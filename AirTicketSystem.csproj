@@ -8,8 +8,32 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="src/" />
-    <Folder Include="src/modules/" />
+    <Folder Include="src/modules/continent/" />
+    <Folder Include="src/modules/continent/Application/" />
+    <Folder Include="src/modules/continent/Application/Interfaces/" />
+    <Folder Include="src/modules/continent/Application/Services/" />
+    <Folder Include="src/modules/continent/Application/UseCases/" />
+    <Folder Include="src/modules/continent/Domain/" />
+    <Folder Include="src/modules/continent/Domain/aggregate/" />
+    <Folder Include="src/modules/continent/Domain/Repositories/" />
+    <Folder Include="src/modules/continent/Domain/ValueObjects/" />
+    <Folder Include="src/modules/continent/Infrastructure/" />
+    <Folder Include="src/modules/continent/Infrastructure/entity/" />
+    <Folder Include="src/modules/continent/Infrastructure/repository/" />
+    <Folder Include="src/modules/continent/UI/" />
+    <Folder Include="src/modules/country/" />
+    <Folder Include="src/modules/country/Application/" />
+    <Folder Include="src/modules/country/Application/Interfaces/" />
+    <Folder Include="src/modules/country/Application/Services/" />
+    <Folder Include="src/modules/country/Application/UseCases/" />
+    <Folder Include="src/modules/country/Domain/" />
+    <Folder Include="src/modules/country/Domain/aggregate/" />
+    <Folder Include="src/modules/country/Domain/Repositories/" />
+    <Folder Include="src/modules/country/Domain/ValueObjects/" />
+    <Folder Include="src/modules/country/Infrastructure/" />
+    <Folder Include="src/modules/country/Infrastructure/entity/" />
+    <Folder Include="src/modules/country/Infrastructure/repository/" />
+    <Folder Include="src/modules/country/UI/" />
     <Folder Include="src/shared/" />
     <Folder Include="src/shared/context/" />
     <Folder Include="src/shared/contracts/" />
@@ -24,9 +48,16 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="10.0.5" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.6" />
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="10.0.5" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.5" />
     <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="9.0.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="appsettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+  
 </Project>
