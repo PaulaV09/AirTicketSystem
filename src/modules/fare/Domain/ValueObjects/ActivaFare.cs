@@ -1,12 +1,17 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+// src/modules/fare/Domain/ValueObjects/ActivaFare.cs
+namespace AirTicketSystem.modules.fare.Domain.ValueObjects;
 
-namespace AirTicketSystem.src.modules.fare.Domain.ValueObjects
+public sealed class ActivaFare
 {
-    public class ActivaFare
-    {
-        
-    }
+    public bool Valor { get; }
+
+    private ActivaFare(bool valor) => Valor = valor;
+
+    public static ActivaFare Crear(bool valor) => new(valor);
+
+    public static ActivaFare Activa() => new(true);
+
+    public static ActivaFare Inactiva() => new(false);
+
+    public override string ToString() => Valor ? "Activa" : "Inactiva";
 }
