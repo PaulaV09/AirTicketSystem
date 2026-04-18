@@ -30,31 +30,31 @@ public sealed class Airline
         return new Airline
         {
             PaisId          = paisId,
-            CodigoIata      = CodigoIataAirline.Crear(codigoIata),
-            CodigoIcao      = CodigoIcaoAirline.Crear(codigoIcao),
-            Nombre          = NombreAirline.Crear(nombre),
+            CodigoIata      = CodigoIataAerolinea.Crear(codigoIata),
+            CodigoIcao      = CodigoIcaoAerolinea.Crear(codigoIcao),
+            Nombre          = NombreAerolinea.Crear(nombre),
             NombreComercial = nombreComercial is not null
-                ? NombreComercialAirline.Crear(nombreComercial)
+                ? NombreComercialAerolinea.Crear(nombreComercial)
                 : null,
             SitioWeb = sitioWeb is not null
-                ? SitioWebAirline.Crear(sitioWeb)
+                ? SitioWebAerolinea.Crear(sitioWeb)
                 : null,
-            Activa = ActivaAirline.Activa()
+            Activa = ActivaAerolinea.Activa()
         };
     }
 
     public void ActualizarNombre(string nombre, string? nombreComercial = null)
     {
-        Nombre = NombreAirline.Crear(nombre);
+        Nombre = NombreAerolinea.Crear(nombre);
         NombreComercial = nombreComercial is not null
-            ? NombreComercialAirline.Crear(nombreComercial)
+            ? NombreComercialAerolinea.Crear(nombreComercial)
             : null;
     }
 
     public void ActualizarSitioWeb(string? sitioWeb)
     {
         SitioWeb = sitioWeb is not null
-            ? SitioWebAirline.Crear(sitioWeb)
+            ? SitioWebAerolinea.Crear(sitioWeb)
             : null;
     }
 
@@ -72,7 +72,7 @@ public sealed class Airline
             throw new InvalidOperationException(
                 "La aerolínea ya se encuentra activa.");
 
-        Activa = ActivaAirline.Activa();
+        Activa = ActivaAerolinea.Activa();
     }
 
     public void Desactivar()
@@ -81,7 +81,7 @@ public sealed class Airline
             throw new InvalidOperationException(
                 "La aerolínea ya se encuentra inactiva.");
 
-        Activa = ActivaAirline.Inactiva();
+        Activa = ActivaAerolinea.Inactiva();
     }
 
     // Propiedades de negocio
