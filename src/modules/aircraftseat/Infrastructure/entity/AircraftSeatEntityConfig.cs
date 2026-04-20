@@ -20,6 +20,7 @@ public class AircraftSeatEntityConfig : IEntityTypeConfiguration<AircraftSeatEnt
         builder.Property(a => a.EsVentana).HasColumnName("es_ventana").IsRequired().HasDefaultValue(false);
         builder.Property(a => a.EsPasillo).HasColumnName("es_pasillo").IsRequired().HasDefaultValue(false);
         builder.Property(a => a.Activo).HasColumnName("activo").IsRequired().HasDefaultValue(true);
+        builder.Property(a => a.CostoSeleccion).HasColumnName("costo_seleccion").HasColumnType("decimal(10,2)").IsRequired().HasDefaultValue(0m);
 
         builder.HasIndex(a => new { a.AvionId, a.CodigoAsiento }).IsUnique();
 

@@ -17,6 +17,7 @@ public class AircraftSeatEntity
     public bool EsVentana { get; set; } = false;
     public bool EsPasillo { get; set; } = false;
     public bool Activo { get; set; } = true;
+    public decimal CostoSeleccion { get; set; } = 0;
 
     public AircraftEntity Avion { get; set; } = null!;
     public ServiceClassEntity ClaseServicio { get; set; } = null!;

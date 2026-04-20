@@ -14,6 +14,8 @@ public sealed class AircraftSeat
     public EsVentanaAircraftSeat EsVentana { get; private set; } = null!;
     public EsPasilloAircraftSeat EsPasillo { get; private set; } = null!;
     public ActivoAircraftSeat Activo { get; private set; } = null!;
+    public CostoSeleccionAircraftSeat CostoSeleccion { get; private set; } = null!;
+    public bool TieneCostoDeSeleccion => CostoSeleccion.Valor > 0;
 
     private AircraftSeat() { }
 
