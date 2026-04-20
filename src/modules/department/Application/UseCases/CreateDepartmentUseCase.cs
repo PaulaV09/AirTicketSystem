@@ -20,18 +20,18 @@ public class CreateDepartmentUseCase
     }
 
     public async Task<DepartmentEntity> ExecuteAsync(
-        int paisId, string nombre, string? codigo)
+        int regionId, string nombre, string? codigo)
     {
-        _ = await _regionRepository.GetByIdAsync(paisId)
+        _ = await _regionRepository.GetByIdAsync(regionId)
             ?? throw new KeyNotFoundException(
-                $"No se encontró un país con ID {paisId}.");
+                $"No se encontró una región con ID {regionId}.");
 
         var nombreVO = NombreDepartment.Crear(nombre);
 
-        if (await _repository.ExistsByNombreAndRegionAsync(nombreVO.Valor, paisId))
+        if (await _repository.ExistsByNombreAndRegionAsync(nombreVO.Valor, regionId))
             throw new InvalidOperationException(
                 $"Ya existe un departamento con el nombre '{nombreVO.Valor}' " +
-                $"en la región con ID {paisId}.");
+                $"en la región con ID {regionId}.");
 
         string? codigoNormalizado = null;
         if (codigo is not null)
@@ -39,7 +39,7 @@ public class CreateDepartmentUseCase
 
         var entity = new DepartmentEntity
         {
-            RegionId = paisId,
+            RegionId = regionId,
             Nombre = nombreVO.Valor,
             Codigo = codigoNormalizado
         };
