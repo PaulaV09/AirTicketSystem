@@ -10,7 +10,7 @@ public class DepartmentService : IDepartmentService
     private readonly CreateDepartmentUseCase _create;
     private readonly GetDepartmentByIdUseCase _getById;
     private readonly GetAllDepartmentsUseCase _getAll;
-    private readonly GetDepartmentsByRegionUseCase _getByCountry;
+    private readonly GetDepartmentsByRegionUseCase _getByRegion;
     private readonly UpdateDepartmentUseCase _update;
     private readonly DeleteDepartmentUseCase _delete;
 
@@ -18,20 +18,20 @@ public class DepartmentService : IDepartmentService
         CreateDepartmentUseCase create,
         GetDepartmentByIdUseCase getById,
         GetAllDepartmentsUseCase getAll,
-        GetDepartmentsByRegionUseCase getByCountry,
+        GetDepartmentsByRegionUseCase getByRegion,
         UpdateDepartmentUseCase update,
         DeleteDepartmentUseCase delete)
     {
         _create      = create;
         _getById     = getById;
         _getAll      = getAll;
-        _getByCountry = getByCountry;
+        _getByRegion = getByRegion;
         _update      = update;
         _delete      = delete;
     }
 
-    public Task<DepartmentEntity> CreateAsync(int paisId, string nombre, string? codigo)
-        => _create.ExecuteAsync(paisId, nombre, codigo);
+    public Task<DepartmentEntity> CreateAsync(int regionId, string nombre, string? codigo)
+        => _create.ExecuteAsync(regionId, nombre, codigo);
 
     public Task<DepartmentEntity?> GetByIdAsync(int id)
         => _getById.ExecuteAsync(id)!;
@@ -39,8 +39,8 @@ public class DepartmentService : IDepartmentService
     public Task<IEnumerable<DepartmentEntity>> GetAllAsync()
         => _getAll.ExecuteAsync();
 
-    public Task<IEnumerable<DepartmentEntity>> GetByCountryAsync(int paisId)
-        => _getByCountry.ExecuteAsync(paisId);
+    public Task<IEnumerable<DepartmentEntity>> GetByRegionAsync(int regionId)
+        => _getByRegion.ExecuteAsync(regionId);
 
     public Task<DepartmentEntity> UpdateAsync(int id, string nombre, string? codigo)
         => _update.ExecuteAsync(id, nombre, codigo);
