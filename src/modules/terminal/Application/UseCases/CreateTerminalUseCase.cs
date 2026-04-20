@@ -1,0 +1,54 @@
+// src/modules/terminal/Application/UseCases/CreateTerminalUseCase.cs
+using AirTicketSystem.modules.terminal.Domain.Repositories;
+using AirTicketSystem.modules.terminal.Infrastructure.entity;
+using AirTicketSystem.modules.terminal.Domain.ValueObjects;
+using AirTicketSystem.modules.airport.Domain.Repositories;
+
+namespace AirTicketSystem.modules.terminal.Application.UseCases;
+
+public class CreateTerminalUseCase
+{
+    private readonly ITerminalRepository _repository;
+    private readonly IAirportRepository _airportRepository;
+
+    public CreateTerminalUseCase(
+        ITerminalRepository repository,
+        IAirportRepository airportRepository)
+    {
+        _repository        = repository;
+        _airportRepository = airportRepository;
+    }
+
+    public async Task<TerminalEntity> ExecuteAsync(
+        int aeropuertoId, string nombre, string? descripcion)
+    {
+        var aeropuerto = await _airportRepository.GetByIdAsync(aeropuertoId)
+            ?? throw new KeyNotFoundException(
+                $"No se encontró un aeropuerto con ID {aeropuertoId}.");
+
+        if (!aeropuerto.Activo)
+            throw new InvalidOperationException(
+                $"No se puede agregar una terminal al aeropuerto " +
+                $"'{aeropuerto.Nombre}' porque está inactivo.");
+
+        var nombreVO = NombreTerminal.Crear(nombre);
+
+        if (await _repository.ExistsByNombreAndAeropuertoAsync(
+            nombreVO.Valor, aeropuertoId))
+            throw new InvalidOperationException(
+                $"Ya existe una terminal con el nombre '{nombreVO.Valor}' " +
+                $"en el aeropuerto '{aeropuerto.Nombre}'.");
+
+        var entity = new TerminalEntity
+        {
+            AeropuertoId = aeropuertoId,
+            Nombre       = nombreVO.Valor,
+            Descripcion  = descripcion is not null
+                ? DescripcionTerminal.Crear(descripcion).Valor
+                : null
+        };
+
+        await _repository.AddAsync(entity);
+        return entity;
+    }
+}
