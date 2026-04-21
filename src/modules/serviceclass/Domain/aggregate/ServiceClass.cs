@@ -27,6 +27,28 @@ public sealed class ServiceClass
         };
     }
 
+    public static ServiceClass Reconstituir(
+        int id,
+        string nombre,
+        string codigo,
+        string? descripcion)
+    {
+        if (id <= 0)
+            throw new ArgumentException("El ID de la clase de servicio no es valido.");
+
+        var serviceClass = Crear(nombre, codigo, descripcion);
+        serviceClass.Id = id;
+        return serviceClass;
+    }
+
+    public void EstablecerId(int id)
+    {
+        if (id <= 0)
+            throw new ArgumentException("El ID de la clase de servicio no es valido.");
+
+        Id = id;
+    }
+
     public void ActualizarNombre(string nombre)
     {
         Nombre = NombreServiceClass.Crear(nombre);

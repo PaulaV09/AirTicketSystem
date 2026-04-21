@@ -48,6 +48,42 @@ public sealed class Worker
         };
     }
 
+    public static Worker Reconstituir(
+        int id,
+        int personaId,
+        int tipoTrabajadorId,
+        int aeropuertoBaseId,
+        DateOnly fechaContratacion,
+        decimal salario,
+        bool activo,
+        int? aerolineaId,
+        int? usuarioId)
+    {
+        if (id <= 0)
+            throw new ArgumentException("El ID del trabajador no es valido.");
+
+        var worker = Crear(
+            personaId,
+            tipoTrabajadorId,
+            aeropuertoBaseId,
+            fechaContratacion,
+            salario,
+            aerolineaId,
+            usuarioId);
+
+        worker.Id = id;
+        worker.Activo = ActivoWorker.Crear(activo);
+        return worker;
+    }
+
+    public void EstablecerId(int id)
+    {
+        if (id <= 0)
+            throw new ArgumentException("El ID del trabajador no es valido.");
+
+        Id = id;
+    }
+
     // ── Gestión de trabajador ────────────────────────────────
 
     public void ActualizarSalario(decimal nuevoSalario)

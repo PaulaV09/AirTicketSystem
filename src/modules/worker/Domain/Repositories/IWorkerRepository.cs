@@ -1,17 +1,21 @@
 // src/modules/worker/Domain/Repositories/IWorkerRepository.cs
-using AirTicketSystem.shared.contracts;
-using AirTicketSystem.modules.worker.Infrastructure.entity;
+using AirTicketSystem.modules.worker.Domain.aggregate;
 
 namespace AirTicketSystem.modules.worker.Domain.Repositories;
 
-public interface IWorkerRepository : IRepository<WorkerEntity>
+public interface IWorkerRepository
 {
-    Task<WorkerEntity?> GetByPersonaAsync(int personaId);
-    Task<WorkerEntity?> GetByUsuarioAsync(int usuarioId);
-    Task<IEnumerable<WorkerEntity>> GetByAerolineaAsync(int aerolineaId);
-    Task<IEnumerable<WorkerEntity>> GetByAeropuertoBaseAsync(int aeropuertoId);
-    Task<IEnumerable<WorkerEntity>> GetByTipoTrabajadorAsync(int tipoTrabajadorId);
-    Task<IEnumerable<WorkerEntity>> GetActivosAsync();
-    Task<IEnumerable<WorkerEntity>> GetPilotosHabilitadosParaModeloAsync(
+    Task<Worker?> FindByIdAsync(int id);
+    Task<IReadOnlyCollection<Worker>> FindAllAsync();
+    Task<Worker?> FindByPersonaAsync(int personaId);
+    Task<Worker?> FindByUsuarioAsync(int usuarioId);
+    Task<IReadOnlyCollection<Worker>> FindByAerolineaAsync(int aerolineaId);
+    Task<IReadOnlyCollection<Worker>> FindByAeropuertoBaseAsync(int aeropuertoId);
+    Task<IReadOnlyCollection<Worker>> FindByTipoTrabajadorAsync(int tipoTrabajadorId);
+    Task<IReadOnlyCollection<Worker>> FindActivosAsync();
+    Task<IReadOnlyCollection<Worker>> FindPilotosHabilitadosParaModeloAsync(
         int modeloAvionId);
+    Task SaveAsync(Worker worker);
+    Task UpdateAsync(Worker worker);
+    Task DeleteAsync(int id);
 }

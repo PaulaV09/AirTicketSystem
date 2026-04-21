@@ -14,7 +14,7 @@ public class DeleteSpecialtyUseCase
 
     public async Task ExecuteAsync(int id)
     {
-        _ = await _repository.GetByIdAsync(id)
+        _ = await _repository.FindByIdAsync(id)
             ?? throw new KeyNotFoundException(
                 $"No se encontró una especialidad con ID {id}.");
 

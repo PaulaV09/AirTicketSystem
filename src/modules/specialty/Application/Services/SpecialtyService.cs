@@ -1,7 +1,7 @@
 // src/modules/specialty/Application/Services/SpecialtyService.cs
 using AirTicketSystem.modules.specialty.Application.Interfaces;
 using AirTicketSystem.modules.specialty.Application.UseCases;
-using AirTicketSystem.modules.specialty.Infrastructure.entity;
+using AirTicketSystem.modules.specialty.Domain.aggregate;
 
 namespace AirTicketSystem.modules.specialty.Application.Services;
 
@@ -33,22 +33,22 @@ public class SpecialtyService : ISpecialtyService
         _delete         = delete;
     }
 
-    public Task<SpecialtyEntity> CreateAsync(string nombre, int? tipoTrabajadorId)
+    public Task<Specialty> CreateAsync(string nombre, int? tipoTrabajadorId)
         => _create.ExecuteAsync(nombre, tipoTrabajadorId);
 
-    public Task<SpecialtyEntity?> GetByIdAsync(int id)
-        => _getById.ExecuteAsync(id)!;
+    public Task<Specialty> GetByIdAsync(int id)
+        => _getById.ExecuteAsync(id);
 
-    public Task<IEnumerable<SpecialtyEntity>> GetAllAsync()
+    public Task<IReadOnlyCollection<Specialty>> GetAllAsync()
         => _getAll.ExecuteAsync();
 
-    public Task<IEnumerable<SpecialtyEntity>> GetByWorkerTypeAsync(int tipoTrabajadorId)
+    public Task<IReadOnlyCollection<Specialty>> GetByWorkerTypeAsync(int tipoTrabajadorId)
         => _getByWorkerType.ExecuteAsync(tipoTrabajadorId);
 
-    public Task<IEnumerable<SpecialtyEntity>> GetGeneralesAsync()
+    public Task<IReadOnlyCollection<Specialty>> GetGeneralesAsync()
         => _getGenerales.ExecuteAsync();
 
-    public Task<SpecialtyEntity> UpdateAsync(
+    public Task<Specialty> UpdateAsync(
         int id, string nombre, int? tipoTrabajadorId)
         => _update.ExecuteAsync(id, nombre, tipoTrabajadorId);
 

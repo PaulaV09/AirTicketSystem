@@ -1,6 +1,6 @@
 // src/modules/specialty/Application/UseCases/CreateSpecialtyUseCase.cs
 using AirTicketSystem.modules.specialty.Domain.Repositories;
-using AirTicketSystem.modules.specialty.Infrastructure.entity;
+using AirTicketSystem.modules.specialty.Domain.aggregate;
 using AirTicketSystem.modules.specialty.Domain.ValueObjects;
 using AirTicketSystem.modules.workertype.Domain.Repositories;
 
@@ -19,14 +19,16 @@ public class CreateSpecialtyUseCase
         _workerTypeRepository = workerTypeRepository;
     }
 
-    public async Task<SpecialtyEntity> ExecuteAsync(
-        string nombre, int? tipoTrabajadorId)
+    public async Task<Specialty> ExecuteAsync(
+        string nombre,
+        int? tipoTrabajadorId,
+        CancellationToken cancellationToken = default)
     {
         var nombreVO = NombreSpecialty.Crear(nombre);
 
         if (tipoTrabajadorId.HasValue)
         {
-            _ = await _workerTypeRepository.GetByIdAsync(tipoTrabajadorId.Value)
+            _ = await _workerTypeRepository.FindByIdAsync(tipoTrabajadorId.Value)
                 ?? throw new KeyNotFoundException(
                     $"No se encontró un tipo de trabajador con ID " +
                     $"{tipoTrabajadorId.Value}.");
@@ -36,13 +38,8 @@ public class CreateSpecialtyUseCase
             throw new InvalidOperationException(
                 $"Ya existe una especialidad con el nombre '{nombreVO.Valor}'.");
 
-        var entity = new SpecialtyEntity
-        {
-            Nombre            = nombreVO.Valor,
-            TipoTrabajadorId  = tipoTrabajadorId
-        };
-
-        await _repository.AddAsync(entity);
-        return entity;
+        var specialty = Specialty.Crear(nombreVO.Valor, tipoTrabajadorId);
+        await _repository.SaveAsync(specialty);
+        return specialty;
     }
 }

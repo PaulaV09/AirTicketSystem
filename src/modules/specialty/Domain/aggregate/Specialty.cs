@@ -23,6 +23,27 @@ public sealed class Specialty
         };
     }
 
+    public static Specialty Reconstituir(
+        int id,
+        string nombre,
+        int? tipoTrabajadorId)
+    {
+        if (id <= 0)
+            throw new ArgumentException("El ID de la especialidad no es valido.");
+
+        var specialty = Crear(nombre, tipoTrabajadorId);
+        specialty.Id = id;
+        return specialty;
+    }
+
+    public void EstablecerId(int id)
+    {
+        if (id <= 0)
+            throw new ArgumentException("El ID de la especialidad no es valido.");
+
+        Id = id;
+    }
+
     public void ActualizarNombre(string nombre)
     {
         Nombre = NombreSpecialty.Crear(nombre);

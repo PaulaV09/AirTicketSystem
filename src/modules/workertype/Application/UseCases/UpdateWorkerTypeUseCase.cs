@@ -1,7 +1,6 @@
 // src/modules/workertype/Application/UseCases/UpdateWorkerTypeUseCase.cs
 using AirTicketSystem.modules.workertype.Domain.Repositories;
-using AirTicketSystem.modules.workertype.Infrastructure.entity;
-using AirTicketSystem.modules.workertype.Domain.ValueObjects;
+using AirTicketSystem.modules.workertype.Domain.aggregate;
 
 namespace AirTicketSystem.modules.workertype.Application.UseCases;
 
@@ -14,20 +13,21 @@ public class UpdateWorkerTypeUseCase
         _repository = repository;
     }
 
-    public async Task<WorkerTypeEntity> ExecuteAsync(int id, string nombre)
+    public async Task<WorkerType> ExecuteAsync(
+        int id,
+        string nombre,
+        CancellationToken cancellationToken = default)
     {
-        var tipo = await _repository.GetByIdAsync(id)
+        var tipo = await _repository.FindByIdAsync(id)
             ?? throw new KeyNotFoundException(
                 $"No se encontró un tipo de trabajador con ID {id}.");
 
-        var nombreVO = NombreWorkerType.Crear(nombre);
-
-        if (nombreVO.Valor != tipo.Nombre &&
-            await _repository.ExistsByNombreAsync(nombreVO.Valor))
+        if (!string.Equals(nombre.Trim(), tipo.Nombre.Valor, StringComparison.OrdinalIgnoreCase) &&
+            await _repository.ExistsByNombreAsync(nombre))
             throw new InvalidOperationException(
-                $"Ya existe otro tipo de trabajador con el nombre '{nombreVO.Valor}'.");
+                $"Ya existe otro tipo de trabajador con el nombre '{nombre.Trim()}'.");
 
-        tipo.Nombre = nombreVO.Valor;
+        tipo.ActualizarNombre(nombre);
         await _repository.UpdateAsync(tipo);
         return tipo;
     }

@@ -18,6 +18,24 @@ public sealed class WorkerType
         };
     }
 
+    public static WorkerType Reconstituir(int id, string nombre)
+    {
+        if (id <= 0)
+            throw new ArgumentException("El ID del tipo de trabajador no es valido.");
+
+        var workerType = Crear(nombre);
+        workerType.Id = id;
+        return workerType;
+    }
+
+    public void EstablecerId(int id)
+    {
+        if (id <= 0)
+            throw new ArgumentException("El ID del tipo de trabajador no es valido.");
+
+        Id = id;
+    }
+
     public void ActualizarNombre(string nombre)
     {
         Nombre = NombreWorkerType.Crear(nombre);

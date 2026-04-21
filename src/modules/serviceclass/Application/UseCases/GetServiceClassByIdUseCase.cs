@@ -1,6 +1,6 @@
 // src/modules/serviceclass/Application/UseCases/GetServiceClassByIdUseCase.cs
 using AirTicketSystem.modules.serviceclass.Domain.Repositories;
-using AirTicketSystem.modules.serviceclass.Infrastructure.entity;
+using AirTicketSystem.modules.serviceclass.Domain.aggregate;
 
 namespace AirTicketSystem.modules.serviceclass.Application.UseCases;
 
@@ -13,13 +13,15 @@ public class GetServiceClassByIdUseCase
         _repository = repository;
     }
 
-    public async Task<ServiceClassEntity> ExecuteAsync(int id)
+    public async Task<ServiceClass> ExecuteAsync(
+        int id,
+        CancellationToken cancellationToken = default)
     {
         if (id <= 0)
             throw new ArgumentException(
                 "El ID de la clase de servicio no es válido.");
 
-        return await _repository.GetByIdAsync(id)
+        return await _repository.FindByIdAsync(id)
             ?? throw new KeyNotFoundException(
                 $"No se encontró una clase de servicio con ID {id}.");
     }

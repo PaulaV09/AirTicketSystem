@@ -1,12 +1,16 @@
 // src/modules/specialty/Domain/Repositories/ISpecialtyRepository.cs
-using AirTicketSystem.shared.contracts;
-using AirTicketSystem.modules.specialty.Infrastructure.entity;
+using AirTicketSystem.modules.specialty.Domain.aggregate;
 
 namespace AirTicketSystem.modules.specialty.Domain.Repositories;
 
-public interface ISpecialtyRepository : IRepository<SpecialtyEntity>
+public interface ISpecialtyRepository
 {
-    Task<IEnumerable<SpecialtyEntity>> GetByTipoTrabajadorAsync(int tipoTrabajadorId);
-    Task<IEnumerable<SpecialtyEntity>> GetGeneralesAsync();
+    Task<Specialty?> FindByIdAsync(int id);
+    Task<IReadOnlyCollection<Specialty>> FindAllAsync();
+    Task<IReadOnlyCollection<Specialty>> FindByTipoTrabajadorAsync(int tipoTrabajadorId);
+    Task<IReadOnlyCollection<Specialty>> FindGeneralesAsync();
     Task<bool> ExistsByNombreAsync(string nombre);
+    Task SaveAsync(Specialty specialty);
+    Task UpdateAsync(Specialty specialty);
+    Task DeleteAsync(int id);
 }

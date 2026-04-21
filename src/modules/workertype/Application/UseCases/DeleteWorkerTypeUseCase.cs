@@ -14,7 +14,7 @@ public class DeleteWorkerTypeUseCase
 
     public async Task ExecuteAsync(int id)
     {
-        _ = await _repository.GetByIdAsync(id)
+        _ = await _repository.FindByIdAsync(id)
             ?? throw new KeyNotFoundException(
                 $"No se encontró un tipo de trabajador con ID {id}.");
 

@@ -1,6 +1,6 @@
 // src/modules/serviceclass/Application/UseCases/GetAllServiceClassesUseCase.cs
 using AirTicketSystem.modules.serviceclass.Domain.Repositories;
-using AirTicketSystem.modules.serviceclass.Infrastructure.entity;
+using AirTicketSystem.modules.serviceclass.Domain.aggregate;
 
 namespace AirTicketSystem.modules.serviceclass.Application.UseCases;
 
@@ -13,6 +13,10 @@ public class GetAllServiceClassesUseCase
         _repository = repository;
     }
 
-    public async Task<IEnumerable<ServiceClassEntity>> ExecuteAsync()
-        => (await _repository.GetAllAsync()).OrderBy(s => s.Nombre);
+    public async Task<IReadOnlyCollection<ServiceClass>> ExecuteAsync(
+        CancellationToken cancellationToken = default)
+        => (await _repository.FindAllAsync())
+            .OrderBy(s => s.Nombre.Valor)
+            .ToList()
+            .AsReadOnly();
 }

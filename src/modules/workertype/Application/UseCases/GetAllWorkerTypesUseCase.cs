@@ -1,6 +1,6 @@
 // src/modules/workertype/Application/UseCases/GetAllWorkerTypesUseCase.cs
 using AirTicketSystem.modules.workertype.Domain.Repositories;
-using AirTicketSystem.modules.workertype.Infrastructure.entity;
+using AirTicketSystem.modules.workertype.Domain.aggregate;
 
 namespace AirTicketSystem.modules.workertype.Application.UseCases;
 
@@ -13,6 +13,10 @@ public class GetAllWorkerTypesUseCase
         _repository = repository;
     }
 
-    public async Task<IEnumerable<WorkerTypeEntity>> ExecuteAsync()
-        => (await _repository.GetAllAsync()).OrderBy(w => w.Nombre);
+    public async Task<IReadOnlyCollection<WorkerType>> ExecuteAsync(
+        CancellationToken cancellationToken = default)
+        => (await _repository.FindAllAsync())
+            .OrderBy(w => w.Nombre.Valor)
+            .ToList()
+            .AsReadOnly();
 }

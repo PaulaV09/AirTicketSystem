@@ -1,16 +1,16 @@
 // src/modules/specialty/Application/Interfaces/ISpecialtyService.cs
-using AirTicketSystem.modules.specialty.Infrastructure.entity;
+using AirTicketSystem.modules.specialty.Domain.aggregate;
 
 namespace AirTicketSystem.modules.specialty.Application.Interfaces;
 
 public interface ISpecialtyService
 {
-    Task<SpecialtyEntity> CreateAsync(string nombre, int? tipoTrabajadorId);
-    Task<SpecialtyEntity?> GetByIdAsync(int id);
-    Task<IEnumerable<SpecialtyEntity>> GetAllAsync();
-    Task<IEnumerable<SpecialtyEntity>> GetByWorkerTypeAsync(int tipoTrabajadorId);
-    Task<IEnumerable<SpecialtyEntity>> GetGeneralesAsync();
-    Task<SpecialtyEntity> UpdateAsync(
+    Task<Specialty> CreateAsync(string nombre, int? tipoTrabajadorId);
+    Task<Specialty> GetByIdAsync(int id);
+    Task<IReadOnlyCollection<Specialty>> GetAllAsync();
+    Task<IReadOnlyCollection<Specialty>> GetByWorkerTypeAsync(int tipoTrabajadorId);
+    Task<IReadOnlyCollection<Specialty>> GetGeneralesAsync();
+    Task<Specialty> UpdateAsync(
         int id, string nombre, int? tipoTrabajadorId);
     Task DeleteAsync(int id);
 }

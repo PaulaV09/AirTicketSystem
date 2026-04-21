@@ -1,7 +1,7 @@
 // src/modules/workertype/Application/Services/WorkerTypeService.cs
 using AirTicketSystem.modules.workertype.Application.Interfaces;
 using AirTicketSystem.modules.workertype.Application.UseCases;
-using AirTicketSystem.modules.workertype.Infrastructure.entity;
+using AirTicketSystem.modules.workertype.Domain.aggregate;
 
 namespace AirTicketSystem.modules.workertype.Application.Services;
 
@@ -27,16 +27,16 @@ public class WorkerTypeService : IWorkerTypeService
         _delete  = delete;
     }
 
-    public Task<WorkerTypeEntity> CreateAsync(string nombre)
+    public Task<WorkerType> CreateAsync(string nombre)
         => _create.ExecuteAsync(nombre);
 
-    public Task<WorkerTypeEntity?> GetByIdAsync(int id)
-        => _getById.ExecuteAsync(id)!;
+    public Task<WorkerType> GetByIdAsync(int id)
+        => _getById.ExecuteAsync(id);
 
-    public Task<IEnumerable<WorkerTypeEntity>> GetAllAsync()
+    public Task<IReadOnlyCollection<WorkerType>> GetAllAsync()
         => _getAll.ExecuteAsync();
 
-    public Task<WorkerTypeEntity> UpdateAsync(int id, string nombre)
+    public Task<WorkerType> UpdateAsync(int id, string nombre)
         => _update.ExecuteAsync(id, nombre);
 
     public Task DeleteAsync(int id)

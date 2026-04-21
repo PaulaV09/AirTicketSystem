@@ -1,7 +1,7 @@
 // src/modules/serviceclass/Application/Services/ServiceClassService.cs
 using AirTicketSystem.modules.serviceclass.Application.Interfaces;
 using AirTicketSystem.modules.serviceclass.Application.UseCases;
-using AirTicketSystem.modules.serviceclass.Infrastructure.entity;
+using AirTicketSystem.modules.serviceclass.Domain.aggregate;
 
 namespace AirTicketSystem.modules.serviceclass.Application.Services;
 
@@ -27,17 +27,17 @@ public class ServiceClassService : IServiceClassService
         _delete  = delete;
     }
 
-    public Task<ServiceClassEntity> CreateAsync(
+    public Task<ServiceClass> CreateAsync(
         string nombre, string codigo, string? descripcion)
         => _create.ExecuteAsync(nombre, codigo, descripcion);
 
-    public Task<ServiceClassEntity?> GetByIdAsync(int id)
-        => _getById.ExecuteAsync(id)!;
+    public Task<ServiceClass> GetByIdAsync(int id)
+        => _getById.ExecuteAsync(id);
 
-    public Task<IEnumerable<ServiceClassEntity>> GetAllAsync()
+    public Task<IReadOnlyCollection<ServiceClass>> GetAllAsync()
         => _getAll.ExecuteAsync();
 
-    public Task<ServiceClassEntity> UpdateAsync(
+    public Task<ServiceClass> UpdateAsync(
         int id, string nombre, string? descripcion)
         => _update.ExecuteAsync(id, nombre, descripcion);
 
