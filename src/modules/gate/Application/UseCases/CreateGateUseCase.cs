@@ -1,6 +1,6 @@
 // src/modules/gate/Application/UseCases/CreateGateUseCase.cs
 using AirTicketSystem.modules.gate.Domain.Repositories;
-using AirTicketSystem.modules.gate.Infrastructure.entity;
+using AirTicketSystem.modules.gate.Domain.aggregate;
 using AirTicketSystem.modules.gate.Domain.ValueObjects;
 using AirTicketSystem.modules.terminal.Domain.Repositories;
 
@@ -19,7 +19,10 @@ public class CreateGateUseCase
         _terminalRepository = terminalRepository;
     }
 
-    public async Task<GateEntity> ExecuteAsync(int terminalId, string codigo)
+    public async Task<Gate> ExecuteAsync(
+        int terminalId,
+        string codigo,
+        CancellationToken cancellationToken = default)
     {
         _ = await _terminalRepository.GetByIdAsync(terminalId)
             ?? throw new KeyNotFoundException(
@@ -33,14 +36,8 @@ public class CreateGateUseCase
                 $"Ya existe una puerta con el código '{codigoVO.Valor}' " +
                 $"en la terminal con ID {terminalId}.");
 
-        var entity = new GateEntity
-        {
-            TerminalId = terminalId,
-            Codigo     = codigoVO.Valor,
-            Activa     = true
-        };
-
-        await _repository.AddAsync(entity);
-        return entity;
+        var gate = Gate.Crear(terminalId, codigoVO.Valor);
+        await _repository.SaveAsync(gate);
+        return gate;
     }
 }

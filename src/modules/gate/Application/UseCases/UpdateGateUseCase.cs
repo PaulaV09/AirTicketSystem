@@ -1,7 +1,6 @@
 // src/modules/gate/Application/UseCases/UpdateGateUseCase.cs
 using AirTicketSystem.modules.gate.Domain.Repositories;
-using AirTicketSystem.modules.gate.Infrastructure.entity;
-using AirTicketSystem.modules.gate.Domain.ValueObjects;
+using AirTicketSystem.modules.gate.Domain.aggregate;
 
 namespace AirTicketSystem.modules.gate.Application.UseCases;
 
@@ -14,22 +13,23 @@ public class UpdateGateUseCase
         _repository = repository;
     }
 
-    public async Task<GateEntity> ExecuteAsync(int id, string codigo)
+    public async Task<Gate> ExecuteAsync(
+        int id,
+        string codigo,
+        CancellationToken cancellationToken = default)
     {
-        var puerta = await _repository.GetByIdAsync(id)
+        var puerta = await _repository.FindByIdAsync(id)
             ?? throw new KeyNotFoundException(
                 $"No se encontró una puerta de embarque con ID {id}.");
 
-        var codigoVO = CodigoGate.Crear(codigo);
-
-        if (codigoVO.Valor != puerta.Codigo &&
+        if (!string.Equals(codigo.Trim(), puerta.Codigo.Valor, StringComparison.OrdinalIgnoreCase) &&
             await _repository.ExistsByCodigoAndTerminalAsync(
-                codigoVO.Valor, puerta.TerminalId))
+                codigo.Trim(), puerta.TerminalId))
             throw new InvalidOperationException(
-                $"Ya existe otra puerta con el código '{codigoVO.Valor}' " +
+                $"Ya existe otra puerta con el código '{codigo.Trim().ToUpperInvariant()}' " +
                 "en la misma terminal.");
 
-        puerta.Codigo = codigoVO.Valor;
+        puerta.ActualizarCodigo(codigo);
         await _repository.UpdateAsync(puerta);
         return puerta;
     }

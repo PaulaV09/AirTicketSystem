@@ -30,7 +30,7 @@ public sealed class AssignGateToFlightUseCase
             ?? throw new KeyNotFoundException(
                 $"No se encontró una puerta con ID {puertaEmbarqueId}.");
 
-        if (!puerta.Activa)
+        if (!puerta.Activa.Valor)
             throw new InvalidOperationException(
                 $"La puerta '{puerta.Codigo.Valor}' está inactiva.");
 

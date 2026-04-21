@@ -1,7 +1,7 @@
 // src/modules/gate/Application/Services/GateService.cs
 using AirTicketSystem.modules.gate.Application.Interfaces;
 using AirTicketSystem.modules.gate.Application.UseCases;
-using AirTicketSystem.modules.gate.Infrastructure.entity;
+using AirTicketSystem.modules.gate.Domain.aggregate;
 
 namespace AirTicketSystem.modules.gate.Application.Services;
 
@@ -36,19 +36,19 @@ public class GateService : IGateService
         _delete       = delete;
     }
 
-    public Task<GateEntity> CreateAsync(int terminalId, string codigo)
+    public Task<Gate> CreateAsync(int terminalId, string codigo)
         => _create.ExecuteAsync(terminalId, codigo);
 
-    public Task<GateEntity?> GetByIdAsync(int id)
-        => _getById.ExecuteAsync(id)!;
+    public Task<Gate> GetByIdAsync(int id)
+        => _getById.ExecuteAsync(id);
 
-    public Task<IEnumerable<GateEntity>> GetByTerminalAsync(int terminalId)
+    public Task<IReadOnlyCollection<Gate>> GetByTerminalAsync(int terminalId)
         => _getByTerminal.ExecuteAsync(terminalId);
 
-    public Task<IEnumerable<GateEntity>> GetActivasByTerminalAsync(int terminalId)
+    public Task<IReadOnlyCollection<Gate>> GetActivasByTerminalAsync(int terminalId)
         => _getActivas.ExecuteAsync(terminalId);
 
-    public Task<GateEntity> UpdateAsync(int id, string codigo)
+    public Task<Gate> UpdateAsync(int id, string codigo)
         => _update.ExecuteAsync(id, codigo);
 
     public Task ActivateAsync(int id)

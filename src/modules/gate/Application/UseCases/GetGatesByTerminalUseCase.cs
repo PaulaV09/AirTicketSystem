@@ -1,6 +1,6 @@
 // src/modules/gate/Application/UseCases/GetGatesByTerminalUseCase.cs
 using AirTicketSystem.modules.gate.Domain.Repositories;
-using AirTicketSystem.modules.gate.Infrastructure.entity;
+using AirTicketSystem.modules.gate.Domain.aggregate;
 
 namespace AirTicketSystem.modules.gate.Application.UseCases;
 
@@ -13,11 +13,13 @@ public class GetGatesByTerminalUseCase
         _repository = repository;
     }
 
-    public async Task<IEnumerable<GateEntity>> ExecuteAsync(int terminalId)
+    public async Task<IReadOnlyCollection<Gate>> ExecuteAsync(
+        int terminalId,
+        CancellationToken cancellationToken = default)
     {
         if (terminalId <= 0)
             throw new ArgumentException("El ID de la terminal no es válido.");
 
-        return await _repository.GetByTerminalAsync(terminalId);
+        return await _repository.FindByTerminalAsync(terminalId);
     }
 }

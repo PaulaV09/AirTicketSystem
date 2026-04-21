@@ -1,12 +1,15 @@
 // src/modules/gate/Domain/Repositories/IGateRepository.cs
-using AirTicketSystem.shared.contracts;
-using AirTicketSystem.modules.gate.Infrastructure.entity;
+using AirTicketSystem.modules.gate.Domain.aggregate;
 
 namespace AirTicketSystem.modules.gate.Domain.Repositories;
 
-public interface IGateRepository : IRepository<GateEntity>
+public interface IGateRepository
 {
-    Task<IEnumerable<GateEntity>> GetByTerminalAsync(int terminalId);
-    Task<IEnumerable<GateEntity>> GetActivasByTerminalAsync(int terminalId);
+    Task<Gate?> FindByIdAsync(int id);
+    Task<IReadOnlyCollection<Gate>> FindByTerminalAsync(int terminalId);
+    Task<IReadOnlyCollection<Gate>> FindActivasByTerminalAsync(int terminalId);
     Task<bool> ExistsByCodigoAndTerminalAsync(string codigo, int terminalId);
+    Task SaveAsync(Gate gate);
+    Task UpdateAsync(Gate gate);
+    Task DeleteAsync(int id);
 }

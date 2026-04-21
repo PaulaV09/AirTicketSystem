@@ -25,6 +25,29 @@ public sealed class Gate
         };
     }
 
+    public static Gate Reconstituir(
+        int id,
+        int terminalId,
+        string codigo,
+        bool activa)
+    {
+        if (id <= 0)
+            throw new ArgumentException("El ID de la puerta no es valido.");
+
+        var gate = Crear(terminalId, codigo);
+        gate.Id = id;
+        gate.Activa = ActivaGate.Crear(activa);
+        return gate;
+    }
+
+    public void EstablecerId(int id)
+    {
+        if (id <= 0)
+            throw new ArgumentException("El ID de la puerta no es valido.");
+
+        Id = id;
+    }
+
     public void ActualizarCodigo(string codigo)
     {
         Codigo = CodigoGate.Crear(codigo);

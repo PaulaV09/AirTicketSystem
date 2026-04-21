@@ -14,15 +14,15 @@ public class ActivateGateUseCase
 
     public async Task ExecuteAsync(int id)
     {
-        var puerta = await _repository.GetByIdAsync(id)
+        var puerta = await _repository.FindByIdAsync(id)
             ?? throw new KeyNotFoundException(
                 $"No se encontró una puerta de embarque con ID {id}.");
 
-        if (puerta.Activa)
+        if (puerta.Activa.Valor)
             throw new InvalidOperationException(
-                $"La puerta '{puerta.Codigo}' ya se encuentra activa.");
+                $"La puerta '{puerta.Codigo.Valor}' ya se encuentra activa.");
 
-        puerta.Activa = true;
+        puerta.Activar();
         await _repository.UpdateAsync(puerta);
     }
 }
