@@ -1,18 +1,17 @@
 // src/modules/seatavailability/Domain/Repositories/ISeatAvailabilityRepository.cs
-using AirTicketSystem.shared.contracts;
-using AirTicketSystem.modules.seatavailability.Infrastructure.entity;
+using AirTicketSystem.modules.seatavailability.Domain.aggregate;
 
 namespace AirTicketSystem.modules.seatavailability.Domain.Repositories;
 
-public interface ISeatAvailabilityRepository : IRepository<SeatAvailabilityEntity>
+public interface ISeatAvailabilityRepository
 {
-    Task<SeatAvailabilityEntity?> GetByVueloAndAsientoAsync(
-        int vueloId, int asientoId);
-    Task<IEnumerable<SeatAvailabilityEntity>> GetByVueloAsync(int vueloId);
-    Task<IEnumerable<SeatAvailabilityEntity>> GetDisponiblesByVueloAsync(int vueloId);
-    Task<IEnumerable<SeatAvailabilityEntity>> GetDisponiblesByVueloAndClaseAsync(
+    Task<SeatAvailability?> FindByVueloAndAsientoAsync(int vueloId, int asientoId);
+    Task<IReadOnlyCollection<SeatAvailability>> FindByVueloAsync(int vueloId);
+    Task<IReadOnlyCollection<SeatAvailability>> FindDisponiblesByVueloAsync(int vueloId);
+    Task<IReadOnlyCollection<SeatAvailability>> FindDisponiblesByVueloAndClaseAsync(
         int vueloId, int claseServicioId);
     Task<int> ContarDisponiblesByVueloAsync(int vueloId);
     Task<bool> AsientoDisponibleAsync(int vueloId, int asientoId);
-    Task CrearDisponibilidadParaVueloAsync(int vueloId, int avionId);
+    Task SaveAllAsync(IEnumerable<SeatAvailability> asientos);
+    Task UpdateAsync(SeatAvailability seatAvailability);
 }

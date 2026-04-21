@@ -10,7 +10,7 @@ public sealed class FlightHistory
     public int? UsuarioId { get; private set; }
     public EstadoAnteriorFlightHistory EstadoAnterior { get; private set; } = null!;
     public EstadoNuevoFlightHistory EstadoNuevo { get; private set; } = null!;
-    public FechaCambioFlightHistory FechaCambio { get; private set; } = null!;
+    public DateTime FechaCambio { get; private set; }
     public MotivoFlightHistory? Motivo { get; private set; }
 
     private FlightHistory() { }
@@ -31,30 +31,51 @@ public sealed class FlightHistory
 
         return new FlightHistory
         {
-            VueloId       = vueloId,
-            UsuarioId     = usuarioId,
+            VueloId        = vueloId,
+            UsuarioId      = usuarioId,
             EstadoAnterior = EstadoAnteriorFlightHistory.Crear(estadoAnterior),
-            EstadoNuevo   = EstadoNuevoFlightHistory.Crear(estadoNuevo),
-            FechaCambio   = FechaCambioFlightHistory.Ahora(),
-            Motivo        = motivo is not null
+            EstadoNuevo    = EstadoNuevoFlightHistory.Crear(estadoNuevo),
+            FechaCambio    = DateTime.UtcNow,
+            Motivo         = motivo is not null
                 ? MotivoFlightHistory.Crear(motivo)
                 : null
         };
     }
 
-    // Propiedades de negocio
-    public bool FueCancelacion =>
-        EstadoNuevo.Valor == "CANCELADO";
+    public static FlightHistory Reconstituir(
+        int id,
+        int vueloId,
+        int? usuarioId,
+        string estadoAnterior,
+        string estadoNuevo,
+        DateTime fechaCambio,
+        string? motivo)
+    {
+        return new FlightHistory
+        {
+            Id             = id,
+            VueloId        = vueloId,
+            UsuarioId      = usuarioId,
+            EstadoAnterior = EstadoAnteriorFlightHistory.Crear(estadoAnterior),
+            EstadoNuevo    = EstadoNuevoFlightHistory.Crear(estadoNuevo),
+            FechaCambio    = fechaCambio,
+            Motivo         = motivo is not null
+                ? MotivoFlightHistory.Crear(motivo)
+                : null
+        };
+    }
 
-    public bool FueDemora =>
-        EstadoNuevo.Valor == "DEMORADO";
+    public void EstablecerId(int id)
+    {
+        if (Id != 0)
+            throw new InvalidOperationException("El ID ya fue establecido.");
 
-    public bool FueDesvio =>
-        EstadoNuevo.Valor == "DESVIADO";
+        if (id <= 0)
+            throw new ArgumentException("El ID debe ser mayor a 0.");
 
-    public bool TieneMotivo => Motivo is not null;
+        Id = id;
+    }
 
-    public override string ToString() =>
-        $"Vuelo #{VueloId} | {EstadoAnterior} → {EstadoNuevo} " +
-        $"[{FechaCambio}]";
+    public override string ToString()
+        => $"[{FechaCambio:dd/MM/yyyy HH:mm}] {EstadoAnterior} → {EstadoNuevo}";
 }

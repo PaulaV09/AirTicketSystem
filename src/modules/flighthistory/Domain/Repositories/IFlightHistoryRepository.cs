@@ -1,11 +1,11 @@
 // src/modules/flighthistory/Domain/Repositories/IFlightHistoryRepository.cs
-using AirTicketSystem.shared.contracts;
-using AirTicketSystem.modules.flighthistory.Infrastructure.entity;
+using AirTicketSystem.modules.flighthistory.Domain.aggregate;
 
 namespace AirTicketSystem.modules.flighthistory.Domain.Repositories;
 
-public interface IFlightHistoryRepository : IRepository<FlightHistoryEntity>
+public interface IFlightHistoryRepository
 {
-    Task<IEnumerable<FlightHistoryEntity>> GetByVueloAsync(int vueloId);
-    Task<FlightHistoryEntity?> GetUltimoCambioByVueloAsync(int vueloId);
+    Task<IReadOnlyCollection<FlightHistory>> FindByVueloAsync(int vueloId);
+    Task<FlightHistory?> FindUltimoCambioByVueloAsync(int vueloId);
+    Task SaveAsync(FlightHistory flightHistory);
 }

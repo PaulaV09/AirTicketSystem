@@ -12,11 +12,11 @@ public sealed class Flight
     public NumeroVueloFlight NumeroVuelo { get; private set; } = null!;
     public FechaSalidaFlight FechaSalida { get; private set; } = null!;
     public FechaLlegadaEstimadaFlight FechaLlegadaEstimada { get; private set; } = null!;
-    public FechaLlegadaRealFlight? FechaLlegadaReal { get; private set; }
+    public DateTime? FechaLlegadaReal { get; private set; }
+    public DateTime? CheckinApertura { get; private set; }
+    public DateTime? CheckinCierre { get; private set; }
     public EstadoFlight Estado { get; private set; } = null!;
     public MotivoCambioEstadoFlight? MotivoCambioEstado { get; private set; }
-    public CheckinAperturaFlight? CheckinApertura { get; private set; }
-    public CheckinCierreFlight? CheckinCierre { get; private set; }
 
     private Flight() { }
 
@@ -34,8 +34,8 @@ public sealed class Flight
         if (avionId <= 0)
             throw new ArgumentException("El avión es obligatorio.");
 
-        var salida   = FechaSalidaFlight.Crear(fechaSalida);
-        var llegada  = FechaLlegadaEstimadaFlight.Crear(
+        var salidaVO  = FechaSalidaFlight.Crear(fechaSalida);
+        var llegadaVO = FechaLlegadaEstimadaFlight.Crear(
             fechaLlegadaEstimada, fechaSalida);
 
         return new Flight
@@ -44,141 +44,192 @@ public sealed class Flight
             AvionId              = avionId,
             PuertaEmbarqueId     = puertaEmbarqueId,
             NumeroVuelo          = NumeroVueloFlight.Crear(numeroVuelo),
-            FechaSalida          = salida,
-            FechaLlegadaEstimada = llegada,
-            FechaLlegadaReal     = null,
-            Estado               = EstadoFlight.Programado(),
-            MotivoCambioEstado   = null,
-            CheckinApertura      = null,
-            CheckinCierre        = null
+            FechaSalida          = salidaVO,
+            FechaLlegadaEstimada = llegadaVO,
+            Estado               = EstadoFlight.Programado()
         };
     }
 
-    // ── Gestión de check-in ──────────────────────────────────
+    public static Flight Reconstituir(
+        int id,
+        int rutaId,
+        int avionId,
+        int? puertaEmbarqueId,
+        string numeroVuelo,
+        DateTime fechaSalida,
+        DateTime fechaLlegadaEstimada,
+        DateTime? fechaLlegadaReal,
+        DateTime? checkinApertura,
+        DateTime? checkinCierre,
+        string estado,
+        string? motivoCambioEstado)
+    {
+        return new Flight
+        {
+            Id                   = id,
+            RutaId               = rutaId,
+            AvionId              = avionId,
+            PuertaEmbarqueId     = puertaEmbarqueId,
+            NumeroVuelo          = NumeroVueloFlight.Crear(numeroVuelo),
+            FechaSalida          = FechaSalidaFlight.Reconstituir(fechaSalida),
+            FechaLlegadaEstimada = FechaLlegadaEstimadaFlight
+                .Reconstituir(fechaLlegadaEstimada),
+            FechaLlegadaReal  = fechaLlegadaReal,
+            CheckinApertura   = checkinApertura,
+            CheckinCierre     = checkinCierre,
+            Estado            = EstadoFlight.Reconstituir(estado),
+            MotivoCambioEstado = motivoCambioEstado is not null
+                ? MotivoCambioEstadoFlight.Crear(motivoCambioEstado)
+                : null
+        };
+    }
+
+    public void EstablecerId(int id)
+    {
+        if (Id != 0)
+            throw new InvalidOperationException("El ID ya fue establecido.");
+
+        if (id <= 0)
+            throw new ArgumentException("El ID debe ser mayor a 0.");
+
+        Id = id;
+    }
+
+    // ── Operaciones de negocio ───────────────────────────────
 
     public void AbrirCheckin(DateTime apertura, DateTime cierre)
     {
-        if (!Estado.PermiteCheckin)
+        if (Estado.Valor != "PROGRAMADO" && Estado.Valor != "DEMORADO")
             throw new InvalidOperationException(
                 $"No se puede abrir el check-in con el vuelo en estado '{Estado}'.");
 
-        CheckinApertura = CheckinAperturaFlight.Crear(apertura, FechaSalida.Valor);
-        CheckinCierre   = CheckinCierreFlight.Crear(
-            cierre, FechaSalida.Valor, apertura);
-    }
-
-    public void CerrarCheckin()
-    {
-        if (CheckinApertura is null)
+        if (CheckinApertura.HasValue)
             throw new InvalidOperationException(
-                "No se puede cerrar un check-in que no ha sido abierto.");
+                "El check-in de este vuelo ya fue abierto.");
 
-        if (CheckinCierre is not null && CheckinCierre.EstaCerrado)
-            throw new InvalidOperationException(
-                "El check-in ya se encuentra cerrado.");
+        CheckinAperturaFlight.Crear(apertura, FechaSalida.Valor);
+        CheckinCierreFlight.Crear(cierre, FechaSalida.Valor, apertura);
+
+        CheckinApertura = apertura;
+        CheckinCierre   = cierre;
     }
-
-    // ── Gestión de puerta ────────────────────────────────────
 
     public void AsignarPuerta(int puertaEmbarqueId)
     {
-        if (puertaEmbarqueId <= 0)
-            throw new ArgumentException("La puerta de embarque no es válida.");
-
-        if (Estado.EstaFinalizado)
+        if (Estado.Valor == "CANCELADO" || Estado.Valor == "ATERRIZADO")
             throw new InvalidOperationException(
-                "No se puede asignar puerta a un vuelo finalizado.");
+                $"No se puede asignar puerta a un vuelo en estado '{Estado}'.");
 
         PuertaEmbarqueId = puertaEmbarqueId;
     }
 
-    public void LiberarPuerta()
+    public void IniciarAbordaje()
     {
-        if (PuertaEmbarqueId is null)
+        if (Estado.Valor != "PROGRAMADO" && Estado.Valor != "DEMORADO")
             throw new InvalidOperationException(
-                "El vuelo no tiene una puerta asignada.");
+                $"No se puede iniciar abordaje con el vuelo en estado '{Estado}'.");
 
-        PuertaEmbarqueId = null;
+        if (!PuertaEmbarqueId.HasValue)
+            throw new InvalidOperationException(
+                "El vuelo no tiene puerta de embarque asignada.");
+
+        Estado = EstadoFlight.Abordando();
+        MotivoCambioEstado = null;
     }
 
-    // ── Máquina de estados ───────────────────────────────────
-
-    public void IniciarAbordaje(string? motivo = null)
+    public void IniciarVuelo()
     {
-        CambiarEstado(EstadoFlight.Abordando(), motivo);
+        if (Estado.Valor != "ABORDANDO")
+            throw new InvalidOperationException(
+                $"Solo se puede iniciar un vuelo en estado ABORDANDO. " +
+                $"Estado actual: '{Estado}'.");
+
+        Estado = EstadoFlight.EnVuelo();
+        MotivoCambioEstado = null;
     }
 
-    public void IniciarVuelo(string? motivo = null)
+    public void RegistrarAterrizaje(DateTime fechaLlegadaReal)
     {
-        CambiarEstado(EstadoFlight.EnVuelo(), motivo);
-    }
+        if (Estado.Valor != "EN_VUELO" && Estado.Valor != "DESVIADO")
+            throw new InvalidOperationException(
+                $"Solo se puede registrar aterrizaje de vuelos EN_VUELO o DESVIADOS. " +
+                $"Estado actual: '{Estado}'.");
 
-    public void RegistrarAterrizaje(DateTime fechaLlegadaReal, string? motivo = null)
-    {
-        CambiarEstado(EstadoFlight.Aterrizado(), motivo);
-        FechaLlegadaReal = FechaLlegadaRealFlight.Crear(
+        var llegadaVO = FechaLlegadaRealFlight.Crear(
             fechaLlegadaReal, FechaSalida.Valor);
+
+        FechaLlegadaReal   = llegadaVO.Valor;
+        Estado             = EstadoFlight.Aterrizado();
+        MotivoCambioEstado = null;
     }
 
     public void Cancelar(string motivo)
     {
-        if (string.IsNullOrWhiteSpace(motivo))
-            throw new ArgumentException(
-                "Se debe indicar el motivo de cancelación del vuelo.");
+        if (Estado.Valor == "EN_VUELO")
+            throw new InvalidOperationException(
+                "No se puede cancelar un vuelo que ya está en el aire.");
 
-        CambiarEstado(EstadoFlight.Cancelado(), motivo);
+        if (Estado.Valor == "ATERRIZADO")
+            throw new InvalidOperationException(
+                "No se puede cancelar un vuelo que ya aterrizó.");
+
+        if (Estado.Valor == "CANCELADO")
+            throw new InvalidOperationException("El vuelo ya está cancelado.");
+
+        MotivoCambioEstado = MotivoCambioEstadoFlight.Crear(motivo);
+        Estado             = EstadoFlight.Cancelado();
     }
 
     public void Demorar(string motivo)
     {
-        if (string.IsNullOrWhiteSpace(motivo))
-            throw new ArgumentException(
-                "Se debe indicar el motivo de la demora.");
+        if (Estado.Valor != "PROGRAMADO")
+            throw new InvalidOperationException(
+                $"Solo se pueden demorar vuelos PROGRAMADOS. " +
+                $"Estado actual: '{Estado}'.");
 
-        CambiarEstado(EstadoFlight.Demorado(), motivo);
+        MotivoCambioEstado = MotivoCambioEstadoFlight.Crear(motivo);
+        Estado             = EstadoFlight.Demorado();
     }
 
     public void Desviar(string motivo)
     {
-        if (string.IsNullOrWhiteSpace(motivo))
-            throw new ArgumentException(
-                "Se debe indicar el motivo del desvío.");
-
-        CambiarEstado(EstadoFlight.Desviado(), motivo);
-    }
-
-    private void CambiarEstado(EstadoFlight nuevoEstado, string? motivo)
-    {
-        if (!Estado.PuedeTransicionarA(nuevoEstado))
+        if (Estado.Valor != "EN_VUELO")
             throw new InvalidOperationException(
-                $"No se puede cambiar el estado de '{Estado}' a '{nuevoEstado}'.");
+                $"Solo se pueden desviar vuelos EN_VUELO. " +
+                $"Estado actual: '{Estado}'.");
 
-        Estado             = nuevoEstado;
-        MotivoCambioEstado = motivo is not null
-            ? MotivoCambioEstadoFlight.Crear(motivo)
-            : null;
+        MotivoCambioEstado = MotivoCambioEstadoFlight.Crear(motivo);
+        Estado             = EstadoFlight.Desviado();
     }
 
-    // ── Propiedades de negocio ───────────────────────────────
+    public void ActualizarHorarios(
+        DateTime fechaSalida, DateTime fechaLlegadaEstimada)
+    {
+        if (Estado.Valor != "PROGRAMADO" && Estado.Valor != "DEMORADO")
+            throw new InvalidOperationException(
+                $"Solo se pueden modificar horarios de vuelos PROGRAMADOS o DEMORADOS. " +
+                $"Estado actual: '{Estado}'.");
 
-    public bool CheckinEstaAbierto =>
-        CheckinApertura is not null &&
-        CheckinCierre is not null &&
-        CheckinApertura.EstaAbierto &&
-        !CheckinCierre.EstaCerrado;
+        FechaSalida = FechaSalidaFlight.Crear(fechaSalida);
+        FechaLlegadaEstimada = FechaLlegadaEstimadaFlight.Crear(
+            fechaLlegadaEstimada, fechaSalida);
+    }
 
-    public bool AceptaNuevasReservas =>
-        Estado.PermiteNuevasReservas;
+    public bool CheckinEstaAbierto
+    {
+        get
+        {
+            if (!CheckinApertura.HasValue || !CheckinCierre.HasValue)
+                return false;
 
-    public bool EstaFinalizado => Estado.EstaFinalizado;
+            var ahora = DateTime.UtcNow;
+            return ahora >= CheckinApertura.Value && ahora <= CheckinCierre.Value;
+        }
+    }
 
-    public bool LlegoATiempo =>
-        FechaLlegadaReal is not null &&
-        FechaLlegadaReal.LlegoATiempo(FechaLlegadaEstimada.Valor);
+    public decimal DuracionEstimadaHoras
+        => (decimal)(FechaLlegadaEstimada.Valor - FechaSalida.Valor).TotalHours;
 
-    public int? MinutosDeDemora =>
-        FechaLlegadaReal?.MinutosDeDemora(FechaLlegadaEstimada.Valor);
-
-    public override string ToString() =>
-        $"[{NumeroVuelo}] {FechaSalida.EnFormatoCorto} — {Estado}";
+    public override string ToString()
+        => $"[{NumeroVuelo}] {FechaSalida} | {Estado}";
 }

@@ -28,57 +28,70 @@ public sealed class SeatAvailability
         };
     }
 
-    // ── Máquina de estados ───────────────────────────────────
+    public static SeatAvailability Reconstituir(
+        int id, int vueloId, int asientoId, string estado)
+    {
+        return new SeatAvailability
+        {
+            Id        = id,
+            VueloId   = vueloId,
+            AsientoId = asientoId,
+            Estado    = EstadoSeatAvailability.Reconstituir(estado)
+        };
+    }
+
+    public void EstablecerId(int id)
+    {
+        if (Id != 0)
+            throw new InvalidOperationException("El ID ya fue establecido.");
+
+        if (id <= 0)
+            throw new ArgumentException("El ID debe ser mayor a 0.");
+
+        Id = id;
+    }
 
     public void Reservar()
     {
-        if (!Estado.PuedeReservarse)
+        if (Estado.Valor != "DISPONIBLE")
             throw new InvalidOperationException(
-                $"El asiento no puede reservarse en estado '{Estado}'.");
+                $"No se puede reservar un asiento en estado '{Estado}'.");
 
         Estado = EstadoSeatAvailability.Reservado();
     }
 
-    public void Ocupar()
-    {
-        if (!Estado.PuedeTransicionarA(EstadoSeatAvailability.Ocupado()))
-            throw new InvalidOperationException(
-                $"El asiento no puede ocuparse en estado '{Estado}'.");
-
-        Estado = EstadoSeatAvailability.Ocupado();
-    }
-
     public void Liberar()
     {
-        if (!Estado.PuedeTransicionarA(EstadoSeatAvailability.Disponible()))
+        if (Estado.Valor != "RESERVADO")
             throw new InvalidOperationException(
-                $"El asiento no puede liberarse en estado '{Estado}'.");
+                $"Solo se pueden liberar asientos RESERVADOS. " +
+                $"Estado actual: '{Estado}'.");
 
         Estado = EstadoSeatAvailability.Disponible();
     }
 
     public void Bloquear()
     {
-        if (!Estado.PuedeTransicionarA(EstadoSeatAvailability.Bloqueado()))
+        if (Estado.Valor != "DISPONIBLE")
             throw new InvalidOperationException(
-                $"El asiento no puede bloquearse en estado '{Estado}'.");
+                $"Solo se pueden bloquear asientos DISPONIBLES. " +
+                $"Estado actual: '{Estado}'.");
 
         Estado = EstadoSeatAvailability.Bloqueado();
     }
 
     public void Desbloquear()
     {
-        if (!Estado.PuedeTransicionarA(EstadoSeatAvailability.Disponible()))
+        if (Estado.Valor != "BLOQUEADO")
             throw new InvalidOperationException(
-                $"El asiento no puede desbloquearse en estado '{Estado}'.");
+                $"Solo se pueden desbloquear asientos BLOQUEADOS. " +
+                $"Estado actual: '{Estado}'.");
 
         Estado = EstadoSeatAvailability.Disponible();
     }
 
-    // Propiedades de negocio
-    public bool EstaDisponible => Estado.PuedeReservarse;
-    public bool EstaOcupado    => Estado.EstaOcupado;
+    public bool EstaDisponible => Estado.Valor == "DISPONIBLE";
 
-    public override string ToString() =>
-        $"Vuelo #{VueloId} — Asiento #{AsientoId} [{Estado}]";
+    public override string ToString()
+        => $"Asiento #{AsientoId} — Vuelo #{VueloId} | {Estado}";
 }

@@ -1,16 +1,18 @@
 // src/modules/flightcrew/Domain/Repositories/IFlightCrewRepository.cs
-using AirTicketSystem.shared.contracts;
-using AirTicketSystem.modules.flightcrew.Infrastructure.entity;
+using AirTicketSystem.modules.flightcrew.Domain.aggregate;
 
 namespace AirTicketSystem.modules.flightcrew.Domain.Repositories;
 
-public interface IFlightCrewRepository : IRepository<FlightCrewEntity>
+public interface IFlightCrewRepository
 {
-    Task<IEnumerable<FlightCrewEntity>> GetByVueloAsync(int vueloId);
-    Task<IEnumerable<FlightCrewEntity>> GetByTrabajadorAsync(int trabajadorId);
-    Task<FlightCrewEntity?> GetByVueloAndRolAsync(int vueloId, string rol);
+    Task<FlightCrew?> FindByIdAsync(int id);
+    Task<IReadOnlyCollection<FlightCrew>> FindByVueloAsync(int vueloId);
+    Task<IReadOnlyCollection<FlightCrew>> FindByTrabajadorAsync(int trabajadorId);
+    Task<FlightCrew?> FindByVueloAndRolAsync(int vueloId, string rol);
     Task<bool> VueloTienePilotoAsync(int vueloId);
     Task<bool> VueloTieneCopiloAsync(int vueloId);
     Task<bool> ExistsByVueloAndTrabajadorAsync(int vueloId, int trabajadorId);
     Task<bool> ExistsByVueloAndRolAsync(int vueloId, string rol);
+    Task SaveAsync(FlightCrew flightCrew);
+    Task DeleteAsync(int id);
 }

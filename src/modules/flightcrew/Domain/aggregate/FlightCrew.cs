@@ -12,10 +12,7 @@ public sealed class FlightCrew
 
     private FlightCrew() { }
 
-    public static FlightCrew Crear(
-        int vueloId,
-        int trabajadorId,
-        string rolEnVuelo)
+    public static FlightCrew Crear(int vueloId, int trabajadorId, string rolEnVuelo)
     {
         if (vueloId <= 0)
             throw new ArgumentException("El vuelo es obligatorio.");
@@ -25,35 +22,38 @@ public sealed class FlightCrew
 
         return new FlightCrew
         {
-            VueloId     = vueloId,
+            VueloId      = vueloId,
             TrabajadorId = trabajadorId,
-            RolEnVuelo  = RolEnVueloFlightCrew.Crear(rolEnVuelo)
+            RolEnVuelo   = RolEnVueloFlightCrew.Crear(rolEnVuelo)
         };
     }
 
-    // Métodos de fábrica expresivos por rol
-    public static FlightCrew AsignarPiloto(int vueloId, int trabajadorId)
-        => Crear(vueloId, trabajadorId, "PILOTO");
+    public static FlightCrew Reconstituir(
+        int id, int vueloId, int trabajadorId, string rolEnVuelo)
+    {
+        return new FlightCrew
+        {
+            Id           = id,
+            VueloId      = vueloId,
+            TrabajadorId = trabajadorId,
+            RolEnVuelo   = RolEnVueloFlightCrew.Crear(rolEnVuelo)
+        };
+    }
 
-    public static FlightCrew AsignarCopiloto(int vueloId, int trabajadorId)
-        => Crear(vueloId, trabajadorId, "COPILOTO");
+    public void EstablecerId(int id)
+    {
+        if (Id != 0)
+            throw new InvalidOperationException("El ID ya fue establecido.");
 
-    public static FlightCrew AsignarSobrecargo(int vueloId, int trabajadorId)
-        => Crear(vueloId, trabajadorId, "SOBRECARGO");
+        if (id <= 0)
+            throw new ArgumentException("El ID debe ser mayor a 0.");
 
-    public static FlightCrew AsignarAuxiliarVuelo(int vueloId, int trabajadorId)
-        => Crear(vueloId, trabajadorId, "AUXILIAR_VUELO");
+        Id = id;
+    }
 
-    public static FlightCrew AsignarAuxiliarSeguridad(int vueloId, int trabajadorId)
-        => Crear(vueloId, trabajadorId, "AUXILIAR_SEGURIDAD");
-
-    // Propiedades de negocio
     public bool EsParteDeCabina =>
-        RolEnVuelo.EsParteDeCabina;
+        RolEnVuelo.Valor == "PILOTO" || RolEnVuelo.Valor == "COPILOTO";
 
-    public bool EsObligatorioParaDespegar =>
-        RolEnVuelo.EsObligatorioParaDespegar;
-
-    public override string ToString() =>
-        $"Vuelo #{VueloId} — Trabajador #{TrabajadorId} [{RolEnVuelo}]";
+    public override string ToString()
+        => $"[{RolEnVuelo}] Trabajador #{TrabajadorId} — Vuelo #{VueloId}";
 }
