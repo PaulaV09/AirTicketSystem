@@ -1,6 +1,6 @@
 // src/modules/aircraftseat/Application/UseCases/CreateAircraftSeatUseCase.cs
 using AirTicketSystem.modules.aircraftseat.Domain.Repositories;
-using AirTicketSystem.modules.aircraftseat.Infrastructure.entity;
+using AirTicketSystem.modules.aircraftseat.Domain.aggregate;
 using AirTicketSystem.modules.aircraftseat.Domain.ValueObjects;
 using AirTicketSystem.modules.aircraft.Domain.Repositories;
 using AirTicketSystem.modules.serviceclass.Domain.Repositories;
@@ -23,22 +23,23 @@ public class CreateAircraftSeatUseCase
         _serviceClassRepository = serviceClassRepository;
     }
 
-    public async Task<AircraftSeatEntity> ExecuteAsync(
+    public async Task<AircraftSeat> ExecuteAsync(
         int avionId,
         int claseServicioId,
         int fila,
         char columna,
         bool esVentana,
         bool esPasillo,
-        decimal costoSeleccion)
+        decimal costoSeleccion,
+        CancellationToken cancellationToken = default)
     {
-        var avion = await _aircraftRepository.GetByIdAsync(avionId)
+        var avion = await _aircraftRepository.FindByIdAsync(avionId)
             ?? throw new KeyNotFoundException(
                 $"No se encontró un avión con ID {avionId}.");
 
-        if (!avion.Activo)
+        if (!avion.Activo.Valor)
             throw new InvalidOperationException(
-                $"El avión '{avion.Matricula}' está dado de baja. " +
+                $"El avión '{avion.Matricula.Valor}' está dado de baja. " +
                 "No se pueden agregar asientos.");
 
         _ = await _serviceClassRepository.GetByIdAsync(claseServicioId)
@@ -57,22 +58,19 @@ public class CreateAircraftSeatUseCase
         if (await _repository.ExistsByCodigoAndAvionAsync(codigoVO.Valor, avionId))
             throw new InvalidOperationException(
                 $"Ya existe el asiento '{codigoVO.Valor}' en el avión " +
-                $"'{avion.Matricula}'.");
+                $"'{avion.Matricula.Valor}'.");
 
-        var entity = new AircraftSeatEntity
-        {
-            AvionId         = avionId,
-            ClaseServicioId = claseServicioId,
-            CodigoAsiento   = codigoVO.Valor,
-            Fila            = filaVO.Valor,
-            Columna         = columnaVO.Valor.ToString(),
-            EsVentana       = esVentana,
-            EsPasillo       = esPasillo,
-            CostoSeleccion  = costoVO.Valor,
-            Activo          = true
-        };
+        var seat = AircraftSeat.Crear(
+            avionId,
+            claseServicioId,
+            filaVO.Valor,
+            columnaVO.Valor,
+            esVentana,
+            esPasillo);
 
-        await _repository.AddAsync(entity);
-        return entity;
+        seat.ActualizarCondiciones(esVentana, esPasillo, costoVO.Valor);
+
+        await _repository.SaveAsync(seat);
+        return seat;
     }
 }

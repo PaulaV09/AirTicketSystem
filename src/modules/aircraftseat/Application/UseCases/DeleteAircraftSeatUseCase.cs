@@ -12,15 +12,17 @@ public class DeleteAircraftSeatUseCase
         _repository = repository;
     }
 
-    public async Task ExecuteAsync(int id)
+    public async Task ExecuteAsync(
+        int id,
+        CancellationToken cancellationToken = default)
     {
-        var asiento = await _repository.GetByIdAsync(id)
+        var asiento = await _repository.FindByIdAsync(id)
             ?? throw new KeyNotFoundException(
                 $"No se encontró un asiento con ID {id}.");
 
-        if (asiento.Activo)
+        if (asiento.Activo.Valor)
             throw new InvalidOperationException(
-                $"No se puede eliminar el asiento '{asiento.CodigoAsiento}' " +
+                $"No se puede eliminar el asiento '{asiento.CodigoAsiento.Valor}' " +
                 "porque está activo. Desactívelo primero.");
 
         await _repository.DeleteAsync(id);

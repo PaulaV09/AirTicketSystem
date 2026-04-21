@@ -1,20 +1,20 @@
 // src/modules/aircraftseat/Application/Interfaces/IAircraftSeatService.cs
-using AirTicketSystem.modules.aircraftseat.Infrastructure.entity;
+using AirTicketSystem.modules.aircraftseat.Domain.aggregate;
 
 namespace AirTicketSystem.modules.aircraftseat.Application.Interfaces;
 
 public interface IAircraftSeatService
 {
-    Task<AircraftSeatEntity> CreateAsync(
+    Task<AircraftSeat> CreateAsync(
         int avionId, int claseServicioId,
         int fila, char columna,
         bool esVentana, bool esPasillo,
         decimal costoSeleccion);
-    Task<AircraftSeatEntity?> GetByIdAsync(int id);
-    Task<IEnumerable<AircraftSeatEntity>> GetByAircraftAsync(int avionId);
-    Task<IEnumerable<AircraftSeatEntity>> GetByAircraftAndClassAsync(
+    Task<AircraftSeat> GetByIdAsync(int id);
+    Task<IReadOnlyCollection<AircraftSeat>> GetByAircraftAsync(int avionId);
+    Task<IReadOnlyCollection<AircraftSeat>> GetByAircraftAndClassAsync(
         int avionId, int claseServicioId);
-    Task<AircraftSeatEntity> UpdateAsync(
+    Task<AircraftSeat> UpdateAsync(
         int id, bool esVentana, bool esPasillo, decimal costoSeleccion);
     Task ActivateAsync(int id);
     Task DeactivateAsync(int id);

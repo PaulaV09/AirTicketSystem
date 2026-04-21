@@ -1,7 +1,7 @@
 // src/modules/aircraft/Application/Services/AircraftService.cs
 using AirTicketSystem.modules.aircraft.Application.Interfaces;
 using AirTicketSystem.modules.aircraft.Application.UseCases;
-using AirTicketSystem.modules.aircraft.Infrastructure.entity;
+using AirTicketSystem.modules.aircraft.Domain.aggregate;
 
 namespace AirTicketSystem.modules.aircraft.Application.Services;
 
@@ -54,32 +54,32 @@ public class AircraftService : IAircraftService
         _delete              = delete;
     }
 
-    public Task<AircraftEntity> CreateAsync(
+    public Task<Aircraft> CreateAsync(
         int modeloAvionId, int aerolineaId, string matricula,
         DateOnly? fechaFabricacion, DateOnly? fechaProximoMantenimiento)
         => _create.ExecuteAsync(
             modeloAvionId, aerolineaId, matricula,
             fechaFabricacion, fechaProximoMantenimiento);
 
-    public Task<AircraftEntity?> GetByIdAsync(int id)
-        => _getById.ExecuteAsync(id)!;
+    public Task<Aircraft> GetByIdAsync(int id)
+        => _getById.ExecuteAsync(id);
 
-    public Task<AircraftEntity?> GetByMatriculaAsync(string matricula)
-        => _getByMatricula.ExecuteAsync(matricula)!;
+    public Task<Aircraft> GetByMatriculaAsync(string matricula)
+        => _getByMatricula.ExecuteAsync(matricula);
 
-    public Task<IEnumerable<AircraftEntity>> GetAllAsync()
+    public Task<IReadOnlyCollection<Aircraft>> GetAllAsync()
         => _getAll.ExecuteAsync();
 
-    public Task<IEnumerable<AircraftEntity>> GetByAirlineAsync(int aerolineaId)
+    public Task<IReadOnlyCollection<Aircraft>> GetByAirlineAsync(int aerolineaId)
         => _getByAirline.ExecuteAsync(aerolineaId);
 
-    public Task<IEnumerable<AircraftEntity>> GetAvailableAsync()
+    public Task<IReadOnlyCollection<Aircraft>> GetAvailableAsync()
         => _getAvailable.ExecuteAsync();
 
-    public Task<IEnumerable<AircraftEntity>> GetWithUrgentMaintenanceAsync()
+    public Task<IReadOnlyCollection<Aircraft>> GetWithUrgentMaintenanceAsync()
         => _getUrgent.ExecuteAsync();
 
-    public Task<AircraftEntity> UpdateAsync(
+    public Task<Aircraft> UpdateAsync(
         int id, DateOnly? fechaFabricacion,
         DateOnly? fechaProximoMantenimiento)
         => _update.ExecuteAsync(id, fechaFabricacion, fechaProximoMantenimiento);

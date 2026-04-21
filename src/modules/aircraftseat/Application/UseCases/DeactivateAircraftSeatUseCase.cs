@@ -12,17 +12,15 @@ public class DeactivateAircraftSeatUseCase
         _repository = repository;
     }
 
-    public async Task ExecuteAsync(int id)
+    public async Task ExecuteAsync(
+        int id,
+        CancellationToken cancellationToken = default)
     {
-        var asiento = await _repository.GetByIdAsync(id)
+        var asiento = await _repository.FindByIdAsync(id)
             ?? throw new KeyNotFoundException(
                 $"No se encontró un asiento con ID {id}.");
 
-        if (!asiento.Activo)
-            throw new InvalidOperationException(
-                $"El asiento '{asiento.CodigoAsiento}' ya se encuentra inactivo.");
-
-        asiento.Activo = false;
+        asiento.Desactivar();
         await _repository.UpdateAsync(asiento);
     }
 }

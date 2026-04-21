@@ -1,6 +1,5 @@
 // src/modules/aircraft/Application/UseCases/RegisterMaintenanceUseCase.cs
 using AirTicketSystem.modules.aircraft.Domain.Repositories;
-using AirTicketSystem.modules.aircraft.Domain.ValueObjects;
 
 namespace AirTicketSystem.modules.aircraft.Application.UseCases;
 
@@ -13,24 +12,15 @@ public class RegisterMaintenanceUseCase
         _repository = repository;
     }
 
-    public async Task ExecuteAsync(int id, DateOnly fechaProximoMantenimiento)
+    public async Task ExecuteAsync(
+        int id,
+        DateOnly fechaProximoMantenimiento,
+        CancellationToken cancellationToken = default)
     {
-        var avion = await _repository.GetByIdAsync(id)
+        var avion = await _repository.FindByIdAsync(id)
             ?? throw new KeyNotFoundException(
                 $"No se encontró un avión con ID {id}.");
-
-        if (avion.Estado != "MANTENIMIENTO")
-            throw new InvalidOperationException(
-                $"El avión '{avion.Matricula}' no está en mantenimiento. " +
-                $"Estado actual: '{avion.Estado}'.");
-
-        var hoy      = DateOnly.FromDateTime(DateTime.Today);
-        var proximaVO = FechaProximoMantenimientoAircraft
-            .Crear(fechaProximoMantenimiento);
-
-        avion.Estado                     = "DISPONIBLE";
-        avion.FechaUltimoMantenimiento   = hoy;
-        avion.FechaProximoMantenimiento  = proximaVO.Valor;
+        avion.RegistrarMantenimiento(fechaProximoMantenimiento);
 
         await _repository.UpdateAsync(avion);
     }

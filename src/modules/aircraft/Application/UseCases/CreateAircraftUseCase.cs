@@ -1,6 +1,6 @@
 // src/modules/aircraft/Application/UseCases/CreateAircraftUseCase.cs
 using AirTicketSystem.modules.aircraft.Domain.Repositories;
-using AirTicketSystem.modules.aircraft.Infrastructure.entity;
+using AirTicketSystem.modules.aircraft.Domain.aggregate;
 using AirTicketSystem.modules.aircraft.Domain.ValueObjects;
 using AirTicketSystem.modules.aircraftmodel.Domain.Repositories;
 using AirTicketSystem.modules.airline.Domain.Repositories;
@@ -23,24 +23,25 @@ public class CreateAircraftUseCase
         _airlineRepository = airlineRepository;
     }
 
-    public async Task<AircraftEntity> ExecuteAsync(
+    public async Task<Aircraft> ExecuteAsync(
         int modeloAvionId,
         int aerolineaId,
         string matricula,
         DateOnly? fechaFabricacion,
-        DateOnly? fechaProximoMantenimiento)
+        DateOnly? fechaProximoMantenimiento,
+        CancellationToken cancellationToken = default)
     {
-        _ = await _modelRepository.GetByIdAsync(modeloAvionId)
+        _ = await _modelRepository.FindByIdAsync(modeloAvionId)
             ?? throw new KeyNotFoundException(
                 $"No se encontró un modelo de avión con ID {modeloAvionId}.");
 
-        var aerolinea = await _airlineRepository.GetByIdAsync(aerolineaId)
+        var aerolinea = await _airlineRepository.FindByIdAsync(aerolineaId)
             ?? throw new KeyNotFoundException(
                 $"No se encontró una aerolínea con ID {aerolineaId}.");
 
-        if (!aerolinea.Activa)
+        if (!aerolinea.Activa.Valor)
             throw new InvalidOperationException(
-                $"La aerolínea '{aerolinea.Nombre}' está inactiva. " +
+                $"La aerolínea '{aerolinea.Nombre.Valor}' está inactiva. " +
                 "No se pueden registrar aviones para aerolíneas inactivas.");
 
         var matriculaVO = MatriculaAircraft.Crear(matricula);
@@ -49,24 +50,14 @@ public class CreateAircraftUseCase
             throw new InvalidOperationException(
                 $"Ya existe un avión con la matrícula '{matriculaVO.Valor}'.");
 
-        var entity = new AircraftEntity
-        {
-            ModeloAvionId             = modeloAvionId,
-            AerolineaId               = aerolineaId,
-            Matricula                 = matriculaVO.Valor,
-            FechaFabricacion          = fechaFabricacion is not null
-                ? FechaFabricacionAircraft.Crear(fechaFabricacion.Value).Valor
-                : null,
-            FechaProximoMantenimiento = fechaProximoMantenimiento is not null
-                ? FechaProximoMantenimientoAircraft
-                    .Crear(fechaProximoMantenimiento.Value).Valor
-                : null,
-            TotalHorasVuelo = 0,
-            Estado          = "DISPONIBLE",
-            Activo          = true
-        };
+        var aircraft = Aircraft.Crear(
+            modeloAvionId,
+            aerolineaId,
+            matriculaVO.Valor,
+            fechaFabricacion,
+            fechaProximoMantenimiento);
 
-        await _repository.AddAsync(entity);
-        return entity;
+        await _repository.SaveAsync(aircraft);
+        return aircraft;
     }
 }

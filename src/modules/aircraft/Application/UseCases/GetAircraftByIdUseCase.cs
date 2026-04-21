@@ -1,6 +1,6 @@
 // src/modules/aircraft/Application/UseCases/GetAircraftByIdUseCase.cs
 using AirTicketSystem.modules.aircraft.Domain.Repositories;
-using AirTicketSystem.modules.aircraft.Infrastructure.entity;
+using AirTicketSystem.modules.aircraft.Domain.aggregate;
 
 namespace AirTicketSystem.modules.aircraft.Application.UseCases;
 
@@ -13,12 +13,14 @@ public class GetAircraftByIdUseCase
         _repository = repository;
     }
 
-    public async Task<AircraftEntity> ExecuteAsync(int id)
+    public async Task<Aircraft> ExecuteAsync(
+        int id,
+        CancellationToken cancellationToken = default)
     {
         if (id <= 0)
             throw new ArgumentException("El ID del avión no es válido.");
 
-        return await _repository.GetByIdAsync(id)
+        return await _repository.FindByIdAsync(id)
             ?? throw new KeyNotFoundException(
                 $"No se encontró un avión con ID {id}.");
     }

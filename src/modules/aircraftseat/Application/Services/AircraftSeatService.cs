@@ -1,7 +1,7 @@
 // src/modules/aircraftseat/Application/Services/AircraftSeatService.cs
 using AirTicketSystem.modules.aircraftseat.Application.Interfaces;
 using AirTicketSystem.modules.aircraftseat.Application.UseCases;
-using AirTicketSystem.modules.aircraftseat.Infrastructure.entity;
+using AirTicketSystem.modules.aircraftseat.Domain.aggregate;
 
 namespace AirTicketSystem.modules.aircraftseat.Application.Services;
 
@@ -36,7 +36,7 @@ public class AircraftSeatService : IAircraftSeatService
         _delete                = delete;
     }
 
-    public Task<AircraftSeatEntity> CreateAsync(
+    public Task<AircraftSeat> CreateAsync(
         int avionId, int claseServicioId,
         int fila, char columna,
         bool esVentana, bool esPasillo,
@@ -45,17 +45,17 @@ public class AircraftSeatService : IAircraftSeatService
             avionId, claseServicioId, fila, columna,
             esVentana, esPasillo, costoSeleccion);
 
-    public Task<AircraftSeatEntity?> GetByIdAsync(int id)
-        => _getById.ExecuteAsync(id)!;
+    public Task<AircraftSeat> GetByIdAsync(int id)
+        => _getById.ExecuteAsync(id);
 
-    public Task<IEnumerable<AircraftSeatEntity>> GetByAircraftAsync(int avionId)
+    public Task<IReadOnlyCollection<AircraftSeat>> GetByAircraftAsync(int avionId)
         => _getByAircraft.ExecuteAsync(avionId);
 
-    public Task<IEnumerable<AircraftSeatEntity>> GetByAircraftAndClassAsync(
+    public Task<IReadOnlyCollection<AircraftSeat>> GetByAircraftAndClassAsync(
         int avionId, int claseServicioId)
         => _getByAircraftAndClass.ExecuteAsync(avionId, claseServicioId);
 
-    public Task<AircraftSeatEntity> UpdateAsync(
+    public Task<AircraftSeat> UpdateAsync(
         int id, bool esVentana, bool esPasillo, decimal costoSeleccion)
         => _update.ExecuteAsync(id, esVentana, esPasillo, costoSeleccion);
 

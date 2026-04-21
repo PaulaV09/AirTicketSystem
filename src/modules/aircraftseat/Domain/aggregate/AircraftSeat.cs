@@ -54,6 +54,53 @@ public sealed class AircraftSeat
         };
     }
 
+    public static AircraftSeat Reconstituir(
+        int id,
+        int avionId,
+        int claseServicioId,
+        string codigoAsiento,
+        int fila,
+        string columna,
+        bool esVentana,
+        bool esPasillo,
+        bool activo,
+        decimal costoSeleccion)
+    {
+        if (id <= 0)
+            throw new ArgumentException("El ID del asiento no es valido.");
+
+        var seat = Crear(avionId, claseServicioId, fila, columna, esVentana, esPasillo);
+        if (seat.CodigoAsiento.Valor != codigoAsiento.ToUpperInvariant())
+            throw new InvalidOperationException("El codigo de asiento es inconsistente.");
+
+        seat.Id = id;
+        seat.Activo = ActivoAircraftSeat.Crear(activo);
+        seat.CostoSeleccion = CostoSeleccionAircraftSeat.Crear(costoSeleccion);
+        return seat;
+    }
+
+    public void EstablecerId(int id)
+    {
+        if (id <= 0)
+            throw new ArgumentException("El ID del asiento no es valido.");
+
+        Id = id;
+    }
+
+    public void ActualizarCondiciones(
+        bool esVentana,
+        bool esPasillo,
+        decimal costoSeleccion)
+    {
+        if (esVentana && esPasillo)
+            throw new InvalidOperationException(
+                "Un asiento no puede ser de ventana y de pasillo al mismo tiempo.");
+
+        EsVentana = EsVentanaAircraftSeat.Crear(esVentana);
+        EsPasillo = EsPasilloAircraftSeat.Crear(esPasillo);
+        CostoSeleccion = CostoSeleccionAircraftSeat.Crear(costoSeleccion);
+    }
+
     public void Activar()
     {
         if (Activo.Valor)

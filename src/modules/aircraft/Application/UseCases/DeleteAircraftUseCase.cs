@@ -12,20 +12,22 @@ public class DeleteAircraftUseCase
         _repository = repository;
     }
 
-    public async Task ExecuteAsync(int id)
+    public async Task ExecuteAsync(
+        int id,
+        CancellationToken cancellationToken = default)
     {
-        var avion = await _repository.GetByIdAsync(id)
+        var avion = await _repository.FindByIdAsync(id)
             ?? throw new KeyNotFoundException(
                 $"No se encontró un avión con ID {id}.");
 
-        if (avion.Activo)
+        if (avion.Activo.Valor)
             throw new InvalidOperationException(
-                $"No se puede eliminar el avión '{avion.Matricula}' " +
+                $"No se puede eliminar el avión '{avion.Matricula.Valor}' " +
                 "porque está activo. Debe darlo de baja primero.");
 
-        if (avion.Estado == "EN_VUELO")
+        if (avion.Estado.Valor == "EN_VUELO")
             throw new InvalidOperationException(
-                $"No se puede eliminar el avión '{avion.Matricula}' " +
+                $"No se puede eliminar el avión '{avion.Matricula.Valor}' " +
                 "porque está en vuelo.");
 
         await _repository.DeleteAsync(id);

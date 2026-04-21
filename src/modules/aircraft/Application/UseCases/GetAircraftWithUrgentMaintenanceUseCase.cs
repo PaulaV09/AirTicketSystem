@@ -1,6 +1,6 @@
 // src/modules/aircraft/Application/UseCases/GetAircraftWithUrgentMaintenanceUseCase.cs
 using AirTicketSystem.modules.aircraft.Domain.Repositories;
-using AirTicketSystem.modules.aircraft.Infrastructure.entity;
+using AirTicketSystem.modules.aircraft.Domain.aggregate;
 
 namespace AirTicketSystem.modules.aircraft.Application.UseCases;
 
@@ -13,6 +13,7 @@ public class GetAircraftWithUrgentMaintenanceUseCase
         _repository = repository;
     }
 
-    public async Task<IEnumerable<AircraftEntity>> ExecuteAsync()
-        => await _repository.GetConMantenimientoUrgenteAsync();
+    public async Task<IReadOnlyCollection<Aircraft>> ExecuteAsync(
+        CancellationToken cancellationToken = default)
+        => await _repository.FindConMantenimientoUrgenteAsync();
 }

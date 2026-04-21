@@ -49,6 +49,59 @@ public sealed class Aircraft
         };
     }
 
+    public static Aircraft Reconstituir(
+        int id,
+        int modeloAvionId,
+        int aerolineaId,
+        string matricula,
+        DateOnly? fechaFabricacion,
+        DateOnly? fechaUltimoMantenimiento,
+        DateOnly? fechaProximoMantenimiento,
+        decimal totalHorasVuelo,
+        string estado,
+        bool activo)
+    {
+        if (id <= 0)
+            throw new ArgumentException("El ID del avion no es valido.");
+
+        var aircraft = Crear(
+            modeloAvionId,
+            aerolineaId,
+            matricula,
+            fechaFabricacion,
+            fechaProximoMantenimiento);
+
+        aircraft.Id = id;
+        aircraft.FechaUltimoMantenimiento = fechaUltimoMantenimiento is not null
+            ? FechaUltimoMantenimientoAircraft.Crear(fechaUltimoMantenimiento.Value)
+            : null;
+        aircraft.TotalHorasVuelo = TotalHorasVueloAircraft.Crear(totalHorasVuelo);
+        aircraft.Estado = EstadoAircraft.Crear(estado);
+        aircraft.Activo = ActivoAircraft.Crear(activo);
+        return aircraft;
+    }
+
+    public void EstablecerId(int id)
+    {
+        if (id <= 0)
+            throw new ArgumentException("El ID del avion no es valido.");
+
+        Id = id;
+    }
+
+    public void ActualizarFechas(
+        DateOnly? fechaFabricacion,
+        DateOnly? fechaProximoMantenimiento)
+    {
+        FechaFabricacion = fechaFabricacion is not null
+            ? FechaFabricacionAircraft.Crear(fechaFabricacion.Value)
+            : null;
+
+        FechaProximoMantenimiento = fechaProximoMantenimiento is not null
+            ? FechaProximoMantenimientoAircraft.Crear(fechaProximoMantenimiento.Value)
+            : null;
+    }
+
     // ── Gestión de estado ────────────────────────────────────
 
     public void AsignarAVuelo()
