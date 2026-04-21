@@ -1,6 +1,6 @@
 // src/modules/route/Application/UseCases/GetRoutesByOriginUseCase.cs
 using AirTicketSystem.modules.route.Domain.Repositories;
-using AirTicketSystem.modules.route.Infrastructure.entity;
+using AirTicketSystem.modules.route.Domain.aggregate;
 
 namespace AirTicketSystem.modules.route.Application.UseCases;
 
@@ -13,12 +13,14 @@ public class GetRoutesByOriginUseCase
         _repository = repository;
     }
 
-    public async Task<IEnumerable<RouteEntity>> ExecuteAsync(int origenId)
+    public async Task<IReadOnlyCollection<Route>> ExecuteAsync(
+        int origenId,
+        CancellationToken cancellationToken = default)
     {
         if (origenId <= 0)
             throw new ArgumentException(
                 "El ID del aeropuerto de origen no es válido.");
 
-        return await _repository.GetByOrigenAsync(origenId);
+        return await _repository.FindByOrigenAsync(origenId);
     }
 }

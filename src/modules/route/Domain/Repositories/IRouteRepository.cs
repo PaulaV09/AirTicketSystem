@@ -1,19 +1,23 @@
 // src/modules/route/Domain/Repositories/IRouteRepository.cs
-using AirTicketSystem.shared.contracts;
-using AirTicketSystem.modules.route.Infrastructure.entity;
+using AirTicketSystem.modules.route.Domain.aggregate;
 
 namespace AirTicketSystem.modules.route.Domain.Repositories;
 
-public interface IRouteRepository : IRepository<RouteEntity>
+public interface IRouteRepository
 {
-    Task<IEnumerable<RouteEntity>> GetByAerolineaAsync(int aerolineaId);
-    Task<IEnumerable<RouteEntity>> GetByOrigenAsync(int origenId);
-    Task<IEnumerable<RouteEntity>> GetByDestinoAsync(int destinoId);
-    Task<IEnumerable<RouteEntity>> GetByOrigenAndDestinoAsync(
+    Task<Route?> FindByIdAsync(int id);
+    Task<IReadOnlyCollection<Route>> FindAllAsync();
+    Task<IReadOnlyCollection<Route>> FindByAerolineaAsync(int aerolineaId);
+    Task<IReadOnlyCollection<Route>> FindByOrigenAsync(int origenId);
+    Task<IReadOnlyCollection<Route>> FindByDestinoAsync(int destinoId);
+    Task<IReadOnlyCollection<Route>> FindByOrigenAndDestinoAsync(
         int origenId, int destinoId);
-    Task<RouteEntity?> GetByAerolineaOrigenDestinoAsync(
+    Task<Route?> FindByAerolineaOrigenDestinoAsync(
         int aerolineaId, int origenId, int destinoId);
-    Task<IEnumerable<RouteEntity>> GetActivasAsync();
+    Task<IReadOnlyCollection<Route>> FindActivasAsync();
     Task<bool> ExistsByAerolineaOrigenDestinoAsync(
         int aerolineaId, int origenId, int destinoId);
+    Task SaveAsync(Route route);
+    Task UpdateAsync(Route route);
+    Task DeleteAsync(int id);
 }

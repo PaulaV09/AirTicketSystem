@@ -1,7 +1,6 @@
 // src/modules/route/Application/UseCases/UpdateRouteUseCase.cs
 using AirTicketSystem.modules.route.Domain.Repositories;
-using AirTicketSystem.modules.route.Infrastructure.entity;
-using AirTicketSystem.modules.route.Domain.ValueObjects;
+using AirTicketSystem.modules.route.Domain.aggregate;
 
 namespace AirTicketSystem.modules.route.Application.UseCases;
 
@@ -14,20 +13,18 @@ public class UpdateRouteUseCase
         _repository = repository;
     }
 
-    public async Task<RouteEntity> ExecuteAsync(
-        int id, int? distanciaKm, int? duracionMin)
+    public async Task<Route> ExecuteAsync(
+        int id,
+        int? distanciaKm,
+        int? duracionMin,
+        CancellationToken cancellationToken = default)
     {
-        var ruta = await _repository.GetByIdAsync(id)
+        var ruta = await _repository.FindByIdAsync(id)
             ?? throw new KeyNotFoundException(
                 $"No se encontró una ruta con ID {id}.");
 
-        ruta.DistanciaKm = distanciaKm is not null
-            ? DistanciaKmRoute.Crear(distanciaKm.Value).Valor
-            : null;
-
-        ruta.DuracionEstimadaMin = duracionMin is not null
-            ? DuracionEstimadaMinRoute.Crear(duracionMin.Value).Valor
-            : null;
+        ruta.ActualizarDistancia(distanciaKm);
+        ruta.ActualizarDuracion(duracionMin);
 
         await _repository.UpdateAsync(ruta);
         return ruta;

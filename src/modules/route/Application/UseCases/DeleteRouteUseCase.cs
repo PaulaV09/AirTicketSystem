@@ -12,13 +12,15 @@ public class DeleteRouteUseCase
         _repository = repository;
     }
 
-    public async Task ExecuteAsync(int id)
+    public async Task ExecuteAsync(
+        int id,
+        CancellationToken cancellationToken = default)
     {
-        var ruta = await _repository.GetByIdAsync(id)
+        var ruta = await _repository.FindByIdAsync(id)
             ?? throw new KeyNotFoundException(
                 $"No se encontró una ruta con ID {id}.");
 
-        if (ruta.Activa)
+        if (ruta.Activa.Valor)
             throw new InvalidOperationException(
                 "No se puede eliminar una ruta activa. " +
                 "Desactívela primero.");

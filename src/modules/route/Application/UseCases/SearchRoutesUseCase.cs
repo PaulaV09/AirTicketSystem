@@ -1,6 +1,6 @@
 // src/modules/route/Application/UseCases/SearchRoutesUseCase.cs
 using AirTicketSystem.modules.route.Domain.Repositories;
-using AirTicketSystem.modules.route.Infrastructure.entity;
+using AirTicketSystem.modules.route.Domain.aggregate;
 
 namespace AirTicketSystem.modules.route.Application.UseCases;
 
@@ -13,8 +13,10 @@ public class SearchRoutesUseCase
         _repository = repository;
     }
 
-    public async Task<IEnumerable<RouteEntity>> ExecuteAsync(
-        int origenId, int destinoId)
+    public async Task<IReadOnlyCollection<Route>> ExecuteAsync(
+        int origenId,
+        int destinoId,
+        CancellationToken cancellationToken = default)
     {
         if (origenId <= 0)
             throw new ArgumentException("El ID del aeropuerto de origen no es válido.");
@@ -26,6 +28,6 @@ public class SearchRoutesUseCase
             throw new InvalidOperationException(
                 "El origen y destino no pueden ser el mismo aeropuerto.");
 
-        return await _repository.GetByOrigenAndDestinoAsync(origenId, destinoId);
+        return await _repository.FindByOrigenAndDestinoAsync(origenId, destinoId);
     }
 }

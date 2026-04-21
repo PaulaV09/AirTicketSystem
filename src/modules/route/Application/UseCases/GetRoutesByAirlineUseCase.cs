@@ -1,6 +1,6 @@
 // src/modules/route/Application/UseCases/GetRoutesByAirlineUseCase.cs
 using AirTicketSystem.modules.route.Domain.Repositories;
-using AirTicketSystem.modules.route.Infrastructure.entity;
+using AirTicketSystem.modules.route.Domain.aggregate;
 
 namespace AirTicketSystem.modules.route.Application.UseCases;
 
@@ -13,11 +13,13 @@ public class GetRoutesByAirlineUseCase
         _repository = repository;
     }
 
-    public async Task<IEnumerable<RouteEntity>> ExecuteAsync(int aerolineaId)
+    public async Task<IReadOnlyCollection<Route>> ExecuteAsync(
+        int aerolineaId,
+        CancellationToken cancellationToken = default)
     {
         if (aerolineaId <= 0)
             throw new ArgumentException("El ID de la aerolínea no es válido.");
 
-        return await _repository.GetByAerolineaAsync(aerolineaId);
+        return await _repository.FindByAerolineaAsync(aerolineaId);
     }
 }

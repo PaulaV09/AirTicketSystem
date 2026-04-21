@@ -1,7 +1,7 @@
 // src/modules/route/Application/Services/RouteService.cs
 using AirTicketSystem.modules.route.Application.Interfaces;
 using AirTicketSystem.modules.route.Application.UseCases;
-using AirTicketSystem.modules.route.Infrastructure.entity;
+using AirTicketSystem.modules.route.Domain.aggregate;
 
 namespace AirTicketSystem.modules.route.Application.Services;
 
@@ -48,34 +48,34 @@ public class RouteService : IRouteService
         _delete           = delete;
     }
 
-    public Task<RouteEntity> CreateAsync(
+    public Task<Route> CreateAsync(
         int aerolineaId, int origenId, int destinoId,
         int? distanciaKm, int? duracionMin)
         => _create.ExecuteAsync(
             aerolineaId, origenId, destinoId, distanciaKm, duracionMin);
 
-    public Task<RouteEntity?> GetByIdAsync(int id)
-        => _getById.ExecuteAsync(id)!;
+    public Task<Route> GetByIdAsync(int id)
+        => _getById.ExecuteAsync(id);
 
-    public Task<IEnumerable<RouteEntity>> GetAllAsync()
+    public Task<IReadOnlyCollection<Route>> GetAllAsync()
         => _getAll.ExecuteAsync();
 
-    public Task<IEnumerable<RouteEntity>> GetByAirlineAsync(int aerolineaId)
+    public Task<IReadOnlyCollection<Route>> GetByAirlineAsync(int aerolineaId)
         => _getByAirline.ExecuteAsync(aerolineaId);
 
-    public Task<IEnumerable<RouteEntity>> GetByOriginAsync(int origenId)
+    public Task<IReadOnlyCollection<Route>> GetByOriginAsync(int origenId)
         => _getByOrigin.ExecuteAsync(origenId);
 
-    public Task<IEnumerable<RouteEntity>> GetByDestinationAsync(int destinoId)
+    public Task<IReadOnlyCollection<Route>> GetByDestinationAsync(int destinoId)
         => _getByDestination.ExecuteAsync(destinoId);
 
-    public Task<IEnumerable<RouteEntity>> SearchAsync(int origenId, int destinoId)
+    public Task<IReadOnlyCollection<Route>> SearchAsync(int origenId, int destinoId)
         => _search.ExecuteAsync(origenId, destinoId);
 
-    public Task<IEnumerable<RouteEntity>> GetActivasAsync()
+    public Task<IReadOnlyCollection<Route>> GetActivasAsync()
         => _getActivas.ExecuteAsync();
 
-    public Task<RouteEntity> UpdateAsync(int id, int? distanciaKm, int? duracionMin)
+    public Task<Route> UpdateAsync(int id, int? distanciaKm, int? duracionMin)
         => _update.ExecuteAsync(id, distanciaKm, duracionMin);
 
     public Task ActivateAsync(int id) => _activate.ExecuteAsync(id);

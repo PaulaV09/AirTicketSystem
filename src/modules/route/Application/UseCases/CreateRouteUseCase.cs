@@ -1,7 +1,6 @@
 // src/modules/route/Application/UseCases/CreateRouteUseCase.cs
 using AirTicketSystem.modules.route.Domain.Repositories;
-using AirTicketSystem.modules.route.Infrastructure.entity;
-using AirTicketSystem.modules.route.Domain.ValueObjects;
+using AirTicketSystem.modules.route.Domain.aggregate;
 using AirTicketSystem.modules.airline.Domain.Repositories;
 using AirTicketSystem.modules.airport.Domain.Repositories;
 
@@ -23,12 +22,13 @@ public class CreateRouteUseCase
         _airportRepository = airportRepository;
     }
 
-    public async Task<RouteEntity> ExecuteAsync(
+    public async Task<Route> ExecuteAsync(
         int aerolineaId,
         int origenId,
         int destinoId,
         int? distanciaKm,
-        int? duracionMin)
+        int? duracionMin,
+        CancellationToken cancellationToken = default)
     {
         var aerolinea = await _airlineRepository.GetByIdAsync(aerolineaId)
             ?? throw new KeyNotFoundException(
@@ -65,21 +65,14 @@ public class CreateRouteUseCase
                 $"Ya existe una ruta de '{origen.Nombre}' a '{destino.Nombre}' " +
                 $"para la aerolínea '{aerolinea.Nombre}'.");
 
-        var entity = new RouteEntity
-        {
-            AerolineaId         = aerolineaId,
-            OrigenId            = origenId,
-            DestinoId           = destinoId,
-            DistanciaKm         = distanciaKm is not null
-                ? DistanciaKmRoute.Crear(distanciaKm.Value).Valor
-                : null,
-            DuracionEstimadaMin = duracionMin is not null
-                ? DuracionEstimadaMinRoute.Crear(duracionMin.Value).Valor
-                : null,
-            Activa = true
-        };
+        var route = Route.Crear(
+            aerolineaId,
+            origenId,
+            destinoId,
+            distanciaKm,
+            duracionMin);
 
-        await _repository.AddAsync(entity);
-        return entity;
+        await _repository.SaveAsync(route);
+        return route;
     }
 }

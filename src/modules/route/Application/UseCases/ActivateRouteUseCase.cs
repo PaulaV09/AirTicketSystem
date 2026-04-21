@@ -12,17 +12,15 @@ public class ActivateRouteUseCase
         _repository = repository;
     }
 
-    public async Task ExecuteAsync(int id)
+    public async Task ExecuteAsync(
+        int id,
+        CancellationToken cancellationToken = default)
     {
-        var ruta = await _repository.GetByIdAsync(id)
+        var ruta = await _repository.FindByIdAsync(id)
             ?? throw new KeyNotFoundException(
                 $"No se encontró una ruta con ID {id}.");
 
-        if (ruta.Activa)
-            throw new InvalidOperationException(
-                "La ruta ya se encuentra activa.");
-
-        ruta.Activa = true;
+        ruta.Activar();
         await _repository.UpdateAsync(ruta);
     }
 }

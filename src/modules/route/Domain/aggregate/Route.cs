@@ -50,6 +50,38 @@ public sealed class Route
         };
     }
 
+    public static Route Reconstituir(
+        int id,
+        int aerolineaId,
+        int origenId,
+        int destinoId,
+        int? distanciaKm,
+        int? duracionEstimadaMin,
+        bool activa)
+    {
+        if (id <= 0)
+            throw new ArgumentException("El ID de la ruta no es valido.");
+
+        var route = Crear(
+            aerolineaId,
+            origenId,
+            destinoId,
+            distanciaKm,
+            duracionEstimadaMin);
+
+        route.Id = id;
+        route.Activa = ActivaRoute.Crear(activa);
+        return route;
+    }
+
+    public void EstablecerId(int id)
+    {
+        if (id <= 0)
+            throw new ArgumentException("El ID de la ruta no es valido.");
+
+        Id = id;
+    }
+
     public void ActualizarDistancia(int? distanciaKm)
     {
         DistanciaKm = distanciaKm is not null

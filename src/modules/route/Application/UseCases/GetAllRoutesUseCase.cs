@@ -1,6 +1,6 @@
 // src/modules/route/Application/UseCases/GetAllRoutesUseCase.cs
 using AirTicketSystem.modules.route.Domain.Repositories;
-using AirTicketSystem.modules.route.Infrastructure.entity;
+using AirTicketSystem.modules.route.Domain.aggregate;
 
 namespace AirTicketSystem.modules.route.Application.UseCases;
 
@@ -13,6 +13,7 @@ public class GetAllRoutesUseCase
         _repository = repository;
     }
 
-    public async Task<IEnumerable<RouteEntity>> ExecuteAsync()
-        => await _repository.GetAllAsync();
+    public async Task<IReadOnlyCollection<Route>> ExecuteAsync(
+        CancellationToken cancellationToken = default)
+        => await _repository.FindAllAsync();
 }
