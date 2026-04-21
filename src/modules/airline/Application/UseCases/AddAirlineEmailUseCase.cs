@@ -28,7 +28,7 @@ public class AddAirlineEmailUseCase
         string email,
         bool esPrincipal)
     {
-        _ = await _airlineRepository.GetByIdAsync(aerolineaId)
+        _ = await _airlineRepository.FindByIdAsync(aerolineaId)
             ?? throw new KeyNotFoundException(
                 $"No se encontró una aerolínea con ID {aerolineaId}.");
 

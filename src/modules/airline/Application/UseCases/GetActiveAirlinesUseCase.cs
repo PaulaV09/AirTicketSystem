@@ -1,6 +1,6 @@
 // src/modules/airline/Application/UseCases/GetActiveAirlinesUseCase.cs
 using AirTicketSystem.modules.airline.Domain.Repositories;
-using AirTicketSystem.modules.airline.Infrastructure.entity;
+using AirTicketSystem.modules.airline.Domain.aggregate;
 
 namespace AirTicketSystem.modules.airline.Application.UseCases;
 
@@ -13,6 +13,7 @@ public class GetActiveAirlinesUseCase
         _repository = repository;
     }
 
-    public async Task<IEnumerable<AirlineEntity>> ExecuteAsync()
-        => await _repository.GetActivasAsync();
+    public async Task<IReadOnlyCollection<Airline>> ExecuteAsync(
+        CancellationToken cancellationToken = default)
+        => await _repository.FindActivasAsync();
 }

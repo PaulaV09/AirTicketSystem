@@ -12,15 +12,17 @@ public class DeleteAirportUseCase
         _repository = repository;
     }
 
-    public async Task ExecuteAsync(int id)
+    public async Task ExecuteAsync(
+        int id,
+        CancellationToken cancellationToken = default)
     {
-        var aeropuerto = await _repository.GetByIdAsync(id)
+        var aeropuerto = await _repository.FindByIdAsync(id)
             ?? throw new KeyNotFoundException(
                 $"No se encontró un aeropuerto con ID {id}.");
 
-        if (aeropuerto.Activo)
+        if (aeropuerto.Activo.Valor)
             throw new InvalidOperationException(
-                $"No se puede eliminar el aeropuerto '{aeropuerto.Nombre}' " +
+                $"No se puede eliminar el aeropuerto '{aeropuerto.Nombre.Valor}' " +
                 "porque está activo. Desactívelo primero.");
 
         await _repository.DeleteAsync(id);

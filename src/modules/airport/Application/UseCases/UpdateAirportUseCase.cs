@@ -1,7 +1,6 @@
 // src/modules/airport/Application/UseCases/UpdateAirportUseCase.cs
 using AirTicketSystem.modules.airport.Domain.Repositories;
-using AirTicketSystem.modules.airport.Infrastructure.entity;
-using AirTicketSystem.modules.airport.Domain.ValueObjects;
+using AirTicketSystem.modules.airport.Domain.aggregate;
 
 namespace AirTicketSystem.modules.airport.Application.UseCases;
 
@@ -14,17 +13,18 @@ public class UpdateAirportUseCase
         _repository = repository;
     }
 
-    public async Task<AirportEntity> ExecuteAsync(
-        int id, string nombre, string? direccion)
+    public async Task<Airport> ExecuteAsync(
+        int id,
+        string nombre,
+        string? direccion,
+        CancellationToken cancellationToken = default)
     {
-        var aeropuerto = await _repository.GetByIdAsync(id)
+        var aeropuerto = await _repository.FindByIdAsync(id)
             ?? throw new KeyNotFoundException(
                 $"No se encontró un aeropuerto con ID {id}.");
 
-        aeropuerto.Nombre    = NombreAirport.Crear(nombre).Valor;
-        aeropuerto.Direccion = direccion is not null
-            ? DireccionAirport.Crear(direccion).Valor
-            : null;
+        aeropuerto.ActualizarNombre(nombre);
+        aeropuerto.ActualizarDireccion(direccion);
 
         await _repository.UpdateAsync(aeropuerto);
         return aeropuerto;

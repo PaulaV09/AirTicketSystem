@@ -1,6 +1,6 @@
 // src/modules/airport/Application/UseCases/CreateAirportUseCase.cs
 using AirTicketSystem.modules.airport.Domain.Repositories;
-using AirTicketSystem.modules.airport.Infrastructure.entity;
+using AirTicketSystem.modules.airport.Domain.aggregate;
 using AirTicketSystem.modules.airport.Domain.ValueObjects;
 using AirTicketSystem.modules.city.Domain.Repositories;
 
@@ -19,12 +19,13 @@ public class CreateAirportUseCase
         _cityRepository = cityRepository;
     }
 
-    public async Task<AirportEntity> ExecuteAsync(
+    public async Task<Airport> ExecuteAsync(
         int ciudadId,
         string codigoIata,
         string codigoIcao,
         string nombre,
-        string? direccion)
+        string? direccion,
+        CancellationToken cancellationToken = default)
     {
         _ = await _cityRepository.GetByIdAsync(ciudadId)
             ?? throw new KeyNotFoundException(
@@ -42,19 +43,14 @@ public class CreateAirportUseCase
             throw new InvalidOperationException(
                 $"Ya existe un aeropuerto con el código ICAO '{icaoVO.Valor}'.");
 
-        var entity = new AirportEntity
-        {
-            CiudadId    = ciudadId,
-            CodigoIata  = iataVO.Valor,
-            CodigoIcao  = icaoVO.Valor,
-            Nombre      = nombreVO.Valor,
-            Direccion   = direccion is not null
-                ? DireccionAirport.Crear(direccion).Valor
-                : null,
-            Activo = true
-        };
+        var airport = Airport.Crear(
+            ciudadId,
+            iataVO.Valor,
+            icaoVO.Valor,
+            nombreVO.Valor,
+            direccion);
 
-        await _repository.AddAsync(entity);
-        return entity;
+        await _repository.SaveAsync(airport);
+        return airport;
     }
 }

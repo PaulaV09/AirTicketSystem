@@ -12,15 +12,17 @@ public class DeleteAirlineUseCase
         _repository = repository;
     }
 
-    public async Task ExecuteAsync(int id)
+    public async Task ExecuteAsync(
+        int id,
+        CancellationToken cancellationToken = default)
     {
-        var aerolinea = await _repository.GetByIdAsync(id)
+        var aerolinea = await _repository.FindByIdAsync(id)
             ?? throw new KeyNotFoundException(
                 $"No se encontró una aerolínea con ID {id}.");
 
-        if (aerolinea.Activa)
+        if (aerolinea.Activa.Valor)
             throw new InvalidOperationException(
-                $"No se puede eliminar la aerolínea '{aerolinea.Nombre}' " +
+                $"No se puede eliminar la aerolínea '{aerolinea.Nombre.Valor}' " +
                 "porque está activa. Desactívela primero.");
 
         await _repository.DeleteAsync(id);

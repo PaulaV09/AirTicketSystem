@@ -2,6 +2,7 @@
 using AirTicketSystem.modules.airline.Application.Interfaces;
 using AirTicketSystem.modules.airline.Application.UseCases;
 using AirTicketSystem.modules.airline.Infrastructure.entity;
+using AirTicketSystem.modules.airline.Domain.aggregate;
 
 namespace AirTicketSystem.modules.airline.Application.Services;
 
@@ -51,25 +52,25 @@ public class AirlineService : IAirlineService
         _removeEmail = removeEmail;
     }
 
-    public Task<AirlineEntity> CreateAsync(
+    public Task<Airline> CreateAsync(
         int paisId, string codigoIata, string codigoIcao,
         string nombre, string? nombreComercial, string? sitioWeb)
         => _create.ExecuteAsync(
             paisId, codigoIata, codigoIcao, nombre, nombreComercial, sitioWeb);
 
-    public Task<AirlineEntity?> GetByIdAsync(int id)
-        => _getById.ExecuteAsync(id)!;
+    public Task<Airline> GetByIdAsync(int id)
+        => _getById.ExecuteAsync(id);
 
-    public Task<AirlineEntity?> GetByIataAsync(string codigoIata)
-        => _getByIata.ExecuteAsync(codigoIata)!;
+    public Task<Airline> GetByIataAsync(string codigoIata)
+        => _getByIata.ExecuteAsync(codigoIata);
 
-    public Task<IEnumerable<AirlineEntity>> GetAllAsync()
+    public Task<IReadOnlyCollection<Airline>> GetAllAsync()
         => _getAll.ExecuteAsync();
 
-    public Task<IEnumerable<AirlineEntity>> GetActivasAsync()
+    public Task<IReadOnlyCollection<Airline>> GetActivasAsync()
         => _getActivas.ExecuteAsync();
 
-    public Task<AirlineEntity> UpdateAsync(
+    public Task<Airline> UpdateAsync(
         int id, string nombre, string? nombreComercial, string? sitioWeb)
         => _update.ExecuteAsync(id, nombre, nombreComercial, sitioWeb);
 

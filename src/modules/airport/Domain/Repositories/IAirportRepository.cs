@@ -1,15 +1,19 @@
 // src/modules/airport/Domain/Repositories/IAirportRepository.cs
-using AirTicketSystem.shared.contracts;
-using AirTicketSystem.modules.airport.Infrastructure.entity;
+using AirTicketSystem.modules.airport.Domain.aggregate;
 
 namespace AirTicketSystem.modules.airport.Domain.Repositories;
 
-public interface IAirportRepository : IRepository<AirportEntity>
+public interface IAirportRepository
 {
-    Task<AirportEntity?> GetByCodigoIataAsync(string codigoIata);
-    Task<AirportEntity?> GetByCodigoIcaoAsync(string codigoIcao);
-    Task<IEnumerable<AirportEntity>> GetByCiudadAsync(int ciudadId);
-    Task<IEnumerable<AirportEntity>> GetActivosAsync();
+    Task<Airport?> FindByIdAsync(int id);
+    Task<IReadOnlyCollection<Airport>> FindAllAsync();
+    Task<Airport?> FindByCodigoIataAsync(string codigoIata);
+    Task<Airport?> FindByCodigoIcaoAsync(string codigoIcao);
+    Task<IReadOnlyCollection<Airport>> FindByCiudadAsync(int ciudadId);
+    Task<IReadOnlyCollection<Airport>> FindActivosAsync();
     Task<bool> ExistsByCodigoIataAsync(string codigoIata);
     Task<bool> ExistsByCodigoIcaoAsync(string codigoIcao);
+    Task SaveAsync(Airport airport);
+    Task UpdateAsync(Airport airport);
+    Task DeleteAsync(int id);
 }

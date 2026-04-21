@@ -1,6 +1,6 @@
 // src/modules/airport/Application/UseCases/GetAllAirportsUseCase.cs
 using AirTicketSystem.modules.airport.Domain.Repositories;
-using AirTicketSystem.modules.airport.Infrastructure.entity;
+using AirTicketSystem.modules.airport.Domain.aggregate;
 
 namespace AirTicketSystem.modules.airport.Application.UseCases;
 
@@ -13,6 +13,10 @@ public class GetAllAirportsUseCase
         _repository = repository;
     }
 
-    public async Task<IEnumerable<AirportEntity>> ExecuteAsync()
-        => (await _repository.GetAllAsync()).OrderBy(a => a.Nombre);
+    public async Task<IReadOnlyCollection<Airport>> ExecuteAsync(
+        CancellationToken cancellationToken = default)
+        => (await _repository.FindAllAsync())
+            .OrderBy(a => a.Nombre.Valor)
+            .ToList()
+            .AsReadOnly();
 }

@@ -1,18 +1,19 @@
 // src/modules/airline/Application/Interfaces/IAirlineService.cs
 using AirTicketSystem.modules.airline.Infrastructure.entity;
+using AirTicketSystem.modules.airline.Domain.aggregate;
 
 namespace AirTicketSystem.modules.airline.Application.Interfaces;
 
 public interface IAirlineService
 {
-    Task<AirlineEntity> CreateAsync(
+    Task<Airline> CreateAsync(
         int paisId, string codigoIata, string codigoIcao,
         string nombre, string? nombreComercial, string? sitioWeb);
-    Task<AirlineEntity?> GetByIdAsync(int id);
-    Task<AirlineEntity?> GetByIataAsync(string codigoIata);
-    Task<IEnumerable<AirlineEntity>> GetAllAsync();
-    Task<IEnumerable<AirlineEntity>> GetActivasAsync();
-    Task<AirlineEntity> UpdateAsync(
+    Task<Airline> GetByIdAsync(int id);
+    Task<Airline> GetByIataAsync(string codigoIata);
+    Task<IReadOnlyCollection<Airline>> GetAllAsync();
+    Task<IReadOnlyCollection<Airline>> GetActivasAsync();
+    Task<Airline> UpdateAsync(
         int id, string nombre, string? nombreComercial, string? sitioWeb);
     Task ActivateAsync(int id);
     Task DeactivateAsync(int id);

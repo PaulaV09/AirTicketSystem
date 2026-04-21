@@ -1,6 +1,6 @@
 // src/modules/airport/Application/UseCases/GetAirportsByCityUseCase.cs
 using AirTicketSystem.modules.airport.Domain.Repositories;
-using AirTicketSystem.modules.airport.Infrastructure.entity;
+using AirTicketSystem.modules.airport.Domain.aggregate;
 
 namespace AirTicketSystem.modules.airport.Application.UseCases;
 
@@ -13,11 +13,13 @@ public class GetAirportsByCityUseCase
         _repository = repository;
     }
 
-    public async Task<IEnumerable<AirportEntity>> ExecuteAsync(int ciudadId)
+    public async Task<IReadOnlyCollection<Airport>> ExecuteAsync(
+        int ciudadId,
+        CancellationToken cancellationToken = default)
     {
         if (ciudadId <= 0)
             throw new ArgumentException("El ID de la ciudad no es válido.");
 
-        return await _repository.GetByCiudadAsync(ciudadId);
+        return await _repository.FindByCiudadAsync(ciudadId);
     }
 }

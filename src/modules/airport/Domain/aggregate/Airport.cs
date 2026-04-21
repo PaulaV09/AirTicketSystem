@@ -38,6 +38,32 @@ public sealed class Airport
         };
     }
 
+    public static Airport Reconstituir(
+        int id,
+        int ciudadId,
+        string codigoIata,
+        string codigoIcao,
+        string nombre,
+        string? direccion,
+        bool activo)
+    {
+        if (id <= 0)
+            throw new ArgumentException("El ID del aeropuerto no es valido.");
+
+        var airport = Crear(ciudadId, codigoIata, codigoIcao, nombre, direccion);
+        airport.Id = id;
+        airport.Activo = ActivoAirport.Crear(activo);
+        return airport;
+    }
+
+    public void EstablecerId(int id)
+    {
+        if (id <= 0)
+            throw new ArgumentException("El ID del aeropuerto no es valido.");
+
+        Id = id;
+    }
+
     public void ActualizarNombre(string nombre)
     {
         Nombre = NombreAirport.Crear(nombre);

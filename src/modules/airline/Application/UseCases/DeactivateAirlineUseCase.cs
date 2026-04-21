@@ -12,17 +12,15 @@ public class DeactivateAirlineUseCase
         _repository = repository;
     }
 
-    public async Task ExecuteAsync(int id)
+    public async Task ExecuteAsync(
+        int id,
+        CancellationToken cancellationToken = default)
     {
-        var aerolinea = await _repository.GetByIdAsync(id)
+        var aerolinea = await _repository.FindByIdAsync(id)
             ?? throw new KeyNotFoundException(
                 $"No se encontró una aerolínea con ID {id}.");
 
-        if (!aerolinea.Activa)
-            throw new InvalidOperationException(
-                $"La aerolínea '{aerolinea.Nombre}' ya se encuentra inactiva.");
-
-        aerolinea.Activa = false;
+        aerolinea.Desactivar();
         await _repository.UpdateAsync(aerolinea);
     }
 }

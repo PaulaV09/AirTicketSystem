@@ -1,7 +1,7 @@
 // src/modules/airport/Application/Services/AirportService.cs
 using AirTicketSystem.modules.airport.Application.Interfaces;
 using AirTicketSystem.modules.airport.Application.UseCases;
-using AirTicketSystem.modules.airport.Infrastructure.entity;
+using AirTicketSystem.modules.airport.Domain.aggregate;
 
 namespace AirTicketSystem.modules.airport.Application.Services;
 
@@ -42,27 +42,27 @@ public class AirportService : IAirportService
         _delete     = delete;
     }
 
-    public Task<AirportEntity> CreateAsync(
+    public Task<Airport> CreateAsync(
         int ciudadId, string codigoIata, string codigoIcao,
         string nombre, string? direccion)
         => _create.ExecuteAsync(ciudadId, codigoIata, codigoIcao, nombre, direccion);
 
-    public Task<AirportEntity?> GetByIdAsync(int id)
-        => _getById.ExecuteAsync(id)!;
+    public Task<Airport> GetByIdAsync(int id)
+        => _getById.ExecuteAsync(id);
 
-    public Task<AirportEntity?> GetByIataAsync(string codigoIata)
-        => _getByIata.ExecuteAsync(codigoIata)!;
+    public Task<Airport> GetByIataAsync(string codigoIata)
+        => _getByIata.ExecuteAsync(codigoIata);
 
-    public Task<IEnumerable<AirportEntity>> GetAllAsync()
+    public Task<IReadOnlyCollection<Airport>> GetAllAsync()
         => _getAll.ExecuteAsync();
 
-    public Task<IEnumerable<AirportEntity>> GetActivosAsync()
+    public Task<IReadOnlyCollection<Airport>> GetActivosAsync()
         => _getActivos.ExecuteAsync();
 
-    public Task<IEnumerable<AirportEntity>> GetByCityAsync(int ciudadId)
+    public Task<IReadOnlyCollection<Airport>> GetByCityAsync(int ciudadId)
         => _getByCity.ExecuteAsync(ciudadId);
 
-    public Task<AirportEntity> UpdateAsync(int id, string nombre, string? direccion)
+    public Task<Airport> UpdateAsync(int id, string nombre, string? direccion)
         => _update.ExecuteAsync(id, nombre, direccion);
 
     public Task ActivateAsync(int id)

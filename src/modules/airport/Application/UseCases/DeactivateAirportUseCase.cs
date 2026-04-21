@@ -12,17 +12,19 @@ public class DeactivateAirportUseCase
         _repository = repository;
     }
 
-    public async Task ExecuteAsync(int id)
+    public async Task ExecuteAsync(
+        int id,
+        CancellationToken cancellationToken = default)
     {
-        var aeropuerto = await _repository.GetByIdAsync(id)
+        var aeropuerto = await _repository.FindByIdAsync(id)
             ?? throw new KeyNotFoundException(
                 $"No se encontró un aeropuerto con ID {id}.");
 
-        if (!aeropuerto.Activo)
+        if (!aeropuerto.Activo.Valor)
             throw new InvalidOperationException(
-                $"El aeropuerto '{aeropuerto.Nombre}' ya se encuentra inactivo.");
+                $"El aeropuerto '{aeropuerto.Nombre.Valor}' ya se encuentra inactivo.");
 
-        aeropuerto.Activo = false;
+        aeropuerto.Desactivar();
         await _repository.UpdateAsync(aeropuerto);
     }
 }

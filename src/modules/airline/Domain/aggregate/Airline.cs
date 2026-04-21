@@ -43,6 +43,40 @@ public sealed class Airline
         };
     }
 
+    public static Airline Reconstituir(
+        int id,
+        int paisId,
+        string codigoIata,
+        string codigoIcao,
+        string nombre,
+        string? nombreComercial,
+        string? sitioWeb,
+        bool activa)
+    {
+        if (id <= 0)
+            throw new ArgumentException("El ID de la aerolinea no es valido.");
+
+        var airline = Crear(
+            paisId,
+            codigoIata,
+            codigoIcao,
+            nombre,
+            nombreComercial,
+            sitioWeb);
+
+        airline.Id = id;
+        airline.Activa = ActivaAerolinea.Crear(activa);
+        return airline;
+    }
+
+    public void EstablecerId(int id)
+    {
+        if (id <= 0)
+            throw new ArgumentException("El ID de la aerolinea no es valido.");
+
+        Id = id;
+    }
+
     public void ActualizarNombre(string nombre, string? nombreComercial = null)
     {
         Nombre = NombreAerolinea.Crear(nombre);

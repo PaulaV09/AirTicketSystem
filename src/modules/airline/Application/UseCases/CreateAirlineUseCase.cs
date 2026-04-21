@@ -1,6 +1,6 @@
 // src/modules/airline/Application/UseCases/CreateAirlineUseCase.cs
 using AirTicketSystem.modules.airline.Domain.Repositories;
-using AirTicketSystem.modules.airline.Infrastructure.entity;
+using AirTicketSystem.modules.airline.Domain.aggregate;
 using AirTicketSystem.modules.airline.Domain.ValueObjects;
 using AirTicketSystem.modules.country.Domain.Repositories;
 
@@ -19,13 +19,14 @@ public class CreateAirlineUseCase
         _countryRepository = countryRepository;
     }
 
-    public async Task<AirlineEntity> ExecuteAsync(
+    public async Task<Airline> ExecuteAsync(
         int paisId,
         string codigoIata,
         string codigoIcao,
         string nombre,
         string? nombreComercial,
-        string? sitioWeb)
+        string? sitioWeb,
+        CancellationToken cancellationToken = default)
     {
         _ = await _countryRepository.GetByIdAsync(paisId)
             ?? throw new KeyNotFoundException(
@@ -43,22 +44,15 @@ public class CreateAirlineUseCase
             throw new InvalidOperationException(
                 $"Ya existe una aerolínea con el código ICAO '{icaoVO.Valor}'.");
 
-        var entity = new AirlineEntity
-        {
-            PaisId          = paisId,
-            CodigoIata      = iataVO.Valor,
-            CodigoIcao      = icaoVO.Valor,
-            Nombre          = nombreVO.Valor,
-            NombreComercial = nombreComercial is not null
-                ? NombreComercialAerolinea.Crear(nombreComercial).Valor
-                : null,
-            SitioWeb = sitioWeb is not null
-                ? SitioWebAerolinea.Crear(sitioWeb).Valor
-                : null,
-            Activa = true
-        };
+        var airline = Airline.Crear(
+            paisId,
+            iataVO.Valor,
+            icaoVO.Valor,
+            nombreVO.Valor,
+            nombreComercial,
+            sitioWeb);
 
-        await _repository.AddAsync(entity);
-        return entity;
+        await _repository.SaveAsync(airline);
+        return airline;
     }
 }
