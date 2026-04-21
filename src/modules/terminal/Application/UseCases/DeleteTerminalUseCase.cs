@@ -14,7 +14,7 @@ public class DeleteTerminalUseCase
 
     public async Task ExecuteAsync(int id)
     {
-        var terminal = await _repository.GetByIdAsync(id)
+        var terminal = await _repository.FindByIdAsync(id)
             ?? throw new KeyNotFoundException(
                 $"No se encontró una terminal con ID {id}.");
 

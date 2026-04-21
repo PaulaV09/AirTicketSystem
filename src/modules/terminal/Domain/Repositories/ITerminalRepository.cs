@@ -1,11 +1,14 @@
 // src/modules/terminal/Domain/Repositories/ITerminalRepository.cs
-using AirTicketSystem.shared.contracts;
-using AirTicketSystem.modules.terminal.Infrastructure.entity;
+using AirTicketSystem.modules.terminal.Domain.aggregate;
 
 namespace AirTicketSystem.modules.terminal.Domain.Repositories;
 
-public interface ITerminalRepository : IRepository<TerminalEntity>
+public interface ITerminalRepository
 {
-    Task<IEnumerable<TerminalEntity>> GetByAeropuertoAsync(int aeropuertoId);
+    Task<Terminal?> FindByIdAsync(int id);
+    Task<IReadOnlyCollection<Terminal>> FindByAeropuertoAsync(int aeropuertoId);
     Task<bool> ExistsByNombreAndAeropuertoAsync(string nombre, int aeropuertoId);
+    Task SaveAsync(Terminal terminal);
+    Task UpdateAsync(Terminal terminal);
+    Task DeleteAsync(int id);
 }

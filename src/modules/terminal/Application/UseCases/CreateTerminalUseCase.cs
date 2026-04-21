@@ -1,6 +1,6 @@
 // src/modules/terminal/Application/UseCases/CreateTerminalUseCase.cs
 using AirTicketSystem.modules.terminal.Domain.Repositories;
-using AirTicketSystem.modules.terminal.Infrastructure.entity;
+using AirTicketSystem.modules.terminal.Domain.aggregate;
 using AirTicketSystem.modules.terminal.Domain.ValueObjects;
 using AirTicketSystem.modules.airport.Domain.Repositories;
 
@@ -19,8 +19,11 @@ public class CreateTerminalUseCase
         _airportRepository = airportRepository;
     }
 
-    public async Task<TerminalEntity> ExecuteAsync(
-        int aeropuertoId, string nombre, string? descripcion)
+    public async Task<Terminal> ExecuteAsync(
+        int aeropuertoId,
+        string nombre,
+        string? descripcion,
+        CancellationToken cancellationToken = default)
     {
         var aeropuerto = await _airportRepository.GetByIdAsync(aeropuertoId)
             ?? throw new KeyNotFoundException(
@@ -39,16 +42,8 @@ public class CreateTerminalUseCase
                 $"Ya existe una terminal con el nombre '{nombreVO.Valor}' " +
                 $"en el aeropuerto '{aeropuerto.Nombre}'.");
 
-        var entity = new TerminalEntity
-        {
-            AeropuertoId = aeropuertoId,
-            Nombre       = nombreVO.Valor,
-            Descripcion  = descripcion is not null
-                ? DescripcionTerminal.Crear(descripcion).Valor
-                : null
-        };
-
-        await _repository.AddAsync(entity);
-        return entity;
+        var terminal = Terminal.Crear(aeropuertoId, nombreVO.Valor, descripcion);
+        await _repository.SaveAsync(terminal);
+        return terminal;
     }
 }

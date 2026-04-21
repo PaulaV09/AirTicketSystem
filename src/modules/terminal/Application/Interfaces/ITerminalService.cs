@@ -1,15 +1,15 @@
 // src/modules/terminal/Application/Interfaces/ITerminalService.cs
-using AirTicketSystem.modules.terminal.Infrastructure.entity;
+using AirTicketSystem.modules.terminal.Domain.aggregate;
 
 namespace AirTicketSystem.modules.terminal.Application.Interfaces;
 
 public interface ITerminalService
 {
-    Task<TerminalEntity> CreateAsync(
+    Task<Terminal> CreateAsync(
         int aeropuertoId, string nombre, string? descripcion);
-    Task<TerminalEntity?> GetByIdAsync(int id);
-    Task<IEnumerable<TerminalEntity>> GetByAirportAsync(int aeropuertoId);
-    Task<TerminalEntity> UpdateAsync(
+    Task<Terminal> GetByIdAsync(int id);
+    Task<IReadOnlyCollection<Terminal>> GetByAirportAsync(int aeropuertoId);
+    Task<Terminal> UpdateAsync(
         int id, string nombre, string? descripcion);
     Task DeleteAsync(int id);
 }

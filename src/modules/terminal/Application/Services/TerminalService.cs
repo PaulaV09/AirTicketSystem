@@ -1,7 +1,7 @@
 // src/modules/terminal/Application/Services/TerminalService.cs
 using AirTicketSystem.modules.terminal.Application.Interfaces;
 using AirTicketSystem.modules.terminal.Application.UseCases;
-using AirTicketSystem.modules.terminal.Infrastructure.entity;
+using AirTicketSystem.modules.terminal.Domain.aggregate;
 
 namespace AirTicketSystem.modules.terminal.Application.Services;
 
@@ -27,17 +27,17 @@ public class TerminalService : ITerminalService
         _delete       = delete;
     }
 
-    public Task<TerminalEntity> CreateAsync(
+    public Task<Terminal> CreateAsync(
         int aeropuertoId, string nombre, string? descripcion)
         => _create.ExecuteAsync(aeropuertoId, nombre, descripcion);
 
-    public Task<TerminalEntity?> GetByIdAsync(int id)
-        => _getById.ExecuteAsync(id)!;
+    public Task<Terminal> GetByIdAsync(int id)
+        => _getById.ExecuteAsync(id);
 
-    public Task<IEnumerable<TerminalEntity>> GetByAirportAsync(int aeropuertoId)
+    public Task<IReadOnlyCollection<Terminal>> GetByAirportAsync(int aeropuertoId)
         => _getByAirport.ExecuteAsync(aeropuertoId);
 
-    public Task<TerminalEntity> UpdateAsync(
+    public Task<Terminal> UpdateAsync(
         int id, string nombre, string? descripcion)
         => _update.ExecuteAsync(id, nombre, descripcion);
 

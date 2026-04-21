@@ -30,6 +30,28 @@ public sealed class Terminal
         };
     }
 
+    public static Terminal Reconstituir(
+        int id,
+        int aeropuertoId,
+        string nombre,
+        string? descripcion = null)
+    {
+        if (id <= 0)
+            throw new ArgumentException("El ID de la terminal no es valido.");
+
+        var terminal = Crear(aeropuertoId, nombre, descripcion);
+        terminal.Id = id;
+        return terminal;
+    }
+
+    public void EstablecerId(int id)
+    {
+        if (id <= 0)
+            throw new ArgumentException("El ID de la terminal no es valido.");
+
+        Id = id;
+    }
+
     public void ActualizarNombre(string nombre)
     {
         Nombre = NombreTerminal.Crear(nombre);
