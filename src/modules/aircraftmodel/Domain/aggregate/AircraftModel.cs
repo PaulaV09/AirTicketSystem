@@ -43,6 +43,38 @@ public sealed class AircraftModel
         };
     }
 
+    public static AircraftModel Reconstituir(
+        int id,
+        int fabricanteId,
+        string nombre,
+        string codigoModelo,
+        int? autonomiKm,
+        int? velocidadCruceroKmh,
+        string? descripcion)
+    {
+        if (id <= 0)
+            throw new ArgumentException("El ID del modelo no es valido.");
+
+        var model = Crear(
+            fabricanteId,
+            nombre,
+            codigoModelo,
+            autonomiKm,
+            velocidadCruceroKmh,
+            descripcion);
+
+        model.Id = id;
+        return model;
+    }
+
+    public void EstablecerId(int id)
+    {
+        if (id <= 0)
+            throw new ArgumentException("El ID del modelo no es valido.");
+
+        Id = id;
+    }
+
     public void ActualizarNombre(string nombre)
     {
         Nombre = NombreAircraftModel.Crear(nombre);

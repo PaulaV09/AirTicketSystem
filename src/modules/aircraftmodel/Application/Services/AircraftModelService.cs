@@ -1,7 +1,7 @@
 // src/modules/aircraftmodel/Application/Services/AircraftModelService.cs
 using AirTicketSystem.modules.aircraftmodel.Application.Interfaces;
 using AirTicketSystem.modules.aircraftmodel.Application.UseCases;
-using AirTicketSystem.modules.aircraftmodel.Infrastructure.entity;
+using AirTicketSystem.modules.aircraftmodel.Domain.aggregate;
 
 namespace AirTicketSystem.modules.aircraftmodel.Application.Services;
 
@@ -30,22 +30,22 @@ public class AircraftModelService : IAircraftModelService
         _delete          = delete;
     }
 
-    public Task<AircraftModelEntity> CreateAsync(
+    public Task<AircraftModel> CreateAsync(
         int fabricanteId, string nombre, string codigoModelo,
         int? autonomiKm, int? velocidadKmh, string? descripcion)
         => _create.ExecuteAsync(
             fabricanteId, nombre, codigoModelo, autonomiKm, velocidadKmh, descripcion);
 
-    public Task<AircraftModelEntity?> GetByIdAsync(int id)
-        => _getById.ExecuteAsync(id)!;
+    public Task<AircraftModel> GetByIdAsync(int id)
+        => _getById.ExecuteAsync(id);
 
-    public Task<IEnumerable<AircraftModelEntity>> GetAllAsync()
+    public Task<IReadOnlyCollection<AircraftModel>> GetAllAsync()
         => _getAll.ExecuteAsync();
 
-    public Task<IEnumerable<AircraftModelEntity>> GetByManufacturerAsync(int fabricanteId)
+    public Task<IReadOnlyCollection<AircraftModel>> GetByManufacturerAsync(int fabricanteId)
         => _getByManufacturer.ExecuteAsync(fabricanteId);
 
-    public Task<AircraftModelEntity> UpdateAsync(
+    public Task<AircraftModel> UpdateAsync(
         int id, string nombre, int? autonomiKm,
         int? velocidadKmh, string? descripcion)
         => _update.ExecuteAsync(id, nombre, autonomiKm, velocidadKmh, descripcion);

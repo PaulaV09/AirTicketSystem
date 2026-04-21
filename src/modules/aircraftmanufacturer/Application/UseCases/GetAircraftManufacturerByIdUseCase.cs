@@ -1,6 +1,6 @@
 // src/modules/aircraftmanufacturer/Application/UseCases/GetAircraftManufacturerByIdUseCase.cs
 using AirTicketSystem.modules.aircraftmanufacturer.Domain.Repositories;
-using AirTicketSystem.modules.aircraftmanufacturer.Infrastructure.entity;
+using AirTicketSystem.modules.aircraftmanufacturer.Domain.aggregate;
 
 namespace AirTicketSystem.modules.aircraftmanufacturer.Application.UseCases;
 
@@ -14,12 +14,14 @@ public class GetAircraftManufacturerByIdUseCase
         _repository = repository;
     }
 
-    public async Task<AircraftManufacturerEntity> ExecuteAsync(int id)
+    public async Task<AircraftManufacturer> ExecuteAsync(
+        int id,
+        CancellationToken cancellationToken = default)
     {
         if (id <= 0)
             throw new ArgumentException("El ID del fabricante no es válido.");
 
-        return await _repository.GetByIdAsync(id)
+        return await _repository.FindByIdAsync(id)
             ?? throw new KeyNotFoundException(
                 $"No se encontró un fabricante con ID {id}.");
     }

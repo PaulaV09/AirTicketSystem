@@ -1,17 +1,17 @@
 // src/modules/aircraftmodel/Application/Interfaces/IAircraftModelService.cs
-using AirTicketSystem.modules.aircraftmodel.Infrastructure.entity;
+using AirTicketSystem.modules.aircraftmodel.Domain.aggregate;
 
 namespace AirTicketSystem.modules.aircraftmodel.Application.Interfaces;
 
 public interface IAircraftModelService
 {
-    Task<AircraftModelEntity> CreateAsync(
+    Task<AircraftModel> CreateAsync(
         int fabricanteId, string nombre, string codigoModelo,
         int? autonomiKm, int? velocidadKmh, string? descripcion);
-    Task<AircraftModelEntity?> GetByIdAsync(int id);
-    Task<IEnumerable<AircraftModelEntity>> GetAllAsync();
-    Task<IEnumerable<AircraftModelEntity>> GetByManufacturerAsync(int fabricanteId);
-    Task<AircraftModelEntity> UpdateAsync(
+    Task<AircraftModel> GetByIdAsync(int id);
+    Task<IReadOnlyCollection<AircraftModel>> GetAllAsync();
+    Task<IReadOnlyCollection<AircraftModel>> GetByManufacturerAsync(int fabricanteId);
+    Task<AircraftModel> UpdateAsync(
         int id, string nombre, int? autonomiKm,
         int? velocidadKmh, string? descripcion);
     Task DeleteAsync(int id);

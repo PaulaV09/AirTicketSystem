@@ -1,6 +1,6 @@
 // src/modules/aircraftmodel/Application/UseCases/GetAircraftModelByIdUseCase.cs
 using AirTicketSystem.modules.aircraftmodel.Domain.Repositories;
-using AirTicketSystem.modules.aircraftmodel.Infrastructure.entity;
+using AirTicketSystem.modules.aircraftmodel.Domain.aggregate;
 
 namespace AirTicketSystem.modules.aircraftmodel.Application.UseCases;
 
@@ -13,12 +13,14 @@ public class GetAircraftModelByIdUseCase
         _repository = repository;
     }
 
-    public async Task<AircraftModelEntity> ExecuteAsync(int id)
+    public async Task<AircraftModel> ExecuteAsync(
+        int id,
+        CancellationToken cancellationToken = default)
     {
         if (id <= 0)
             throw new ArgumentException("El ID del modelo no es válido.");
 
-        return await _repository.GetByIdAsync(id)
+        return await _repository.FindByIdAsync(id)
             ?? throw new KeyNotFoundException(
                 $"No se encontró un modelo de avión con ID {id}.");
     }

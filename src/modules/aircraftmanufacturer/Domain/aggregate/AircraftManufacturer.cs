@@ -30,6 +30,28 @@ public sealed class AircraftManufacturer
         };
     }
 
+    public static AircraftManufacturer Reconstituir(
+        int id,
+        int paisId,
+        string nombre,
+        string? sitioWeb)
+    {
+        if (id <= 0)
+            throw new ArgumentException("El ID del fabricante no es valido.");
+
+        var manufacturer = Crear(paisId, nombre, sitioWeb);
+        manufacturer.Id = id;
+        return manufacturer;
+    }
+
+    public void EstablecerId(int id)
+    {
+        if (id <= 0)
+            throw new ArgumentException("El ID del fabricante no es valido.");
+
+        Id = id;
+    }
+
     public void ActualizarNombre(string nombre)
     {
         Nombre = NombreAircraftManufacturer.Crear(nombre);

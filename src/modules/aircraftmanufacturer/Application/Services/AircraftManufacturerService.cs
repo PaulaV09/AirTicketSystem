@@ -1,7 +1,7 @@
 // src/modules/aircraftmanufacturer/Application/Services/AircraftManufacturerService.cs
 using AirTicketSystem.modules.aircraftmanufacturer.Application.Interfaces;
 using AirTicketSystem.modules.aircraftmanufacturer.Application.UseCases;
-using AirTicketSystem.modules.aircraftmanufacturer.Infrastructure.entity;
+using AirTicketSystem.modules.aircraftmanufacturer.Domain.aggregate;
 
 namespace AirTicketSystem.modules.aircraftmanufacturer.Application.Services;
 
@@ -30,20 +30,20 @@ public class AircraftManufacturerService : IAircraftManufacturerService
         _delete      = delete;
     }
 
-    public Task<AircraftManufacturerEntity> CreateAsync(
+    public Task<AircraftManufacturer> CreateAsync(
         int paisId, string nombre, string? sitioWeb)
         => _create.ExecuteAsync(paisId, nombre, sitioWeb);
 
-    public Task<AircraftManufacturerEntity?> GetByIdAsync(int id)
-        => _getById.ExecuteAsync(id)!;
+    public Task<AircraftManufacturer> GetByIdAsync(int id)
+        => _getById.ExecuteAsync(id);
 
-    public Task<IEnumerable<AircraftManufacturerEntity>> GetAllAsync()
+    public Task<IReadOnlyCollection<AircraftManufacturer>> GetAllAsync()
         => _getAll.ExecuteAsync();
 
-    public Task<IEnumerable<AircraftManufacturerEntity>> GetByCountryAsync(int paisId)
+    public Task<IReadOnlyCollection<AircraftManufacturer>> GetByCountryAsync(int paisId)
         => _getByCountry.ExecuteAsync(paisId);
 
-    public Task<AircraftManufacturerEntity> UpdateAsync(
+    public Task<AircraftManufacturer> UpdateAsync(
         int id, string nombre, string? sitioWeb)
         => _update.ExecuteAsync(id, nombre, sitioWeb);
 

@@ -15,7 +15,7 @@ public class DeleteAircraftManufacturerUseCase
 
     public async Task ExecuteAsync(int id)
     {
-        _ = await _repository.GetByIdAsync(id)
+        _ = await _repository.FindByIdAsync(id)
             ?? throw new KeyNotFoundException(
                 $"No se encontró un fabricante con ID {id}.");
 

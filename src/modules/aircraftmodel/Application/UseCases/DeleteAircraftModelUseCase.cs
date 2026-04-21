@@ -14,7 +14,7 @@ public class DeleteAircraftModelUseCase
 
     public async Task ExecuteAsync(int id)
     {
-        _ = await _repository.GetByIdAsync(id)
+        _ = await _repository.FindByIdAsync(id)
             ?? throw new KeyNotFoundException(
                 $"No se encontró un modelo de avión con ID {id}.");
 

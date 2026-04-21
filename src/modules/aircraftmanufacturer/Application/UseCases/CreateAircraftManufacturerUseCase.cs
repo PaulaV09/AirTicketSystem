@@ -1,6 +1,6 @@
 // src/modules/aircraftmanufacturer/Application/UseCases/CreateAircraftManufacturerUseCase.cs
 using AirTicketSystem.modules.aircraftmanufacturer.Domain.Repositories;
-using AirTicketSystem.modules.aircraftmanufacturer.Infrastructure.entity;
+using AirTicketSystem.modules.aircraftmanufacturer.Domain.aggregate;
 using AirTicketSystem.modules.aircraftmanufacturer.Domain.ValueObjects;
 using AirTicketSystem.modules.country.Domain.Repositories;
 
@@ -19,8 +19,11 @@ public class CreateAircraftManufacturerUseCase
         _countryRepository = countryRepository;
     }
 
-    public async Task<AircraftManufacturerEntity> ExecuteAsync(
-        int paisId, string nombre, string? sitioWeb)
+    public async Task<AircraftManufacturer> ExecuteAsync(
+        int paisId,
+        string nombre,
+        string? sitioWeb,
+        CancellationToken cancellationToken = default)
     {
         _ = await _countryRepository.GetByIdAsync(paisId)
             ?? throw new KeyNotFoundException(
@@ -32,16 +35,8 @@ public class CreateAircraftManufacturerUseCase
             throw new InvalidOperationException(
                 $"Ya existe un fabricante con el nombre '{nombreVO.Valor}'.");
 
-        var entity = new AircraftManufacturerEntity
-        {
-            PaisId   = paisId,
-            Nombre   = nombreVO.Valor,
-            SitioWeb = sitioWeb is not null
-                ? SitioWebAircraftManufacturer.Crear(sitioWeb).Valor
-                : null
-        };
-
-        await _repository.AddAsync(entity);
-        return entity;
+        var manufacturer = AircraftManufacturer.Crear(paisId, nombreVO.Valor, sitioWeb);
+        await _repository.SaveAsync(manufacturer);
+        return manufacturer;
     }
 }

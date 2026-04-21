@@ -1,6 +1,6 @@
 // src/modules/aircraftmodel/Application/UseCases/CreateAircraftModelUseCase.cs
 using AirTicketSystem.modules.aircraftmodel.Domain.Repositories;
-using AirTicketSystem.modules.aircraftmodel.Infrastructure.entity;
+using AirTicketSystem.modules.aircraftmodel.Domain.aggregate;
 using AirTicketSystem.modules.aircraftmodel.Domain.ValueObjects;
 using AirTicketSystem.modules.aircraftmanufacturer.Domain.Repositories;
 
@@ -19,15 +19,16 @@ public class CreateAircraftModelUseCase
         _manufacturerRepository = manufacturerRepository;
     }
 
-    public async Task<AircraftModelEntity> ExecuteAsync(
+    public async Task<AircraftModel> ExecuteAsync(
         int fabricanteId,
         string nombre,
         string codigoModelo,
         int? autonomiKm,
         int? velocidadKmh,
-        string? descripcion)
+        string? descripcion,
+        CancellationToken cancellationToken = default)
     {
-        _ = await _manufacturerRepository.GetByIdAsync(fabricanteId)
+        _ = await _manufacturerRepository.FindByIdAsync(fabricanteId)
             ?? throw new KeyNotFoundException(
                 $"No se encontró un fabricante con ID {fabricanteId}.");
 
@@ -38,23 +39,15 @@ public class CreateAircraftModelUseCase
             throw new InvalidOperationException(
                 $"Ya existe un modelo con el código '{codigoVO.Valor}'.");
 
-        var entity = new AircraftModelEntity
-        {
-            FabricanteId        = fabricanteId,
-            Nombre              = nombreVO.Valor,
-            CodigoModelo        = codigoVO.Valor,
-            AutonomiKm          = autonomiKm is not null
-                ? AutonomiKmAircraftModel.Crear(autonomiKm.Value).Valor
-                : null,
-            VelocidadCruceroKmh = velocidadKmh is not null
-                ? VelocidadCruceroKmhAircraftModel.Crear(velocidadKmh.Value).Valor
-                : null,
-            Descripcion = descripcion is not null
-                ? DescripcionAircraftModel.Crear(descripcion).Valor
-                : null
-        };
+        var model = AircraftModel.Crear(
+            fabricanteId,
+            nombreVO.Valor,
+            codigoVO.Valor,
+            autonomiKm,
+            velocidadKmh,
+            descripcion);
 
-        await _repository.AddAsync(entity);
-        return entity;
+        await _repository.SaveAsync(model);
+        return model;
     }
 }
