@@ -27,7 +27,7 @@ public sealed class GenerateBoardingPassUseCase
         DateTime? horaEmbarque = null,
         CancellationToken cancellationToken = default)
     {
-        _ = await _checkInRepository.GetByIdAsync(checkinId)
+        _ = await _checkInRepository.FindByIdAsync(checkinId)
             ?? throw new KeyNotFoundException(
                 $"No se encontró un check-in con ID {checkinId}.");
 

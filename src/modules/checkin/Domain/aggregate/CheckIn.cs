@@ -148,6 +148,28 @@ public sealed class CheckIn
 
     public bool TieneTrabajadorAsignado => TrabajadorId.HasValue;
 
+    public static CheckIn Reconstituir(
+        int id,
+        int pasajeroReservaId,
+        int? trabajadorId,
+        string tipo,
+        DateTime fechaCheckin,
+        string estado)
+    {
+        var checkIn = new CheckIn
+        {
+            PasajeroReservaId = pasajeroReservaId,
+            TrabajadorId      = trabajadorId,
+            Tipo              = TipoCheckin.Crear(tipo),
+            FechaCheckin      = FechaCheckinCheckin.Crear(fechaCheckin),
+            Estado            = EstadoCheckin.Crear(estado)
+        };
+        checkIn.Id = id;
+        return checkIn;
+    }
+
+    public void EstablecerId(int id) => Id = id;
+
     public override string ToString() =>
         $"Check-in [{Tipo}] — {Estado} | " +
         $"Pasajero #{PasajeroReservaId} | " +

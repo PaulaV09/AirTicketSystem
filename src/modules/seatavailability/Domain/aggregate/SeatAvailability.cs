@@ -36,7 +36,7 @@ public sealed class SeatAvailability
             Id        = id,
             VueloId   = vueloId,
             AsientoId = asientoId,
-            Estado    = EstadoSeatAvailability.Reconstituir(estado)
+            Estado    = EstadoSeatAvailability.Crear(estado)
         };
     }
 

@@ -1,14 +1,16 @@
 // src/modules/checkin/Domain/Repositories/ICheckInRepository.cs
-using AirTicketSystem.shared.contracts;
-using AirTicketSystem.modules.checkin.Infrastructure.entity;
+using AirTicketSystem.modules.checkin.Domain.aggregate;
 
 namespace AirTicketSystem.modules.checkin.Domain.Repositories;
 
-public interface ICheckInRepository : IRepository<CheckInEntity>
+public interface ICheckInRepository
 {
-    Task<CheckInEntity?> GetByPasajeroReservaAsync(int pasajeroReservaId);
-    Task<IEnumerable<CheckInEntity>> GetByTrabajadorAsync(int trabajadorId);
-    Task<IEnumerable<CheckInEntity>> GetByEstadoAsync(string estado);
-    Task<IEnumerable<CheckInEntity>> GetByTipoAsync(string tipo);
+    Task<CheckIn?> FindByIdAsync(int id);
+    Task<CheckIn?> FindByPasajeroReservaAsync(int pasajeroReservaId);
+    Task<IReadOnlyCollection<CheckIn>> FindByTrabajadorAsync(int trabajadorId);
+    Task<IReadOnlyCollection<CheckIn>> FindByEstadoAsync(string estado);
+    Task<IReadOnlyCollection<CheckIn>> FindByTipoAsync(string tipo);
     Task<bool> ExistsByPasajeroReservaAsync(int pasajeroReservaId);
+    Task SaveAsync(CheckIn checkIn);
+    Task UpdateAsync(CheckIn checkIn);
 }

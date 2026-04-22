@@ -277,6 +277,68 @@ public sealed class Luggage
         }
     }
 
+    public static Luggage Reconstituir(
+        int id,
+        int pasajeroReservaId,
+        int vueloId,
+        int tipoEquipajeId,
+        string? descripcion,
+        decimal? pesoDeclaradoKg,
+        int? largoDeclaradoCm,
+        int? anchoDeclaradoCm,
+        int? altoDeclaradoCm,
+        decimal? pesoRealKg,
+        int? largoRealCm,
+        int? anchoRealCm,
+        int? altoRealCm,
+        string? codigoEquipaje,
+        decimal costoAdicional,
+        string estado)
+    {
+        var luggage = new Luggage
+        {
+            PasajeroReservaId = pasajeroReservaId,
+            VueloId           = vueloId,
+            TipoEquipajeId    = tipoEquipajeId,
+            Descripcion       = descripcion is not null
+                ? DescripcionLuggage.Crear(descripcion)
+                : null,
+            PesoDeclaradoKg = pesoDeclaradoKg is not null
+                ? PesoDeclaradoKgLuggage.Crear(pesoDeclaradoKg.Value)
+                : null,
+            LargoDeclaradoCm = largoDeclaradoCm is not null
+                ? LargoDeclaradoCmLuggage.Crear(largoDeclaradoCm.Value)
+                : null,
+            AnchoDeclaradoCm = anchoDeclaradoCm is not null
+                ? AnchoDeclaradoCmLuggage.Crear(anchoDeclaradoCm.Value)
+                : null,
+            AltoDeclaradoCm = altoDeclaradoCm is not null
+                ? AltoDeclaradoCmLuggage.Crear(altoDeclaradoCm.Value)
+                : null,
+            PesoRealKg = pesoRealKg is not null
+                ? PesoRealKgLuggage.Crear(pesoRealKg.Value)
+                : null,
+            LargoRealCm = largoRealCm is not null
+                ? LargoRealCmLuggage.Crear(largoRealCm.Value)
+                : null,
+            AnchoRealCm = anchoRealCm is not null
+                ? AnchoRealCmLuggage.Crear(anchoRealCm.Value)
+                : null,
+            AltoRealCm = altoRealCm is not null
+                ? AltoRealCmLuggage.Crear(altoRealCm.Value)
+                : null,
+            CodigoEquipaje = codigoEquipaje is not null
+                ? CodigoEquipajeLuggage.Crear(codigoEquipaje)
+                : null,
+            CostoAdicional = CostoAdicionalLuggage.Crear(costoAdicional),
+            Estado         = EstadoLuggage.Crear(estado)
+        };
+        luggage.Id = id;
+        return luggage;
+    }
+
+    public void EstablecerId(int id) => Id = id;
+
     public override string ToString() =>
         $"Equipaje [{CodigoEquipaje?.Valor ?? "Sin código"}] — " +
         $"{Estado} | {ResumenMedidasDeclaradas}";

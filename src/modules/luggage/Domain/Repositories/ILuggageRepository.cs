@@ -1,15 +1,17 @@
 // src/modules/luggage/Domain/Repositories/ILuggageRepository.cs
-using AirTicketSystem.shared.contracts;
-using AirTicketSystem.modules.luggage.Infrastructure.entity;
+using AirTicketSystem.modules.luggage.Domain.aggregate;
 
 namespace AirTicketSystem.modules.luggage.Domain.Repositories;
 
-public interface ILuggageRepository : IRepository<LuggageEntity>
+public interface ILuggageRepository
 {
-    Task<IEnumerable<LuggageEntity>> GetByPasajeroReservaAsync(int pasajeroReservaId);
-    Task<IEnumerable<LuggageEntity>> GetByVueloAsync(int vueloId);
-    Task<LuggageEntity?> GetByCodigoEquipajeAsync(string codigoEquipaje);
-    Task<IEnumerable<LuggageEntity>> GetByEstadoAsync(string estado);
-    Task<IEnumerable<LuggageEntity>> GetConIncidenciasAsync();
+    Task<Luggage?> FindByIdAsync(int id);
+    Task<IReadOnlyCollection<Luggage>> FindByPasajeroReservaAsync(int pasajeroReservaId);
+    Task<IReadOnlyCollection<Luggage>> FindByVueloAsync(int vueloId);
+    Task<Luggage?> FindByCodigoEquipajeAsync(string codigoEquipaje);
+    Task<IReadOnlyCollection<Luggage>> FindByEstadoAsync(string estado);
+    Task<IReadOnlyCollection<Luggage>> FindConIncidenciasAsync();
     Task<bool> ExistsByCodigoEquipajeAsync(string codigoEquipaje);
+    Task SaveAsync(Luggage luggage);
+    Task UpdateAsync(Luggage luggage);
 }
