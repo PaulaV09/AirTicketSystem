@@ -67,15 +67,24 @@ public sealed class AircraftSeat
         decimal costoSeleccion)
     {
         if (id <= 0)
-            throw new ArgumentException("El ID del asiento no es valido.");
+            throw new ArgumentException("El ID del asiento no es válido.");
 
-        var seat = Crear(avionId, claseServicioId, fila, columna, esVentana, esPasillo);
-        if (seat.CodigoAsiento.Valor != codigoAsiento.ToUpperInvariant())
-            throw new InvalidOperationException("El codigo de asiento es inconsistente.");
+        var filaVO    = FilaAircraftSeat.Crear(fila);
+        var columnaVO = ColumnaAircraftSeat.Crear(columna);
 
-        seat.Id = id;
-        seat.Activo = ActivoAircraftSeat.Crear(activo);
-        seat.CostoSeleccion = CostoSeleccionAircraftSeat.Crear(costoSeleccion);
+        var seat = new AircraftSeat
+        {
+            Id              = id,
+            AvionId         = avionId,
+            ClaseServicioId = claseServicioId,
+            CodigoAsiento   = CodigoAsientoAircraftSeat.Crear(codigoAsiento),
+            Fila            = filaVO,
+            Columna         = columnaVO,
+            EsVentana       = EsVentanaAircraftSeat.Crear(esVentana),
+            EsPasillo       = EsPasilloAircraftSeat.Crear(esPasillo),
+            Activo          = ActivoAircraftSeat.Crear(activo),
+            CostoSeleccion  = CostoSeleccionAircraftSeat.Crear(costoSeleccion)
+        };
         return seat;
     }
 

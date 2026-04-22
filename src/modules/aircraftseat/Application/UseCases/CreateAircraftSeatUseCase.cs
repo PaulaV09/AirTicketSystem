@@ -42,7 +42,7 @@ public class CreateAircraftSeatUseCase
                 $"El avión '{avion.Matricula.Valor}' está dado de baja. " +
                 "No se pueden agregar asientos.");
 
-        _ = await _serviceClassRepository.GetByIdAsync(claseServicioId)
+        _ = await _serviceClassRepository.FindByIdAsync(claseServicioId)
             ?? throw new KeyNotFoundException(
                 $"No se encontró una clase de servicio con ID {claseServicioId}.");
 

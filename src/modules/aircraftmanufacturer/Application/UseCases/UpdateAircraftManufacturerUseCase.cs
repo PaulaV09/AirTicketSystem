@@ -1,6 +1,7 @@
 // src/modules/aircraftmanufacturer/Application/UseCases/UpdateAircraftManufacturerUseCase.cs
 using AirTicketSystem.modules.aircraftmanufacturer.Domain.Repositories;
 using AirTicketSystem.modules.aircraftmanufacturer.Domain.aggregate;
+using AirTicketSystem.modules.aircraftmanufacturer.Domain.ValueObjects;
 
 namespace AirTicketSystem.modules.aircraftmanufacturer.Application.UseCases;
 

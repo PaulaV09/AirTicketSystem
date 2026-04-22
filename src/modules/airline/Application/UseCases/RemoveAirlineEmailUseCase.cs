@@ -3,22 +3,20 @@ using AirTicketSystem.modules.airline.Domain.Repositories;
 
 namespace AirTicketSystem.modules.airline.Application.UseCases;
 
-public class RemoveAirlineEmailUseCase
+public sealed class RemoveAirlineEmailUseCase
 {
     private readonly IAirlineEmailRepository _emailRepository;
 
     public RemoveAirlineEmailUseCase(IAirlineEmailRepository emailRepository)
-    {
-        _emailRepository = emailRepository;
-    }
+        => _emailRepository = emailRepository;
 
-    public async Task ExecuteAsync(int emailId)
+    public async Task ExecuteAsync(int emailId, CancellationToken cancellationToken = default)
     {
-        var email = await _emailRepository.GetByIdAsync(emailId)
+        var email = await _emailRepository.FindByIdAsync(emailId)
             ?? throw new KeyNotFoundException(
                 $"No se encontró el email con ID {emailId}.");
 
-        if (email.EsPrincipal)
+        if (email.EsPrincipal.Valor)
             throw new InvalidOperationException(
                 "No se puede eliminar el email principal. " +
                 "Asigne otro email como principal primero.");

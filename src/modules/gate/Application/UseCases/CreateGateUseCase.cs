@@ -24,7 +24,7 @@ public class CreateGateUseCase
         string codigo,
         CancellationToken cancellationToken = default)
     {
-        _ = await _terminalRepository.GetByIdAsync(terminalId)
+        _ = await _terminalRepository.FindByIdAsync(terminalId)
             ?? throw new KeyNotFoundException(
                 $"No se encontró una terminal con ID {terminalId}.");
 

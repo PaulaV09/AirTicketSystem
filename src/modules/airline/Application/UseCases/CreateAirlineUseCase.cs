@@ -6,7 +6,7 @@ using AirTicketSystem.modules.country.Domain.Repositories;
 
 namespace AirTicketSystem.modules.airline.Application.UseCases;
 
-public class CreateAirlineUseCase
+public sealed class CreateAirlineUseCase
 {
     private readonly IAirlineRepository _repository;
     private readonly ICountryRepository _countryRepository;
@@ -28,7 +28,7 @@ public class CreateAirlineUseCase
         string? sitioWeb,
         CancellationToken cancellationToken = default)
     {
-        _ = await _countryRepository.GetByIdAsync(paisId)
+        _ = await _countryRepository.FindByIdAsync(paisId)
             ?? throw new KeyNotFoundException(
                 $"No se encontró un país con ID {paisId}.");
 

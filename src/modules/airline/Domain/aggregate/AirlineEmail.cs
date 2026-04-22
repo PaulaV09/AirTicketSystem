@@ -34,6 +34,16 @@ public sealed class AirlineEmail
         };
     }
 
+    public static AirlineEmail Reconstituir(
+        int id, int aerolineaId, int tipoEmailId, string email, bool esPrincipal)
+    {
+        var ae = Crear(aerolineaId, tipoEmailId, email, esPrincipal);
+        ae.Id = id;
+        return ae;
+    }
+
+    public void EstablecerId(int id) => Id = id;
+
     public void ActualizarEmail(string email)
     {
         Email = EmailAirlineEmail.Crear(email);

@@ -3,6 +3,7 @@ using AirTicketSystem.modules.flight.Domain.Repositories;
 using AirTicketSystem.modules.flight.Domain.aggregate;
 using AirTicketSystem.modules.route.Domain.Repositories;
 using AirTicketSystem.modules.aircraft.Domain.Repositories;
+using AirTicketSystem.modules.aircraftseat.Domain.Repositories;
 using AirTicketSystem.modules.gate.Domain.Repositories;
 using AirTicketSystem.modules.seatavailability.Domain.Repositories;
 using AirTicketSystem.modules.seatavailability.Domain.aggregate;
@@ -11,24 +12,27 @@ namespace AirTicketSystem.modules.flight.Application.UseCases;
 
 public sealed class CreateFlightUseCase
 {
-    private readonly IFlightRepository _flightRepository;
-    private readonly IRouteRepository _routeRepository;
-    private readonly IAircraftRepository _aircraftRepository;
-    private readonly IGateRepository _gateRepository;
-    private readonly ISeatAvailabilityRepository _seatRepository;
+    private readonly IFlightRepository          _flightRepository;
+    private readonly IRouteRepository           _routeRepository;
+    private readonly IAircraftRepository        _aircraftRepository;
+    private readonly IAircraftSeatRepository    _seatRepository;
+    private readonly IGateRepository            _gateRepository;
+    private readonly ISeatAvailabilityRepository _availabilityRepository;
 
     public CreateFlightUseCase(
-        IFlightRepository flightRepository,
-        IRouteRepository routeRepository,
-        IAircraftRepository aircraftRepository,
-        IGateRepository gateRepository,
-        ISeatAvailabilityRepository seatRepository)
+        IFlightRepository          flightRepository,
+        IRouteRepository           routeRepository,
+        IAircraftRepository        aircraftRepository,
+        IAircraftSeatRepository    seatRepository,
+        IGateRepository            gateRepository,
+        ISeatAvailabilityRepository availabilityRepository)
     {
-        _flightRepository  = flightRepository;
-        _routeRepository   = routeRepository;
-        _aircraftRepository = aircraftRepository;
-        _gateRepository    = gateRepository;
-        _seatRepository    = seatRepository;
+        _flightRepository       = flightRepository;
+        _routeRepository        = routeRepository;
+        _aircraftRepository     = aircraftRepository;
+        _seatRepository         = seatRepository;
+        _gateRepository         = gateRepository;
+        _availabilityRepository = availabilityRepository;
     }
 
     public async Task<Flight> ExecuteAsync(
@@ -44,7 +48,7 @@ public sealed class CreateFlightUseCase
             ?? throw new KeyNotFoundException(
                 $"No se encontró una ruta con ID {rutaId}.");
 
-        if (!ruta.Activa)
+        if (!ruta.Activa.Valor)
             throw new InvalidOperationException(
                 "La ruta seleccionada está inactiva.");
 
@@ -52,7 +56,7 @@ public sealed class CreateFlightUseCase
             ?? throw new KeyNotFoundException(
                 $"No se encontró un avión con ID {avionId}.");
 
-        if (!avion.Activo)
+        if (!avion.Activo.Valor)
             throw new InvalidOperationException(
                 $"El avión '{avion.Matricula.Valor}' está dado de baja.");
 
@@ -73,12 +77,11 @@ public sealed class CreateFlightUseCase
                 ?? throw new KeyNotFoundException(
                     $"No se encontró una puerta con ID {puertaEmbarqueId.Value}.");
 
-            if (!puerta.Activa)
+            if (!puerta.Activa.Valor)
                 throw new InvalidOperationException(
                     $"La puerta '{puerta.Codigo.Valor}' está inactiva.");
         }
 
-        // El aggregate valida las fechas internamente con sus VOs
         var flight = Flight.Crear(
             rutaId, avionId, numeroVuelo,
             fechaSalida, fechaLlegadaEstimada, puertaEmbarqueId);
@@ -86,14 +89,13 @@ public sealed class CreateFlightUseCase
         await _flightRepository.SaveAsync(flight);
 
         // Generar disponibilidad de asientos automáticamente
-        var asientos = await _aircraftRepository
-            .FindAsientosByAvionAsync(avionId);
+        var asientos = await _seatRepository.FindByAvionAsync(avionId);
 
         var disponibilidades = asientos
             .Select(a => SeatAvailability.Crear(flight.Id, a.Id))
             .ToList();
 
-        await _seatRepository.SaveAllAsync(disponibilidades);
+        await _availabilityRepository.SaveAllAsync(disponibilidades);
 
         return flight;
     }

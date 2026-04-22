@@ -6,14 +6,14 @@ using AirTicketSystem.modules.airport.Domain.Repositories;
 
 namespace AirTicketSystem.modules.route.Application.UseCases;
 
-public class CreateRouteUseCase
+public sealed class CreateRouteUseCase
 {
-    private readonly IRouteRepository _repository;
+    private readonly IRouteRepository   _repository;
     private readonly IAirlineRepository _airlineRepository;
     private readonly IAirportRepository _airportRepository;
 
     public CreateRouteUseCase(
-        IRouteRepository repository,
+        IRouteRepository   repository,
         IAirlineRepository airlineRepository,
         IAirportRepository airportRepository)
     {
@@ -30,20 +30,20 @@ public class CreateRouteUseCase
         int? duracionMin,
         CancellationToken cancellationToken = default)
     {
-        var aerolinea = await _airlineRepository.GetByIdAsync(aerolineaId)
+        var aerolinea = await _airlineRepository.FindByIdAsync(aerolineaId)
             ?? throw new KeyNotFoundException(
                 $"No se encontró una aerolínea con ID {aerolineaId}.");
 
-        if (!aerolinea.Activa)
+        if (!aerolinea.Activa.Valor)
             throw new InvalidOperationException(
-                $"La aerolínea '{aerolinea.Nombre}' está inactiva. " +
+                $"La aerolínea '{aerolinea.Nombre.Valor}' está inactiva. " +
                 "No se pueden crear rutas para aerolíneas inactivas.");
 
-        var origen = await _airportRepository.GetByIdAsync(origenId)
+        var origen = await _airportRepository.FindByIdAsync(origenId)
             ?? throw new KeyNotFoundException(
                 $"No se encontró un aeropuerto de origen con ID {origenId}.");
 
-        var destino = await _airportRepository.GetByIdAsync(destinoId)
+        var destino = await _airportRepository.FindByIdAsync(destinoId)
             ?? throw new KeyNotFoundException(
                 $"No se encontró un aeropuerto de destino con ID {destinoId}.");
 
@@ -51,26 +51,23 @@ public class CreateRouteUseCase
             throw new InvalidOperationException(
                 "El aeropuerto de origen y destino no pueden ser el mismo.");
 
-        if (!origen.Activo)
+        if (!origen.Activo.Valor)
             throw new InvalidOperationException(
-                $"El aeropuerto de origen '{origen.Nombre}' está inactivo.");
+                $"El aeropuerto de origen '{origen.Nombre.Valor}' está inactivo.");
 
-        if (!destino.Activo)
+        if (!destino.Activo.Valor)
             throw new InvalidOperationException(
-                $"El aeropuerto de destino '{destino.Nombre}' está inactivo.");
+                $"El aeropuerto de destino '{destino.Nombre.Valor}' está inactivo.");
 
         if (await _repository.ExistsByAerolineaOrigenDestinoAsync(
             aerolineaId, origenId, destinoId))
             throw new InvalidOperationException(
-                $"Ya existe una ruta de '{origen.Nombre}' a '{destino.Nombre}' " +
-                $"para la aerolínea '{aerolinea.Nombre}'.");
+                $"Ya existe una ruta de '{origen.Nombre.Valor}' a " +
+                $"'{destino.Nombre.Valor}' para la aerolínea " +
+                $"'{aerolinea.Nombre.Valor}'.");
 
         var route = Route.Crear(
-            aerolineaId,
-            origenId,
-            destinoId,
-            distanciaKm,
-            duracionMin);
+            aerolineaId, origenId, destinoId, distanciaKm, duracionMin);
 
         await _repository.SaveAsync(route);
         return route;

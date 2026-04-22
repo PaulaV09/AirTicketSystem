@@ -39,6 +39,17 @@ public sealed class AirlinePhone
         };
     }
 
+    public static AirlinePhone Reconstituir(
+        int id, int aerolineaId, int tipoTelefonoId,
+        string numero, string? indicativoPais, bool esPrincipal)
+    {
+        var ap = Crear(aerolineaId, tipoTelefonoId, numero, indicativoPais, esPrincipal);
+        ap.Id = id;
+        return ap;
+    }
+
+    public void EstablecerId(int id) => Id = id;
+
     public void ActualizarNumero(string numero, string? indicativoPais = null)
     {
         Numero = NumeroAirlinePhone.Crear(numero);

@@ -25,6 +25,13 @@ public sealed class FechaSalidaFlight
         return new FechaSalidaFlight(valor);
     }
 
+    public static FechaSalidaFlight Reconstituir(DateTime valor)
+    {
+        if (valor == default)
+            throw new ArgumentException("La fecha de salida no puede estar vacía.");
+        return new FechaSalidaFlight(valor);
+    }
+
     public bool EsHoy
     {
         get

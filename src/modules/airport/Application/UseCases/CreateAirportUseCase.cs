@@ -27,7 +27,7 @@ public class CreateAirportUseCase
         string? direccion,
         CancellationToken cancellationToken = default)
     {
-        _ = await _cityRepository.GetByIdAsync(ciudadId)
+        _ = await _cityRepository.FindByIdAsync(ciudadId)
             ?? throw new KeyNotFoundException(
                 $"No se encontró una ciudad con ID {ciudadId}.");
 

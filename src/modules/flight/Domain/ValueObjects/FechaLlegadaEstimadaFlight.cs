@@ -24,6 +24,14 @@ public sealed class FechaLlegadaEstimadaFlight
         return new FechaLlegadaEstimadaFlight(valor);
     }
 
+    public static FechaLlegadaEstimadaFlight Reconstituir(DateTime valor)
+    {
+        if (valor == default)
+            throw new ArgumentException(
+                "La fecha de llegada estimada no puede estar vacía.");
+        return new FechaLlegadaEstimadaFlight(valor);
+    }
+
     public string EnFormatoCorto => Valor.ToString("dd/MM/yyyy HH:mm");
 
     public override string ToString() => Valor.ToString("dd/MM/yyyy HH:mm:ss");

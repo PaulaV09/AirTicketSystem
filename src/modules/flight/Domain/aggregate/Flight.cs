@@ -77,7 +77,7 @@ public sealed class Flight
             FechaLlegadaReal  = fechaLlegadaReal,
             CheckinApertura   = checkinApertura,
             CheckinCierre     = checkinCierre,
-            Estado            = EstadoFlight.Reconstituir(estado),
+            Estado            = EstadoFlight.Crear(estado),
             MotivoCambioEstado = motivoCambioEstado is not null
                 ? MotivoCambioEstadoFlight.Crear(motivoCambioEstado)
                 : null

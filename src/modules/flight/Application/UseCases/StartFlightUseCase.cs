@@ -33,7 +33,7 @@ public sealed class StartFlightUseCase
         flight.IniciarVuelo();
 
         // El aggregate del avión cambia su estado a EN_VUELO
-        avion.PonerEnVuelo();
+        avion.AsignarAVuelo();
 
         await _flightRepository.UpdateAsync(flight);
         await _aircraftRepository.UpdateAsync(avion);

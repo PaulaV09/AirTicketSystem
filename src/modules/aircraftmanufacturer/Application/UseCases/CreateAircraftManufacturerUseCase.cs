@@ -25,7 +25,7 @@ public class CreateAircraftManufacturerUseCase
         string? sitioWeb,
         CancellationToken cancellationToken = default)
     {
-        _ = await _countryRepository.GetByIdAsync(paisId)
+        _ = await _countryRepository.FindByIdAsync(paisId)
             ?? throw new KeyNotFoundException(
                 $"No se encontró un país con ID {paisId}.");
 

@@ -6,14 +6,14 @@ using AirTicketSystem.modules.airport.Domain.Repositories;
 
 namespace AirTicketSystem.modules.terminal.Application.UseCases;
 
-public class CreateTerminalUseCase
+public sealed class CreateTerminalUseCase
 {
     private readonly ITerminalRepository _repository;
-    private readonly IAirportRepository _airportRepository;
+    private readonly IAirportRepository  _airportRepository;
 
     public CreateTerminalUseCase(
         ITerminalRepository repository,
-        IAirportRepository airportRepository)
+        IAirportRepository  airportRepository)
     {
         _repository        = repository;
         _airportRepository = airportRepository;
@@ -25,14 +25,14 @@ public class CreateTerminalUseCase
         string? descripcion,
         CancellationToken cancellationToken = default)
     {
-        var aeropuerto = await _airportRepository.GetByIdAsync(aeropuertoId)
+        var aeropuerto = await _airportRepository.FindByIdAsync(aeropuertoId)
             ?? throw new KeyNotFoundException(
                 $"No se encontró un aeropuerto con ID {aeropuertoId}.");
 
-        if (!aeropuerto.Activo)
+        if (!aeropuerto.Activo.Valor)
             throw new InvalidOperationException(
                 $"No se puede agregar una terminal al aeropuerto " +
-                $"'{aeropuerto.Nombre}' porque está inactivo.");
+                $"'{aeropuerto.Nombre.Valor}' porque está inactivo.");
 
         var nombreVO = NombreTerminal.Crear(nombre);
 
@@ -40,7 +40,7 @@ public class CreateTerminalUseCase
             nombreVO.Valor, aeropuertoId))
             throw new InvalidOperationException(
                 $"Ya existe una terminal con el nombre '{nombreVO.Valor}' " +
-                $"en el aeropuerto '{aeropuerto.Nombre}'.");
+                $"en el aeropuerto '{aeropuerto.Nombre.Valor}'.");
 
         var terminal = Terminal.Crear(aeropuertoId, nombreVO.Valor, descripcion);
         await _repository.SaveAsync(terminal);

@@ -1,39 +1,40 @@
 // src/modules/airline/Application/UseCases/AddAirlinePhoneUseCase.cs
+using AirTicketSystem.modules.airline.Domain.aggregate;
 using AirTicketSystem.modules.airline.Domain.Repositories;
-using AirTicketSystem.modules.airline.Infrastructure.entity;
 using AirTicketSystem.modules.airline.Domain.ValueObjects;
 using AirTicketSystem.modules.phonetype.Domain.Repositories;
 
 namespace AirTicketSystem.modules.airline.Application.UseCases;
 
-public class AddAirlinePhoneUseCase
+public sealed class AddAirlinePhoneUseCase
 {
-    private readonly IAirlineRepository _airlineRepository;
+    private readonly IAirlineRepository      _airlineRepository;
     private readonly IAirlinePhoneRepository _phoneRepository;
-    private readonly IPhoneTypeRepository _phoneTypeRepository;
+    private readonly IPhoneTypeRepository    _phoneTypeRepository;
 
     public AddAirlinePhoneUseCase(
-        IAirlineRepository airlineRepository,
+        IAirlineRepository      airlineRepository,
         IAirlinePhoneRepository phoneRepository,
-        IPhoneTypeRepository phoneTypeRepository)
+        IPhoneTypeRepository    phoneTypeRepository)
     {
         _airlineRepository   = airlineRepository;
         _phoneRepository     = phoneRepository;
         _phoneTypeRepository = phoneTypeRepository;
     }
 
-    public async Task<AirlinePhoneEntity> ExecuteAsync(
+    public async Task<AirlinePhone> ExecuteAsync(
         int aerolineaId,
         int tipoTelefonoId,
         string numero,
         string? indicativo,
-        bool esPrincipal)
+        bool esPrincipal,
+        CancellationToken cancellationToken = default)
     {
         _ = await _airlineRepository.FindByIdAsync(aerolineaId)
             ?? throw new KeyNotFoundException(
                 $"No se encontró una aerolínea con ID {aerolineaId}.");
 
-        _ = await _phoneTypeRepository.GetByIdAsync(tipoTelefonoId)
+        _ = await _phoneTypeRepository.FindByIdAsync(tipoTelefonoId)
             ?? throw new KeyNotFoundException(
                 $"No se encontró un tipo de teléfono con ID {tipoTelefonoId}.");
 
@@ -42,25 +43,15 @@ public class AddAirlinePhoneUseCase
         if (await _phoneRepository.ExistsByNumeroAndAerolineaAsync(
             numeroVO.Valor, aerolineaId))
             throw new InvalidOperationException(
-                $"El número '{numeroVO.Valor}' ya está registrado " +
-                "para esta aerolínea.");
+                $"El número '{numeroVO.Valor}' ya está registrado para esta aerolínea.");
 
-        // Si se marca como principal, desmarcar el anterior
         if (esPrincipal)
             await _phoneRepository.DesmarcarPrincipalByAerolineaAsync(aerolineaId);
 
-        var entity = new AirlinePhoneEntity
-        {
-            AerolineaId    = aerolineaId,
-            TipoTelefonoId = tipoTelefonoId,
-            Numero         = numeroVO.Valor,
-            IndicativoPais = indicativo is not null
-                ? IndicativoPaisAirlinePhone.Crear(indicativo).Valor
-                : null,
-            EsPrincipal = esPrincipal
-        };
+        var airlinePhone = AirlinePhone.Crear(
+            aerolineaId, tipoTelefonoId, numero, indicativo, esPrincipal);
 
-        await _phoneRepository.AddAsync(entity);
-        return entity;
+        await _phoneRepository.SaveAsync(airlinePhone);
+        return airlinePhone;
     }
 }

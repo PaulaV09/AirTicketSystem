@@ -1,13 +1,15 @@
 // src/modules/airline/Domain/Repositories/IAirlineEmailRepository.cs
-using AirTicketSystem.shared.contracts;
-using AirTicketSystem.modules.airline.Infrastructure.entity;
+using AirTicketSystem.modules.airline.Domain.aggregate;
 
 namespace AirTicketSystem.modules.airline.Domain.Repositories;
 
-public interface IAirlineEmailRepository : IRepository<AirlineEmailEntity>
+public interface IAirlineEmailRepository
 {
-    Task<IEnumerable<AirlineEmailEntity>> GetByAerolineaAsync(int aerolineaId);
-    Task<AirlineEmailEntity?> GetPrincipalByAerolineaAsync(int aerolineaId);
+    Task<AirlineEmail?> FindByIdAsync(int id);
+    Task<IReadOnlyCollection<AirlineEmail>> FindByAerolineaAsync(int aerolineaId);
+    Task<AirlineEmail?> FindPrincipalByAerolineaAsync(int aerolineaId);
     Task<bool> ExistsByEmailAndAerolineaAsync(string email, int aerolineaId);
     Task DesmarcarPrincipalByAerolineaAsync(int aerolineaId);
+    Task SaveAsync(AirlineEmail email);
+    Task DeleteAsync(int id);
 }
