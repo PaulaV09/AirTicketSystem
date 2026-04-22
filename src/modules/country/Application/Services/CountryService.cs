@@ -1,11 +1,11 @@
 // src/modules/country/Application/Services/CountryService.cs
 using AirTicketSystem.modules.country.Application.Interfaces;
 using AirTicketSystem.modules.country.Application.UseCases;
-using AirTicketSystem.modules.country.Infrastructure.entity;
+using AirTicketSystem.modules.country.Domain.aggregate;
 
 namespace AirTicketSystem.modules.country.Application.Services;
 
-public class CountryService : ICountryService
+public sealed class CountryService : ICountryService
 {
     private readonly CreateCountryUseCase _create;
     private readonly GetCountryByIdUseCase _getById;
@@ -30,21 +30,21 @@ public class CountryService : ICountryService
         _delete         = delete;
     }
 
-    public Task<CountryEntity> CreateAsync(
+    public Task<Country> CreateAsync(
         int continenteId, string nombre,
         string codigoIso2, string codigoIso3)
         => _create.ExecuteAsync(continenteId, nombre, codigoIso2, codigoIso3);
 
-    public Task<CountryEntity?> GetByIdAsync(int id)
-        => _getById.ExecuteAsync(id)!;
+    public Task<Country> GetByIdAsync(int id)
+        => _getById.ExecuteAsync(id);
 
-    public Task<IEnumerable<CountryEntity>> GetAllAsync()
+    public Task<IReadOnlyCollection<Country>> GetAllAsync()
         => _getAll.ExecuteAsync();
 
-    public Task<IEnumerable<CountryEntity>> GetByContinentAsync(int continenteId)
+    public Task<IReadOnlyCollection<Country>> GetByContinentAsync(int continenteId)
         => _getByContinent.ExecuteAsync(continenteId);
 
-    public Task<CountryEntity> UpdateAsync(
+    public Task<Country> UpdateAsync(
         int id, string nombre,
         string codigoIso2, string codigoIso3)
         => _update.ExecuteAsync(id, nombre, codigoIso2, codigoIso3);

@@ -1,14 +1,14 @@
 // src/modules/department/Application/Interfaces/IDepartmentService.cs
-using AirTicketSystem.modules.department.Infrastructure.entity;
+using AirTicketSystem.modules.department.Domain.aggregate;
 
 namespace AirTicketSystem.modules.department.Application.Interfaces;
 
 public interface IDepartmentService
 {
-    Task<DepartmentEntity> CreateAsync(int regionId, string nombre, string? codigo);
-    Task<DepartmentEntity?> GetByIdAsync(int id);
-    Task<IEnumerable<DepartmentEntity>> GetAllAsync();
-    Task<IEnumerable<DepartmentEntity>> GetByRegionAsync(int regionId);
-    Task<DepartmentEntity> UpdateAsync(int id, string nombre, string? codigo);
+    Task<Department> CreateAsync(int regionId, string nombre, string? codigo);
+    Task<Department> GetByIdAsync(int id);
+    Task<IReadOnlyCollection<Department>> GetAllAsync();
+    Task<IReadOnlyCollection<Department>> GetByRegionAsync(int regionId);
+    Task<Department> UpdateAsync(int id, string nombre, string? codigo);
     Task DeleteAsync(int id);
 }

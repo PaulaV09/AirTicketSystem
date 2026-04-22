@@ -3,7 +3,7 @@ using AirTicketSystem.modules.city.Domain.Repositories;
 
 namespace AirTicketSystem.modules.city.Application.UseCases;
 
-public class DeleteCityUseCase
+public sealed class DeleteCityUseCase
 {
     private readonly ICityRepository _repository;
 
@@ -12,9 +12,11 @@ public class DeleteCityUseCase
         _repository = repository;
     }
 
-    public async Task ExecuteAsync(int id)
+    public async Task ExecuteAsync(
+        int id,
+        CancellationToken cancellationToken = default)
     {
-        _ = await _repository.GetByIdAsync(id)
+        _ = await _repository.FindByIdAsync(id)
             ?? throw new KeyNotFoundException(
                 $"No se encontró una ciudad con ID {id}.");
 

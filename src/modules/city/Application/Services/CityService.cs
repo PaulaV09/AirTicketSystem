@@ -1,11 +1,11 @@
 // src/modules/city/Application/Services/CityService.cs
 using AirTicketSystem.modules.city.Application.Interfaces;
 using AirTicketSystem.modules.city.Application.UseCases;
-using AirTicketSystem.modules.city.Infrastructure.entity;
+using AirTicketSystem.modules.city.Domain.aggregate;
 
 namespace AirTicketSystem.modules.city.Application.Services;
 
-public class CityService : ICityService
+public sealed class CityService : ICityService
 {
     private readonly CreateCityUseCase _create;
     private readonly GetCityByIdUseCase _getById;
@@ -22,28 +22,28 @@ public class CityService : ICityService
         UpdateCityUseCase update,
         DeleteCityUseCase delete)
     {
-        _create      = create;
-        _getById     = getById;
-        _getAll      = getAll;
+        _create          = create;
+        _getById         = getById;
+        _getAll          = getAll;
         _getByDepartment = getByDepartment;
-        _update      = update;
-        _delete      = delete;
+        _update          = update;
+        _delete          = delete;
     }
 
-    public Task<CityEntity> CreateAsync(int departmentId, string nombre, string? codigo)
-        => _create.ExecuteAsync(departmentId, nombre, codigo);
+    public Task<City> CreateAsync(int departamentoId, string nombre, string? codigoPostal)
+        => _create.ExecuteAsync(departamentoId, nombre, codigoPostal);
 
-    public Task<CityEntity?> GetByIdAsync(int id)
-        => _getById.ExecuteAsync(id)!;
+    public Task<City> GetByIdAsync(int id)
+        => _getById.ExecuteAsync(id);
 
-    public Task<IEnumerable<CityEntity>> GetAllAsync()
+    public Task<IReadOnlyCollection<City>> GetAllAsync()
         => _getAll.ExecuteAsync();
 
-    public Task<IEnumerable<CityEntity>> GetByDepartmentAsync(int departmentId)
-        => _getByDepartment.ExecuteAsync(departmentId);
+    public Task<IReadOnlyCollection<City>> GetByDepartmentAsync(int departamentoId)
+        => _getByDepartment.ExecuteAsync(departamentoId);
 
-    public Task<CityEntity> UpdateAsync(int id, string nombre, string? codigo)
-        => _update.ExecuteAsync(id, nombre, codigo);
+    public Task<City> UpdateAsync(int id, string nombre, string? codigoPostal)
+        => _update.ExecuteAsync(id, nombre, codigoPostal);
 
     public Task DeleteAsync(int id)
         => _delete.ExecuteAsync(id);

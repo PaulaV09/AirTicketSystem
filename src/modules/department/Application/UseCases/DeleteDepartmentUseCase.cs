@@ -3,7 +3,7 @@ using AirTicketSystem.modules.department.Domain.Repositories;
 
 namespace AirTicketSystem.modules.department.Application.UseCases;
 
-public class DeleteDepartmentUseCase
+public sealed class DeleteDepartmentUseCase
 {
     private readonly IDepartmentRepository _repository;
 
@@ -12,9 +12,11 @@ public class DeleteDepartmentUseCase
         _repository = repository;
     }
 
-    public async Task ExecuteAsync(int id)
+    public async Task ExecuteAsync(
+        int id,
+        CancellationToken cancellationToken = default)
     {
-        _ = await _repository.GetByIdAsync(id)
+        _ = await _repository.FindByIdAsync(id)
             ?? throw new KeyNotFoundException(
                 $"No se encontró un departamento con ID {id}.");
 

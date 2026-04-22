@@ -1,17 +1,17 @@
 // src/modules/country/Application/Interfaces/ICountryService.cs
-using AirTicketSystem.modules.country.Infrastructure.entity;
+using AirTicketSystem.modules.country.Domain.aggregate;
 
 namespace AirTicketSystem.modules.country.Application.Interfaces;
 
 public interface ICountryService
 {
-    Task<CountryEntity> CreateAsync(
+    Task<Country> CreateAsync(
         int continenteId, string nombre,
         string codigoIso2, string codigoIso3);
-    Task<CountryEntity?> GetByIdAsync(int id);
-    Task<IEnumerable<CountryEntity>> GetAllAsync();
-    Task<IEnumerable<CountryEntity>> GetByContinentAsync(int continenteId);
-    Task<CountryEntity> UpdateAsync(
+    Task<Country> GetByIdAsync(int id);
+    Task<IReadOnlyCollection<Country>> GetAllAsync();
+    Task<IReadOnlyCollection<Country>> GetByContinentAsync(int continenteId);
+    Task<Country> UpdateAsync(
         int id, string nombre,
         string codigoIso2, string codigoIso3);
     Task DeleteAsync(int id);

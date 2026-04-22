@@ -1,10 +1,10 @@
 // src/modules/country/Application/UseCases/GetAllCountriesUseCase.cs
+using AirTicketSystem.modules.country.Domain.aggregate;
 using AirTicketSystem.modules.country.Domain.Repositories;
-using AirTicketSystem.modules.country.Infrastructure.entity;
 
 namespace AirTicketSystem.modules.country.Application.UseCases;
 
-public class GetAllCountriesUseCase
+public sealed class GetAllCountriesUseCase
 {
     private readonly ICountryRepository _repository;
 
@@ -13,6 +13,9 @@ public class GetAllCountriesUseCase
         _repository = repository;
     }
 
-    public async Task<IEnumerable<CountryEntity>> ExecuteAsync()
-        => (await _repository.GetAllAsync()).OrderBy(c => c.Nombre);
+    public async Task<IReadOnlyCollection<Country>> ExecuteAsync(
+        CancellationToken cancellationToken = default)
+    {
+        return await _repository.FindAllAsync();
+    }
 }

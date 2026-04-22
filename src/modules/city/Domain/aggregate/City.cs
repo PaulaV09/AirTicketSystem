@@ -27,6 +27,24 @@ public sealed class City
         };
     }
 
+    public static City Reconstituir(int id, int departamentoId, string nombre, string? codigoPostal)
+    {
+        if (id <= 0)
+            throw new ArgumentException("El ID de la ciudad no es válido.");
+
+        var city = Crear(departamentoId, nombre, codigoPostal);
+        city.Id = id;
+        return city;
+    }
+
+    public void EstablecerId(int id)
+    {
+        if (id <= 0)
+            throw new ArgumentException("El ID de la ciudad no es válido.");
+
+        Id = id;
+    }
+
     public void ActualizarNombre(string nombre)
     {
         Nombre = NombreCity.Crear(nombre);

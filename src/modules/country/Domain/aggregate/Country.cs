@@ -31,9 +31,42 @@ public sealed class Country
         };
     }
 
+    public static Country Reconstituir(
+        int id,
+        int continenteId,
+        string nombre,
+        string codigoIso2,
+        string codigoIso3)
+    {
+        if (id <= 0)
+            throw new ArgumentException("El ID del país no es válido.");
+
+        var country = Crear(continenteId, nombre, codigoIso2, codigoIso3);
+        country.Id = id;
+        return country;
+    }
+
+    public void EstablecerId(int id)
+    {
+        if (id <= 0)
+            throw new ArgumentException("El ID del país no es válido.");
+
+        Id = id;
+    }
+
     public void ActualizarNombre(string nombre)
     {
         Nombre = NombreCountry.Crear(nombre);
+    }
+
+    public void ActualizarCodigoIso2(string codigoIso2)
+    {
+        CodigoIso2 = CodigoIso2Country.Crear(codigoIso2);
+    }
+
+    public void ActualizarCodigoIso3(string codigoIso3)
+    {
+        CodigoIso3 = CodigoIso3Country.Crear(codigoIso3);
     }
 
     public override string ToString() =>

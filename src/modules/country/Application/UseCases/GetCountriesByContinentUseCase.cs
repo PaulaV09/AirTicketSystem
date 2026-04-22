@@ -1,10 +1,10 @@
 // src/modules/country/Application/UseCases/GetCountriesByContinentUseCase.cs
+using AirTicketSystem.modules.country.Domain.aggregate;
 using AirTicketSystem.modules.country.Domain.Repositories;
-using AirTicketSystem.modules.country.Infrastructure.entity;
 
 namespace AirTicketSystem.modules.country.Application.UseCases;
 
-public class GetCountriesByContinentUseCase
+public sealed class GetCountriesByContinentUseCase
 {
     private readonly ICountryRepository _repository;
 
@@ -13,11 +13,13 @@ public class GetCountriesByContinentUseCase
         _repository = repository;
     }
 
-    public async Task<IEnumerable<CountryEntity>> ExecuteAsync(int continenteId)
+    public async Task<IReadOnlyCollection<Country>> ExecuteAsync(
+        int continenteId,
+        CancellationToken cancellationToken = default)
     {
         if (continenteId <= 0)
             throw new ArgumentException("El ID del continente no es válido.");
 
-        return await _repository.GetByContinenteAsync(continenteId);
+        return await _repository.FindByContinenteAsync(continenteId);
     }
 }

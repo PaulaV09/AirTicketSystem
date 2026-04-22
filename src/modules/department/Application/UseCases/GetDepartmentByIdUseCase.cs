@@ -1,10 +1,10 @@
 // src/modules/department/Application/UseCases/GetDepartmentByIdUseCase.cs
+using AirTicketSystem.modules.department.Domain.aggregate;
 using AirTicketSystem.modules.department.Domain.Repositories;
-using AirTicketSystem.modules.department.Infrastructure.entity;
 
 namespace AirTicketSystem.modules.department.Application.UseCases;
 
-public class GetDepartmentByIdUseCase
+public sealed class GetDepartmentByIdUseCase
 {
     private readonly IDepartmentRepository _repository;
 
@@ -13,12 +13,11 @@ public class GetDepartmentByIdUseCase
         _repository = repository;
     }
 
-    public async Task<DepartmentEntity> ExecuteAsync(int id)
+    public async Task<Department> ExecuteAsync(
+        int id,
+        CancellationToken cancellationToken = default)
     {
-        if (id <= 0)
-            throw new ArgumentException("El ID del departamento no es válido.");
-
-        return await _repository.GetByIdAsync(id)
+        return await _repository.FindByIdAsync(id)
             ?? throw new KeyNotFoundException(
                 $"No se encontró un departamento con ID {id}.");
     }

@@ -1,12 +1,12 @@
 // src/modules/country/Application/UseCases/CreateCountryUseCase.cs
-using AirTicketSystem.modules.country.Domain.Repositories;
-using AirTicketSystem.modules.country.Infrastructure.entity;
-using AirTicketSystem.modules.country.Domain.ValueObjects;
 using AirTicketSystem.modules.continent.Domain.Repositories;
+using AirTicketSystem.modules.country.Domain.aggregate;
+using AirTicketSystem.modules.country.Domain.Repositories;
+using AirTicketSystem.modules.country.Domain.ValueObjects;
 
 namespace AirTicketSystem.modules.country.Application.UseCases;
 
-public class CreateCountryUseCase
+public sealed class CreateCountryUseCase
 {
     private readonly ICountryRepository _repository;
     private readonly IContinentRepository _continentRepository;
@@ -19,14 +19,14 @@ public class CreateCountryUseCase
         _continentRepository = continentRepository;
     }
 
-    public async Task<CountryEntity> ExecuteAsync(
+    public async Task<Country> ExecuteAsync(
         int continenteId,
         string nombre,
         string codigoIso2,
-        string codigoIso3)
+        string codigoIso3,
+        CancellationToken cancellationToken = default)
     {
-        // Validar que el continente exista
-        var continente = await _continentRepository.GetByIdAsync(continenteId)
+        _ = await _continentRepository.FindByIdAsync(continenteId)
             ?? throw new KeyNotFoundException(
                 $"No se encontró un continente con ID {continenteId}.");
 
@@ -42,15 +42,8 @@ public class CreateCountryUseCase
             throw new InvalidOperationException(
                 $"Ya existe un país con el código ISO3 '{iso3VO.Valor}'.");
 
-        var entity = new CountryEntity
-        {
-            ContinenteId = continenteId,
-            Nombre       = nombreVO.Valor,
-            CodigoIso2   = iso2VO.Valor,
-            CodigoIso3   = iso3VO.Valor
-        };
-
-        await _repository.AddAsync(entity);
-        return entity;
+        var country = Country.Crear(continenteId, nombreVO.Valor, iso2VO.Valor, iso3VO.Valor);
+        await _repository.SaveAsync(country);
+        return country;
     }
 }

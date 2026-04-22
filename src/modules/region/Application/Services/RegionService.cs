@@ -1,11 +1,11 @@
 // src/modules/region/Application/Services/RegionService.cs
 using AirTicketSystem.modules.region.Application.Interfaces;
 using AirTicketSystem.modules.region.Application.UseCases;
-using AirTicketSystem.modules.region.Infrastructure.entity;
+using AirTicketSystem.modules.region.Domain.aggregate;
 
 namespace AirTicketSystem.modules.region.Application.Services;
 
-public class RegionService : IRegionService
+public sealed class RegionService : IRegionService
 {
     private readonly CreateRegionUseCase _create;
     private readonly GetRegionByIdUseCase _getById;
@@ -22,27 +22,27 @@ public class RegionService : IRegionService
         UpdateRegionUseCase update,
         DeleteRegionUseCase delete)
     {
-        _create      = create;
-        _getById     = getById;
-        _getAll      = getAll;
+        _create       = create;
+        _getById      = getById;
+        _getAll       = getAll;
         _getByCountry = getByCountry;
-        _update      = update;
-        _delete      = delete;
+        _update       = update;
+        _delete       = delete;
     }
 
-    public Task<RegionEntity> CreateAsync(int paisId, string nombre, string? codigo)
+    public Task<Region> CreateAsync(int paisId, string nombre, string? codigo)
         => _create.ExecuteAsync(paisId, nombre, codigo);
 
-    public Task<RegionEntity?> GetByIdAsync(int id)
-        => _getById.ExecuteAsync(id)!;
+    public Task<Region> GetByIdAsync(int id)
+        => _getById.ExecuteAsync(id);
 
-    public Task<IEnumerable<RegionEntity>> GetAllAsync()
+    public Task<IReadOnlyCollection<Region>> GetAllAsync()
         => _getAll.ExecuteAsync();
 
-    public Task<IEnumerable<RegionEntity>> GetByCountryAsync(int paisId)
+    public Task<IReadOnlyCollection<Region>> GetByCountryAsync(int paisId)
         => _getByCountry.ExecuteAsync(paisId);
 
-    public Task<RegionEntity> UpdateAsync(int id, string nombre, string? codigo)
+    public Task<Region> UpdateAsync(int id, string nombre, string? codigo)
         => _update.ExecuteAsync(id, nombre, codigo);
 
     public Task DeleteAsync(int id)

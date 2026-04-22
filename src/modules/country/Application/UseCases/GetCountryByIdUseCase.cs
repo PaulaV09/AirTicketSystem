@@ -1,10 +1,10 @@
 // src/modules/country/Application/UseCases/GetCountryByIdUseCase.cs
+using AirTicketSystem.modules.country.Domain.aggregate;
 using AirTicketSystem.modules.country.Domain.Repositories;
-using AirTicketSystem.modules.country.Infrastructure.entity;
 
 namespace AirTicketSystem.modules.country.Application.UseCases;
 
-public class GetCountryByIdUseCase
+public sealed class GetCountryByIdUseCase
 {
     private readonly ICountryRepository _repository;
 
@@ -13,12 +13,11 @@ public class GetCountryByIdUseCase
         _repository = repository;
     }
 
-    public async Task<CountryEntity> ExecuteAsync(int id)
+    public async Task<Country> ExecuteAsync(
+        int id,
+        CancellationToken cancellationToken = default)
     {
-        if (id <= 0)
-            throw new ArgumentException("El ID del país no es válido.");
-
-        return await _repository.GetByIdAsync(id)
+        return await _repository.FindByIdAsync(id)
             ?? throw new KeyNotFoundException(
                 $"No se encontró un país con ID {id}.");
     }

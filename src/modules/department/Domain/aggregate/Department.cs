@@ -25,6 +25,24 @@ public sealed class Department
         };
     }
 
+    public static Department Reconstituir(int id, int regionId, string nombre, string? codigo)
+    {
+        if (id <= 0)
+            throw new ArgumentException("El ID del departamento no es válido.");
+
+        var department = Crear(regionId, nombre, codigo);
+        department.Id = id;
+        return department;
+    }
+
+    public void EstablecerId(int id)
+    {
+        if (id <= 0)
+            throw new ArgumentException("El ID del departamento no es válido.");
+
+        Id = id;
+    }
+
     public void ActualizarNombre(string nombre)
     {
         Nombre = NombreDepartment.Crear(nombre);

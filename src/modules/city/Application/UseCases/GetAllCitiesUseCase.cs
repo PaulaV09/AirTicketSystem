@@ -1,10 +1,10 @@
 // src/modules/city/Application/UseCases/GetAllCitiesUseCase.cs
+using AirTicketSystem.modules.city.Domain.aggregate;
 using AirTicketSystem.modules.city.Domain.Repositories;
-using AirTicketSystem.modules.city.Infrastructure.entity;
 
 namespace AirTicketSystem.modules.city.Application.UseCases;
 
-public class GetAllCitiesUseCase
+public sealed class GetAllCitiesUseCase
 {
     private readonly ICityRepository _repository;
 
@@ -13,6 +13,9 @@ public class GetAllCitiesUseCase
         _repository = repository;
     }
 
-    public async Task<IEnumerable<CityEntity>> ExecuteAsync()
-        => (await _repository.GetAllAsync()).OrderBy(c => c.Nombre);
+    public async Task<IReadOnlyCollection<City>> ExecuteAsync(
+        CancellationToken cancellationToken = default)
+    {
+        return await _repository.FindAllAsync();
+    }
 }

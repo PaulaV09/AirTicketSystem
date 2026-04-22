@@ -1,11 +1,11 @@
 // src/modules/department/Application/UseCases/UpdateDepartmentUseCase.cs
+using AirTicketSystem.modules.department.Domain.aggregate;
 using AirTicketSystem.modules.department.Domain.Repositories;
-using AirTicketSystem.modules.department.Infrastructure.entity;
 using AirTicketSystem.modules.department.Domain.ValueObjects;
 
 namespace AirTicketSystem.modules.department.Application.UseCases;
 
-public class UpdateDepartmentUseCase
+public sealed class UpdateDepartmentUseCase
 {
     private readonly IDepartmentRepository _repository;
 
@@ -14,26 +14,25 @@ public class UpdateDepartmentUseCase
         _repository = repository;
     }
 
-    public async Task<DepartmentEntity> ExecuteAsync(
-        int id, string nombre, string? codigo)
+    public async Task<Department> ExecuteAsync(
+        int id,
+        string nombre,
+        string? codigo,
+        CancellationToken cancellationToken = default)
     {
-        var department = await _repository.GetByIdAsync(id)
+        var department = await _repository.FindByIdAsync(id)
             ?? throw new KeyNotFoundException(
                 $"No se encontró un departamento con ID {id}.");
 
         var nombreVO = NombreDepartment.Crear(nombre);
 
-        if (nombreVO.Valor != department.Nombre &&
+        if (!string.Equals(nombreVO.Valor, department.Nombre.Valor, StringComparison.OrdinalIgnoreCase) &&
             await _repository.ExistsByNombreAndRegionAsync(nombreVO.Valor, department.RegionId))
             throw new InvalidOperationException(
-                $"Ya existe otro departamento con el nombre '{nombreVO.Valor}' " +
-                $"en el mismo país.");
+                $"Ya existe otro departamento con el nombre '{nombreVO.Valor}' en la misma región.");
 
-        department.Nombre = nombreVO.Valor;
-        department.Codigo = codigo is not null
-            ? CodigoDepartment.Crear(codigo).Valor
-            : null;
-
+        department.ActualizarNombre(nombreVO.Valor);
+        department.ActualizarCodigo(codigo is not null ? CodigoDepartment.Crear(codigo).Valor : null);
         await _repository.UpdateAsync(department);
         return department;
     }

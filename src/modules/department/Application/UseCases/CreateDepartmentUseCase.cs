@@ -1,12 +1,12 @@
 // src/modules/department/Application/UseCases/CreateDepartmentUseCase.cs
+using AirTicketSystem.modules.department.Domain.aggregate;
 using AirTicketSystem.modules.department.Domain.Repositories;
-using AirTicketSystem.modules.department.Infrastructure.entity;
 using AirTicketSystem.modules.department.Domain.ValueObjects;
 using AirTicketSystem.modules.region.Domain.Repositories;
 
 namespace AirTicketSystem.modules.department.Application.UseCases;
 
-public class CreateDepartmentUseCase
+public sealed class CreateDepartmentUseCase
 {
     private readonly IDepartmentRepository _repository;
     private readonly IRegionRepository _regionRepository;
@@ -15,14 +15,17 @@ public class CreateDepartmentUseCase
         IDepartmentRepository repository,
         IRegionRepository regionRepository)
     {
-        _repository        = repository;
+        _repository       = repository;
         _regionRepository = regionRepository;
     }
 
-    public async Task<DepartmentEntity> ExecuteAsync(
-        int regionId, string nombre, string? codigo)
+    public async Task<Department> ExecuteAsync(
+        int regionId,
+        string nombre,
+        string? codigo,
+        CancellationToken cancellationToken = default)
     {
-        _ = await _regionRepository.GetByIdAsync(regionId)
+        _ = await _regionRepository.FindByIdAsync(regionId)
             ?? throw new KeyNotFoundException(
                 $"No se encontró una región con ID {regionId}.");
 
@@ -33,18 +36,12 @@ public class CreateDepartmentUseCase
                 $"Ya existe un departamento con el nombre '{nombreVO.Valor}' " +
                 $"en la región con ID {regionId}.");
 
-        string? codigoNormalizado = null;
-        if (codigo is not null)
-            codigoNormalizado = CodigoDepartment.Crear(codigo).Valor;
+        string? codigoNormalizado = codigo is not null
+            ? CodigoDepartment.Crear(codigo).Valor
+            : null;
 
-        var entity = new DepartmentEntity
-        {
-            RegionId = regionId,
-            Nombre = nombreVO.Valor,
-            Codigo = codigoNormalizado
-        };
-
-        await _repository.AddAsync(entity);
-        return entity;
+        var department = Department.Crear(regionId, nombreVO.Valor, codigoNormalizado);
+        await _repository.SaveAsync(department);
+        return department;
     }
 }

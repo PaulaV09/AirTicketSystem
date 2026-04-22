@@ -3,7 +3,7 @@ using AirTicketSystem.modules.region.Domain.Repositories;
 
 namespace AirTicketSystem.modules.region.Application.UseCases;
 
-public class DeleteRegionUseCase
+public sealed class DeleteRegionUseCase
 {
     private readonly IRegionRepository _repository;
 
@@ -12,9 +12,11 @@ public class DeleteRegionUseCase
         _repository = repository;
     }
 
-    public async Task ExecuteAsync(int id)
+    public async Task ExecuteAsync(
+        int id,
+        CancellationToken cancellationToken = default)
     {
-        _ = await _repository.GetByIdAsync(id)
+        _ = await _repository.FindByIdAsync(id)
             ?? throw new KeyNotFoundException(
                 $"No se encontró una región con ID {id}.");
 

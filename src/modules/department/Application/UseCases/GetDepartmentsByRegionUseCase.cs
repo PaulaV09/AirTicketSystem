@@ -1,10 +1,10 @@
 // src/modules/department/Application/UseCases/GetDepartmentsByRegionUseCase.cs
+using AirTicketSystem.modules.department.Domain.aggregate;
 using AirTicketSystem.modules.department.Domain.Repositories;
-using AirTicketSystem.modules.department.Infrastructure.entity;
 
 namespace AirTicketSystem.modules.department.Application.UseCases;
 
-public class GetDepartmentsByRegionUseCase
+public sealed class GetDepartmentsByRegionUseCase
 {
     private readonly IDepartmentRepository _repository;
 
@@ -13,11 +13,13 @@ public class GetDepartmentsByRegionUseCase
         _repository = repository;
     }
 
-    public async Task<IEnumerable<DepartmentEntity>> ExecuteAsync(int regionId)
+    public async Task<IReadOnlyCollection<Department>> ExecuteAsync(
+        int regionId,
+        CancellationToken cancellationToken = default)
     {
         if (regionId <= 0)
             throw new ArgumentException("El ID de la región no es válido.");
 
-        return await _repository.GetByRegionAsync(regionId);
+        return await _repository.FindByRegionAsync(regionId);
     }
 }

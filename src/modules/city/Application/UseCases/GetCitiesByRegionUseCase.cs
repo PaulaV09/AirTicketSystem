@@ -1,10 +1,10 @@
-// src/modules/city/Application/UseCases/GetCitiesByRegionUseCase.cs
+// src/modules/city/Application/UseCases/GetCitiesByDepartmentUseCase.cs
+using AirTicketSystem.modules.city.Domain.aggregate;
 using AirTicketSystem.modules.city.Domain.Repositories;
-using AirTicketSystem.modules.city.Infrastructure.entity;
 
 namespace AirTicketSystem.modules.city.Application.UseCases;
 
-public class GetCitiesByDepartmentUseCase
+public sealed class GetCitiesByDepartmentUseCase
 {
     private readonly ICityRepository _repository;
 
@@ -13,11 +13,13 @@ public class GetCitiesByDepartmentUseCase
         _repository = repository;
     }
 
-    public async Task<IEnumerable<CityEntity>> ExecuteAsync(int departmentId)
+    public async Task<IReadOnlyCollection<City>> ExecuteAsync(
+        int departamentoId,
+        CancellationToken cancellationToken = default)
     {
-        if (departmentId <= 0)
+        if (departamentoId <= 0)
             throw new ArgumentException("El ID del departamento no es válido.");
 
-        return await _repository.GetByDepartamentoAsync(departmentId);
+        return await _repository.FindByDepartamentoAsync(departamentoId);
     }
 }

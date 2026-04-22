@@ -1,10 +1,10 @@
 // src/modules/region/Application/UseCases/GetRegionsByCountryUseCase.cs
+using AirTicketSystem.modules.region.Domain.aggregate;
 using AirTicketSystem.modules.region.Domain.Repositories;
-using AirTicketSystem.modules.region.Infrastructure.entity;
 
 namespace AirTicketSystem.modules.region.Application.UseCases;
 
-public class GetRegionsByCountryUseCase
+public sealed class GetRegionsByCountryUseCase
 {
     private readonly IRegionRepository _repository;
 
@@ -13,11 +13,13 @@ public class GetRegionsByCountryUseCase
         _repository = repository;
     }
 
-    public async Task<IEnumerable<RegionEntity>> ExecuteAsync(int paisId)
+    public async Task<IReadOnlyCollection<Region>> ExecuteAsync(
+        int paisId,
+        CancellationToken cancellationToken = default)
     {
         if (paisId <= 0)
             throw new ArgumentException("El ID del país no es válido.");
 
-        return await _repository.GetByPaisAsync(paisId);
+        return await _repository.FindByPaisAsync(paisId);
     }
 }

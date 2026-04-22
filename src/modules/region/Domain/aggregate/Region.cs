@@ -25,6 +25,24 @@ public sealed class Region
         };
     }
 
+    public static Region Reconstituir(int id, int paisId, string nombre, string? codigo)
+    {
+        if (id <= 0)
+            throw new ArgumentException("El ID de la región no es válido.");
+
+        var region = Crear(paisId, nombre, codigo);
+        region.Id = id;
+        return region;
+    }
+
+    public void EstablecerId(int id)
+    {
+        if (id <= 0)
+            throw new ArgumentException("El ID de la región no es válido.");
+
+        Id = id;
+    }
+
     public void ActualizarNombre(string nombre)
     {
         Nombre = NombreRegion.Crear(nombre);

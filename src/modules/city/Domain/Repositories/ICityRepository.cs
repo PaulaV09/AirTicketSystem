@@ -1,11 +1,15 @@
 // src/modules/city/Domain/Repositories/ICityRepository.cs
-using AirTicketSystem.shared.contracts;
-using AirTicketSystem.modules.city.Infrastructure.entity;
+using AirTicketSystem.modules.city.Domain.aggregate;
 
 namespace AirTicketSystem.modules.city.Domain.Repositories;
 
-public interface ICityRepository : IRepository<CityEntity>
+public interface ICityRepository
 {
-    Task<IEnumerable<CityEntity>> GetByDepartamentoAsync(int departamentoId);
+    Task<City?> FindByIdAsync(int id);
+    Task<IReadOnlyCollection<City>> FindAllAsync();
+    Task<IReadOnlyCollection<City>> FindByDepartamentoAsync(int departamentoId);
     Task<bool> ExistsByNombreAndDepartamentoAsync(string nombre, int departamentoId);
+    Task SaveAsync(City city);
+    Task UpdateAsync(City city);
+    Task DeleteAsync(int id);
 }
