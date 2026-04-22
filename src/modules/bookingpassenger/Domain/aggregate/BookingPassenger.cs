@@ -112,6 +112,20 @@ public sealed class BookingPassenger
     public bool RequiereAcompanante =>
         TipoPasajero.RequiereAdultoAcompanante;
 
+    public static BookingPassenger Reconstituir(
+        int id,
+        int reservaId,
+        int personaId,
+        string tipoPasajero,
+        int? asientoId)
+    {
+        var passenger = Crear(reservaId, personaId, tipoPasajero, asientoId);
+        passenger.Id = id;
+        return passenger;
+    }
+
+    public void EstablecerId(int id) => Id = id;
+
     public override string ToString() =>
         $"Pasajero [{TipoPasajero}] — Persona #{PersonaId} " +
         $"| Asiento: {(AsientoId.HasValue ? AsientoId.ToString() : "Sin asignar")}";

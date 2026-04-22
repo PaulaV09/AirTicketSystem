@@ -72,6 +72,32 @@ public sealed class BookingHistory
 
     public bool FueHechoPorSistema => UsuarioId is null;
 
+    public static BookingHistory Reconstituir(
+        int id,
+        int reservaId,
+        string estadoAnterior,
+        string estadoNuevo,
+        DateTime fechaCambio,
+        int? usuarioId,
+        string? motivo)
+    {
+        var history = new BookingHistory
+        {
+            ReservaId      = reservaId,
+            UsuarioId      = usuarioId,
+            EstadoAnterior = EstadoAnteriorBookingHistory.Crear(estadoAnterior),
+            EstadoNuevo    = EstadoNuevoBookingHistory.Crear(estadoNuevo),
+            FechaCambio    = FechaCambioBookingHistory.Crear(fechaCambio),
+            Motivo         = motivo is not null
+                ? MotivoBookingHistory.Crear(motivo)
+                : null
+        };
+        history.Id = id;
+        return history;
+    }
+
+    public void EstablecerId(int id) => Id = id;
+
     public override string ToString() =>
         $"Reserva #{ReservaId} | {EstadoAnterior} → {EstadoNuevo} " +
         $"[{FechaCambio}]";

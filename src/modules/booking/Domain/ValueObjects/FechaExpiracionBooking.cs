@@ -30,6 +30,14 @@ public sealed class FechaExpiracionBooking
     public static FechaExpiracionBooking EstandarDesde(DateTime fechaReserva)
         => new(fechaReserva.AddHours(24));
 
+    // Bypasses the 72h window rule — only for reconstituting from DB-stored values.
+    public static FechaExpiracionBooking Reconstituir(DateTime valor)
+    {
+        if (valor == default)
+            throw new ArgumentException("La fecha de expiración no puede estar vacía.");
+        return new FechaExpiracionBooking(valor);
+    }
+
     public bool EstaExpirada => DateTime.UtcNow > Valor;
 
     public int HorasRestantes

@@ -128,6 +128,35 @@ public sealed class BoardingPass
     public bool EstaCompleto =>
         TienePuertaAsignada && TieneHoraEmbarque;
 
+    public static BoardingPass Reconstituir(
+        int id,
+        int checkinId,
+        string codigoPase,
+        string? codigoQr,
+        int? puertaEmbarqueId,
+        DateTime? horaEmbarque,
+        DateTime fechaEmision)
+    {
+        var bp = new BoardingPass
+        {
+            CheckinId        = checkinId,
+            PuertaEmbarqueId = puertaEmbarqueId,
+            CodigoPase       = CodigoPaseBoardingPass.Crear(codigoPase),
+            CodigoQr         = codigoQr is not null
+                ? CodigoQrBoardingPass.Crear(codigoQr)
+                : throw new InvalidOperationException(
+                    "El código QR del pase de abordar no puede ser nulo."),
+            HoraEmbarque     = horaEmbarque.HasValue
+                ? HoraEmbarcBoardingPass.Reconstituir(horaEmbarque.Value)
+                : null,
+            FechaEmision     = FechaEmisionBoardingPass.Crear(fechaEmision)
+        };
+        bp.Id = id;
+        return bp;
+    }
+
+    public void EstablecerId(int id) => Id = id;
+
     /// <summary>
     /// Genera un resumen del pase para mostrar en consola.
     /// Incluye toda la información que el pasajero necesita.

@@ -1,61 +1,98 @@
 // src/modules/ticket/Infrastructure/repository/TicketRepository.cs
 using Microsoft.EntityFrameworkCore;
 using AirTicketSystem.shared.context;
-using AirTicketSystem.shared.helpers;
+using AirTicketSystem.modules.ticket.Domain.aggregate;
 using AirTicketSystem.modules.ticket.Domain.Repositories;
 using AirTicketSystem.modules.ticket.Infrastructure.entity;
 
 namespace AirTicketSystem.modules.ticket.Infrastructure.repository;
 
-public class TicketRepository : BaseRepository<TicketEntity>, ITicketRepository
+public sealed class TicketRepository : ITicketRepository
 {
-    public TicketRepository(AppDbContext context) : base(context) { }
+    private readonly AppDbContext _context;
 
-    public async Task<TicketEntity?> GetByCodigoTiqueteAsync(string codigoTiquete)
-        => await _dbSet
-            .Include(t => t.PasajeroReserva)
-                .ThenInclude(pr => pr.Persona)
-            .Include(t => t.PasajeroReserva)
-                .ThenInclude(pr => pr.Reserva)
-                    .ThenInclude(r => r.Vuelo)
-            .Include(t => t.AsientoConfirmado)
-            .FirstOrDefaultAsync(t =>
-                t.CodigoTiquete == codigoTiquete.ToUpperInvariant());
+    public TicketRepository(AppDbContext context) => _context = context;
 
-    public async Task<TicketEntity?> GetByPasajeroReservaAsync(int pasajeroReservaId)
-        => await _dbSet
-            .Include(t => t.PasajeroReserva)
-                .ThenInclude(pr => pr.Persona)
-            .Include(t => t.AsientoConfirmado)
-            .FirstOrDefaultAsync(t =>
-                t.PasajeroReservaId == pasajeroReservaId);
+    public async Task<Ticket?> FindByIdAsync(int id)
+    {
+        var entity = await _context.Tiquetes.FindAsync(id);
+        return entity is null ? null : MapToDomain(entity);
+    }
 
-    public async Task<IEnumerable<TicketEntity>> GetByEstadoAsync(string estado)
-        => await _dbSet
-            .Include(t => t.PasajeroReserva)
-                .ThenInclude(pr => pr.Persona)
+    public async Task<Ticket?> FindByCodigoTiqueteAsync(string codigoTiquete)
+    {
+        var entity = await _context.Tiquetes
+            .FirstOrDefaultAsync(t => t.CodigoTiquete == codigoTiquete.ToUpperInvariant());
+        return entity is null ? null : MapToDomain(entity);
+    }
+
+    public async Task<Ticket?> FindByPasajeroReservaAsync(int pasajeroReservaId)
+    {
+        var entity = await _context.Tiquetes
+            .FirstOrDefaultAsync(t => t.PasajeroReservaId == pasajeroReservaId);
+        return entity is null ? null : MapToDomain(entity);
+    }
+
+    public async Task<IReadOnlyCollection<Ticket>> FindByEstadoAsync(string estado)
+    {
+        var entities = await _context.Tiquetes
             .Where(t => t.Estado == estado.ToUpperInvariant())
             .OrderByDescending(t => t.FechaEmision)
             .ToListAsync();
+        return entities.Select(MapToDomain).ToList();
+    }
 
-    public async Task<IEnumerable<TicketEntity>> GetByVueloAsync(int vueloId)
-        => await _dbSet
-            .Include(t => t.PasajeroReserva)
-                .ThenInclude(pr => pr.Persona)
-            .Include(t => t.PasajeroReserva)
-                .ThenInclude(pr => pr.Reserva)
-            .Include(t => t.AsientoConfirmado)
+    public async Task<IReadOnlyCollection<Ticket>> FindByVueloAsync(int vueloId)
+    {
+        var entities = await _context.Tiquetes
             .Where(t => t.PasajeroReserva.Reserva.VueloId == vueloId)
-            .OrderBy(t => t.AsientoConfirmado!.Fila)
-            .ThenBy(t => t.AsientoConfirmado!.Columna)
+            .OrderByDescending(t => t.FechaEmision)
             .ToListAsync();
+        return entities.Select(MapToDomain).ToList();
+    }
 
     public async Task<bool> ExistsByCodigoTiqueteAsync(string codigoTiquete)
-        => await _dbSet
-            .AnyAsync(t =>
-                t.CodigoTiquete == codigoTiquete.ToUpperInvariant());
+        => await _context.Tiquetes
+            .AnyAsync(t => t.CodigoTiquete == codigoTiquete.ToUpperInvariant());
 
     public async Task<bool> ExistsByPasajeroReservaAsync(int pasajeroReservaId)
-        => await _dbSet
+        => await _context.Tiquetes
             .AnyAsync(t => t.PasajeroReservaId == pasajeroReservaId);
+
+    public async Task SaveAsync(Ticket ticket)
+    {
+        var entity = MapToEntity(ticket);
+        _context.Tiquetes.Add(entity);
+        await _context.SaveChangesAsync();
+        ticket.EstablecerId(entity.Id);
+    }
+
+    public async Task UpdateAsync(Ticket ticket)
+    {
+        var entity = await _context.Tiquetes.FindAsync(ticket.Id)
+            ?? throw new KeyNotFoundException($"No se encontró el tiquete con ID {ticket.Id}.");
+
+        entity.Estado              = ticket.Estado.Valor;
+        entity.AsientoConfirmadoId = ticket.AsientoConfirmadoId;
+
+        await _context.SaveChangesAsync();
+    }
+
+    private static Ticket MapToDomain(TicketEntity e) =>
+        Ticket.Reconstituir(
+            e.Id,
+            e.PasajeroReservaId,
+            e.AsientoConfirmadoId,
+            e.CodigoTiquete,
+            e.FechaEmision,
+            e.Estado);
+
+    private static TicketEntity MapToEntity(Ticket t) => new()
+    {
+        PasajeroReservaId   = t.PasajeroReservaId,
+        CodigoTiquete       = t.CodigoTiquete.Valor,
+        AsientoConfirmadoId = t.AsientoConfirmadoId,
+        FechaEmision        = t.FechaEmision.Valor,
+        Estado              = t.Estado.Valor
+    };
 }

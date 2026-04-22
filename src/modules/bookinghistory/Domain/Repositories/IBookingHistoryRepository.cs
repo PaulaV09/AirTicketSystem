@@ -1,11 +1,12 @@
 // src/modules/bookinghistory/Domain/Repositories/IBookingHistoryRepository.cs
-using AirTicketSystem.shared.contracts;
-using AirTicketSystem.modules.bookinghistory.Infrastructure.entity;
+using AirTicketSystem.modules.bookinghistory.Domain.aggregate;
 
 namespace AirTicketSystem.modules.bookinghistory.Domain.Repositories;
 
-public interface IBookingHistoryRepository : IRepository<BookingHistoryEntity>
+public interface IBookingHistoryRepository
 {
-    Task<IEnumerable<BookingHistoryEntity>> GetByReservaAsync(int reservaId);
-    Task<BookingHistoryEntity?> GetUltimoCambioByReservaAsync(int reservaId);
+    Task<BookingHistory?> FindByIdAsync(int id);
+    Task<IReadOnlyCollection<BookingHistory>> FindByReservaAsync(int reservaId);
+    Task<BookingHistory?> FindUltimoCambioByReservaAsync(int reservaId);
+    Task SaveAsync(BookingHistory history);
 }

@@ -24,6 +24,14 @@ public sealed class HoraEmbarcBoardingPass
         return new HoraEmbarcBoardingPass(valor);
     }
 
+    // Bypasses the 30-60 min window rule — only for reconstituting from DB-stored values.
+    public static HoraEmbarcBoardingPass Reconstituir(DateTime valor)
+    {
+        if (valor == default)
+            throw new ArgumentException("La hora de embarque no puede estar vacía.");
+        return new HoraEmbarcBoardingPass(valor);
+    }
+
     public bool YaComenzo => DateTime.UtcNow >= Valor;
 
     public int MinutosRestantes

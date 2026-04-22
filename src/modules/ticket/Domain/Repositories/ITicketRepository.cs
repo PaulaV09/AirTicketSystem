@@ -1,15 +1,17 @@
 // src/modules/ticket/Domain/Repositories/ITicketRepository.cs
-using AirTicketSystem.shared.contracts;
-using AirTicketSystem.modules.ticket.Infrastructure.entity;
+using AirTicketSystem.modules.ticket.Domain.aggregate;
 
 namespace AirTicketSystem.modules.ticket.Domain.Repositories;
 
-public interface ITicketRepository : IRepository<TicketEntity>
+public interface ITicketRepository
 {
-    Task<TicketEntity?> GetByCodigoTiqueteAsync(string codigoTiquete);
-    Task<TicketEntity?> GetByPasajeroReservaAsync(int pasajeroReservaId);
-    Task<IEnumerable<TicketEntity>> GetByEstadoAsync(string estado);
-    Task<IEnumerable<TicketEntity>> GetByVueloAsync(int vueloId);
+    Task<Ticket?> FindByIdAsync(int id);
+    Task<Ticket?> FindByCodigoTiqueteAsync(string codigoTiquete);
+    Task<Ticket?> FindByPasajeroReservaAsync(int pasajeroReservaId);
+    Task<IReadOnlyCollection<Ticket>> FindByEstadoAsync(string estado);
+    Task<IReadOnlyCollection<Ticket>> FindByVueloAsync(int vueloId);
     Task<bool> ExistsByCodigoTiqueteAsync(string codigoTiquete);
     Task<bool> ExistsByPasajeroReservaAsync(int pasajeroReservaId);
+    Task SaveAsync(Ticket ticket);
+    Task UpdateAsync(Ticket ticket);
 }

@@ -143,6 +143,38 @@ public sealed class Booking
 
     public int HorasParaExpirar => FechaExpiracion.HorasRestantes;
 
+    public static Booking Reconstituir(
+        int id,
+        int clienteId,
+        int vueloId,
+        int tarifaId,
+        string codigoReserva,
+        DateTime fechaReserva,
+        DateTime fechaExpiracion,
+        string estado,
+        decimal valorTotal,
+        string? observaciones)
+    {
+        var booking = new Booking
+        {
+            ClienteId      = clienteId,
+            VueloId        = vueloId,
+            TarifaId       = tarifaId,
+            CodigoReserva  = CodigoReservaBooking.Crear(codigoReserva),
+            FechaReserva   = FechaReservaBooking.Crear(fechaReserva),
+            FechaExpiracion = FechaExpiracionBooking.Reconstituir(fechaExpiracion),
+            Estado         = EstadoBooking.Crear(estado),
+            ValorTotal     = ValorTotalBooking.Crear(valorTotal),
+            Observaciones  = observaciones is not null
+                ? ObservacionesBooking.Crear(observaciones)
+                : null
+        };
+        booking.Id = id;
+        return booking;
+    }
+
+    public void EstablecerId(int id) => Id = id;
+
     public override string ToString() =>
         $"[{CodigoReserva}] — {Estado} | {ValorTotal}";
 }

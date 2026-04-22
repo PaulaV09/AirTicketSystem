@@ -126,6 +126,28 @@ public sealed class Ticket
     public bool FueAbordado =>
         Estado.Valor == "ABORDADO" || Estado.Valor == "USADO";
 
+    public static Ticket Reconstituir(
+        int id,
+        int pasajeroReservaId,
+        int? asientoConfirmadoId,
+        string codigoTiquete,
+        DateTime fechaEmision,
+        string estado)
+    {
+        var ticket = new Ticket
+        {
+            PasajeroReservaId   = pasajeroReservaId,
+            AsientoConfirmadoId = asientoConfirmadoId,
+            CodigoTiquete       = CodigoTiqueteTicket.Crear(codigoTiquete),
+            FechaEmision        = FechaEmisionTicket.Crear(fechaEmision),
+            Estado              = EstadoTicket.Crear(estado)
+        };
+        ticket.Id = id;
+        return ticket;
+    }
+
+    public void EstablecerId(int id) => Id = id;
+
     public override string ToString() =>
         $"[{CodigoTiquete}] — {Estado} | " +
         $"Emitido: {FechaEmision.EnFormatoCorto}";
