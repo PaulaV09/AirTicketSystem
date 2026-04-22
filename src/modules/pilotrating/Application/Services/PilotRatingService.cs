@@ -1,11 +1,11 @@
 // src/modules/pilotrating/Application/Services/PilotRatingService.cs
 using AirTicketSystem.modules.pilotrating.Application.Interfaces;
 using AirTicketSystem.modules.pilotrating.Application.UseCases;
-using AirTicketSystem.modules.pilotrating.Infrastructure.entity;
+using AirTicketSystem.modules.pilotrating.Domain.aggregate;
 
 namespace AirTicketSystem.modules.pilotrating.Application.Services;
 
-public class PilotRatingService : IPilotRatingService
+public sealed class PilotRatingService : IPilotRatingService
 {
     private readonly CreatePilotRatingUseCase _create;
     private readonly GetPilotRatingByIdUseCase _getById;
@@ -24,34 +24,33 @@ public class PilotRatingService : IPilotRatingService
         RenewPilotRatingUseCase renew,
         DeletePilotRatingUseCase delete)
     {
-        _create      = create;
-        _getById     = getById;
+        _create       = create;
+        _getById      = getById;
         _getByLicense = getByLicense;
-        _getByModel  = getByModel;
-        _getVigentes = getVigentes;
-        _renew       = renew;
-        _delete      = delete;
+        _getByModel   = getByModel;
+        _getVigentes  = getVigentes;
+        _renew        = renew;
+        _delete       = delete;
     }
 
-    public Task<PilotRatingEntity> CreateAsync(
+    public Task<PilotRating> CreateAsync(
         int licenciaId, int modeloAvionId,
         DateOnly fechaHabilitacion, DateOnly fechaVencimiento)
-        => _create.ExecuteAsync(
-            licenciaId, modeloAvionId, fechaHabilitacion, fechaVencimiento);
+        => _create.ExecuteAsync(licenciaId, modeloAvionId, fechaHabilitacion, fechaVencimiento);
 
-    public Task<PilotRatingEntity?> GetByIdAsync(int id)
-        => _getById.ExecuteAsync(id)!;
+    public Task<PilotRating> GetByIdAsync(int id)
+        => _getById.ExecuteAsync(id);
 
-    public Task<IEnumerable<PilotRatingEntity>> GetByLicenseAsync(int licenciaId)
+    public Task<IReadOnlyCollection<PilotRating>> GetByLicenseAsync(int licenciaId)
         => _getByLicense.ExecuteAsync(licenciaId);
 
-    public Task<IEnumerable<PilotRatingEntity>> GetByAircraftModelAsync(int modeloAvionId)
+    public Task<IReadOnlyCollection<PilotRating>> GetByAircraftModelAsync(int modeloAvionId)
         => _getByModel.ExecuteAsync(modeloAvionId);
 
-    public Task<IEnumerable<PilotRatingEntity>> GetVigentesAsync()
+    public Task<IReadOnlyCollection<PilotRating>> GetVigentesAsync()
         => _getVigentes.ExecuteAsync();
 
-    public Task<PilotRatingEntity> RenewAsync(int id, DateOnly nuevaFechaVencimiento)
+    public Task<PilotRating> RenewAsync(int id, DateOnly nuevaFechaVencimiento)
         => _renew.ExecuteAsync(id, nuevaFechaVencimiento);
 
     public Task DeleteAsync(int id) => _delete.ExecuteAsync(id);

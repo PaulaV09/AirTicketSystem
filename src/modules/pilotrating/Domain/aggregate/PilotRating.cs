@@ -41,6 +41,34 @@ public sealed class PilotRating
         };
     }
 
+    public static PilotRating Reconstituir(
+        int id,
+        int licenciaId,
+        int modeloAvionId,
+        DateOnly fechaHabilitacion,
+        DateOnly fechaVencimiento)
+    {
+        if (id <= 0)
+            throw new ArgumentException("El ID de la habilitación no es válido.");
+
+        return new PilotRating
+        {
+            Id                = id,
+            LicenciaId        = licenciaId,
+            ModeloAvionId     = modeloAvionId,
+            FechaHabilitacion = FechaHabilitacionPilotRating.Crear(fechaHabilitacion),
+            FechaVencimiento  = FechaVencimientoPilotRating.Crear(fechaVencimiento)
+        };
+    }
+
+    public void EstablecerId(int id)
+    {
+        if (id <= 0)
+            throw new ArgumentException("El ID de la habilitación no es válido.");
+
+        Id = id;
+    }
+
     public void Renovar(DateOnly nuevaFechaVencimiento)
     {
         var nuevaFecha = FechaVencimientoPilotRating.Crear(nuevaFechaVencimiento);
@@ -60,10 +88,6 @@ public sealed class PilotRating
 
     public int DiasHastaVencimiento => FechaVencimiento.DiasRestantes;
 
-    /// <summary>
-    /// Un piloto solo puede volar un modelo si su habilitación
-    /// para ese modelo está vigente.
-    /// </summary>
     public bool HabilitaParaVolar => EstaVigente;
 
     public override string ToString() =>

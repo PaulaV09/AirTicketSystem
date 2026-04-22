@@ -3,18 +3,16 @@ using AirTicketSystem.modules.pilotrating.Domain.Repositories;
 
 namespace AirTicketSystem.modules.pilotrating.Application.UseCases;
 
-public class DeletePilotRatingUseCase
+public sealed class DeletePilotRatingUseCase
 {
     private readonly IPilotRatingRepository _repository;
 
     public DeletePilotRatingUseCase(IPilotRatingRepository repository)
-    {
-        _repository = repository;
-    }
+        => _repository = repository;
 
-    public async Task ExecuteAsync(int id)
+    public async Task ExecuteAsync(int id, CancellationToken cancellationToken = default)
     {
-        _ = await _repository.GetByIdAsync(id)
+        _ = await _repository.FindByIdAsync(id)
             ?? throw new KeyNotFoundException(
                 $"No se encontró una habilitación con ID {id}.");
 

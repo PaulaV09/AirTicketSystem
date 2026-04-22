@@ -16,6 +16,42 @@ public sealed class PilotLicense
 
     private PilotLicense() { }
 
+    public static PilotLicense Reconstituir(
+        int id,
+        int trabajadorId,
+        string numeroLicencia,
+        string tipoLicencia,
+        DateOnly fechaExpedicion,
+        DateOnly fechaVencimiento,
+        string autoridadEmisora,
+        bool activa)
+    {
+        if (id <= 0)
+            throw new ArgumentException("El ID de la licencia no es válido.");
+
+        return new PilotLicense
+        {
+            Id               = id,
+            TrabajadorId     = trabajadorId,
+            NumeroLicencia   = NumeroLicenciaPilotLicense.Crear(numeroLicencia),
+            TipoLicencia     = TipoLicenciaPilotLicense.Crear(tipoLicencia),
+            FechaExpedicion  = FechaExpedicionPilotLicense.Crear(fechaExpedicion),
+            FechaVencimiento = FechaVencimientoPilotLicense.Crear(fechaVencimiento),
+            AutoridadEmisora = AutoridadEmisoraPilotLicense.Crear(autoridadEmisora),
+            Activa           = activa
+                ? ActivaPilotLicense.Activa()
+                : ActivaPilotLicense.Inactiva()
+        };
+    }
+
+    public void EstablecerId(int id)
+    {
+        if (id <= 0)
+            throw new ArgumentException("El ID de la licencia no es válido.");
+
+        Id = id;
+    }
+
     public static PilotLicense Crear(
         int trabajadorId,
         string numeroLicencia,

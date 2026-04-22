@@ -1,11 +1,11 @@
 // src/modules/pilotlicense/Application/Services/PilotLicenseService.cs
 using AirTicketSystem.modules.pilotlicense.Application.Interfaces;
 using AirTicketSystem.modules.pilotlicense.Application.UseCases;
-using AirTicketSystem.modules.pilotlicense.Infrastructure.entity;
+using AirTicketSystem.modules.pilotlicense.Domain.aggregate;
 
 namespace AirTicketSystem.modules.pilotlicense.Application.Services;
 
-public class PilotLicenseService : IPilotLicenseService
+public sealed class PilotLicenseService : IPilotLicenseService
 {
     private readonly CreatePilotLicenseUseCase _create;
     private readonly GetPilotLicenseByIdUseCase _getById;
@@ -28,18 +28,18 @@ public class PilotLicenseService : IPilotLicenseService
         ReactivatePilotLicenseUseCase reactivate,
         DeletePilotLicenseUseCase delete)
     {
-        _create        = create;
-        _getById       = getById;
-        _getByWorker   = getByWorker;
-        _getVigentes   = getVigentes;
+        _create          = create;
+        _getById         = getById;
+        _getByWorker     = getByWorker;
+        _getVigentes     = getVigentes;
         _getExpiringSoon = getExpiringSoon;
-        _renew         = renew;
-        _suspend       = suspend;
-        _reactivate    = reactivate;
-        _delete        = delete;
+        _renew           = renew;
+        _suspend         = suspend;
+        _reactivate      = reactivate;
+        _delete          = delete;
     }
 
-    public Task<PilotLicenseEntity> CreateAsync(
+    public Task<PilotLicense> CreateAsync(
         int trabajadorId, string numeroLicencia, string tipoLicencia,
         DateOnly fechaExpedicion, DateOnly fechaVencimiento,
         string autoridadEmisora)
@@ -47,22 +47,22 @@ public class PilotLicenseService : IPilotLicenseService
             trabajadorId, numeroLicencia, tipoLicencia,
             fechaExpedicion, fechaVencimiento, autoridadEmisora);
 
-    public Task<PilotLicenseEntity?> GetByIdAsync(int id)
-        => _getById.ExecuteAsync(id)!;
+    public Task<PilotLicense> GetByIdAsync(int id)
+        => _getById.ExecuteAsync(id);
 
-    public Task<IEnumerable<PilotLicenseEntity>> GetByWorkerAsync(int trabajadorId)
+    public Task<IReadOnlyCollection<PilotLicense>> GetByWorkerAsync(int trabajadorId)
         => _getByWorker.ExecuteAsync(trabajadorId);
 
-    public Task<IEnumerable<PilotLicenseEntity>> GetVigentesAsync()
+    public Task<IReadOnlyCollection<PilotLicense>> GetVigentesAsync()
         => _getVigentes.ExecuteAsync();
 
-    public Task<IEnumerable<PilotLicenseEntity>> GetProximasAVencerAsync(int diasUmbral)
+    public Task<IReadOnlyCollection<PilotLicense>> GetProximasAVencerAsync(int diasUmbral)
         => _getExpiringSoon.ExecuteAsync(diasUmbral);
 
-    public Task<PilotLicenseEntity> RenewAsync(int id, DateOnly nuevaFechaVencimiento)
+    public Task<PilotLicense> RenewAsync(int id, DateOnly nuevaFechaVencimiento)
         => _renew.ExecuteAsync(id, nuevaFechaVencimiento);
 
-    public Task SuspendAsync(int id) => _suspend.ExecuteAsync(id);
+    public Task SuspendAsync(int id)    => _suspend.ExecuteAsync(id);
     public Task ReactivateAsync(int id) => _reactivate.ExecuteAsync(id);
-    public Task DeleteAsync(int id) => _delete.ExecuteAsync(id);
+    public Task DeleteAsync(int id)     => _delete.ExecuteAsync(id);
 }

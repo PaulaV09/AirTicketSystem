@@ -1,24 +1,22 @@
 // src/modules/pilotlicense/Application/UseCases/GetPilotLicenseByIdUseCase.cs
+using AirTicketSystem.modules.pilotlicense.Domain.aggregate;
 using AirTicketSystem.modules.pilotlicense.Domain.Repositories;
-using AirTicketSystem.modules.pilotlicense.Infrastructure.entity;
 
 namespace AirTicketSystem.modules.pilotlicense.Application.UseCases;
 
-public class GetPilotLicenseByIdUseCase
+public sealed class GetPilotLicenseByIdUseCase
 {
     private readonly IPilotLicenseRepository _repository;
 
     public GetPilotLicenseByIdUseCase(IPilotLicenseRepository repository)
-    {
-        _repository = repository;
-    }
+        => _repository = repository;
 
-    public async Task<PilotLicenseEntity> ExecuteAsync(int id)
+    public async Task<PilotLicense> ExecuteAsync(int id, CancellationToken cancellationToken = default)
     {
         if (id <= 0)
             throw new ArgumentException("El ID de la licencia no es válido.");
 
-        return await _repository.GetByIdAsync(id)
+        return await _repository.FindByIdAsync(id)
             ?? throw new KeyNotFoundException(
                 $"No se encontró una licencia con ID {id}.");
     }

@@ -1,14 +1,17 @@
 // src/modules/pilotlicense/Domain/Repositories/IPilotLicenseRepository.cs
-using AirTicketSystem.shared.contracts;
-using AirTicketSystem.modules.pilotlicense.Infrastructure.entity;
+using AirTicketSystem.modules.pilotlicense.Domain.aggregate;
 
 namespace AirTicketSystem.modules.pilotlicense.Domain.Repositories;
 
-public interface IPilotLicenseRepository : IRepository<PilotLicenseEntity>
+public interface IPilotLicenseRepository
 {
-    Task<PilotLicenseEntity?> GetByNumeroLicenciaAsync(string numeroLicencia);
-    Task<IEnumerable<PilotLicenseEntity>> GetByTrabajadorAsync(int trabajadorId);
-    Task<IEnumerable<PilotLicenseEntity>> GetVigentesAsync();
-    Task<IEnumerable<PilotLicenseEntity>> GetProximasAVencerAsync(int diasUmbral);
+    Task<PilotLicense?> FindByIdAsync(int id);
+    Task<IReadOnlyCollection<PilotLicense>> FindAllAsync();
+    Task<IReadOnlyCollection<PilotLicense>> FindByTrabajadorAsync(int trabajadorId);
+    Task<IReadOnlyCollection<PilotLicense>> FindVigentesAsync();
+    Task<IReadOnlyCollection<PilotLicense>> FindProximasAVencerAsync(int diasUmbral);
     Task<bool> ExistsByNumeroLicenciaAsync(string numeroLicencia);
+    Task SaveAsync(PilotLicense license);
+    Task UpdateAsync(PilotLicense license);
+    Task DeleteAsync(int id);
 }

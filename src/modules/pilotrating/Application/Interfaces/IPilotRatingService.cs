@@ -1,17 +1,17 @@
 // src/modules/pilotrating/Application/Interfaces/IPilotRatingService.cs
-using AirTicketSystem.modules.pilotrating.Infrastructure.entity;
+using AirTicketSystem.modules.pilotrating.Domain.aggregate;
 
 namespace AirTicketSystem.modules.pilotrating.Application.Interfaces;
 
 public interface IPilotRatingService
 {
-    Task<PilotRatingEntity> CreateAsync(
+    Task<PilotRating> CreateAsync(
         int licenciaId, int modeloAvionId,
         DateOnly fechaHabilitacion, DateOnly fechaVencimiento);
-    Task<PilotRatingEntity?> GetByIdAsync(int id);
-    Task<IEnumerable<PilotRatingEntity>> GetByLicenseAsync(int licenciaId);
-    Task<IEnumerable<PilotRatingEntity>> GetByAircraftModelAsync(int modeloAvionId);
-    Task<IEnumerable<PilotRatingEntity>> GetVigentesAsync();
-    Task<PilotRatingEntity> RenewAsync(int id, DateOnly nuevaFechaVencimiento);
+    Task<PilotRating> GetByIdAsync(int id);
+    Task<IReadOnlyCollection<PilotRating>> GetByLicenseAsync(int licenciaId);
+    Task<IReadOnlyCollection<PilotRating>> GetByAircraftModelAsync(int modeloAvionId);
+    Task<IReadOnlyCollection<PilotRating>> GetVigentesAsync();
+    Task<PilotRating> RenewAsync(int id, DateOnly nuevaFechaVencimiento);
     Task DeleteAsync(int id);
 }

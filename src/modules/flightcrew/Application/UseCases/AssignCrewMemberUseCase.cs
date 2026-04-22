@@ -45,7 +45,7 @@ public sealed class AssignCrewMemberUseCase
             ?? throw new KeyNotFoundException(
                 $"No se encontró un trabajador con ID {trabajadorId}.");
 
-        if (!trabajador.Activo)
+        if (!trabajador.EstaActivo)
             throw new InvalidOperationException(
                 "No se puede asignar un trabajador inactivo a un vuelo.");
 
@@ -59,7 +59,7 @@ public sealed class AssignCrewMemberUseCase
             var hoy = DateOnly.FromDateTime(DateTime.Today);
 
             var tieneVigenteComercial = licencias.Any(l =>
-                l.Activa &&
+                l.Activa.Valor &&
                 l.FechaVencimiento.Valor >= hoy &&
                 (l.TipoLicencia.Valor == "CPL" ||
                  l.TipoLicencia.Valor == "ATPL"));

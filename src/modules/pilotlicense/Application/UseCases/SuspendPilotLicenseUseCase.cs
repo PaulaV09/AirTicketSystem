@@ -3,26 +3,20 @@ using AirTicketSystem.modules.pilotlicense.Domain.Repositories;
 
 namespace AirTicketSystem.modules.pilotlicense.Application.UseCases;
 
-public class SuspendPilotLicenseUseCase
+public sealed class SuspendPilotLicenseUseCase
 {
     private readonly IPilotLicenseRepository _repository;
 
     public SuspendPilotLicenseUseCase(IPilotLicenseRepository repository)
-    {
-        _repository = repository;
-    }
+        => _repository = repository;
 
-    public async Task ExecuteAsync(int id)
+    public async Task ExecuteAsync(int id, CancellationToken cancellationToken = default)
     {
-        var licencia = await _repository.GetByIdAsync(id)
+        var licencia = await _repository.FindByIdAsync(id)
             ?? throw new KeyNotFoundException(
                 $"No se encontró una licencia con ID {id}.");
 
-        if (!licencia.Activa)
-            throw new InvalidOperationException(
-                "La licencia ya se encuentra suspendida.");
-
-        licencia.Activa = false;
+        licencia.Suspender();
         await _repository.UpdateAsync(licencia);
     }
 }

@@ -1,18 +1,17 @@
 // src/modules/pilotrating/Application/UseCases/GetViigenteRatingsUseCase.cs
+using AirTicketSystem.modules.pilotrating.Domain.aggregate;
 using AirTicketSystem.modules.pilotrating.Domain.Repositories;
-using AirTicketSystem.modules.pilotrating.Infrastructure.entity;
 
 namespace AirTicketSystem.modules.pilotrating.Application.UseCases;
 
-public class GetVigenteRatingsUseCase
+public sealed class GetVigenteRatingsUseCase
 {
     private readonly IPilotRatingRepository _repository;
 
     public GetVigenteRatingsUseCase(IPilotRatingRepository repository)
-    {
-        _repository = repository;
-    }
+        => _repository = repository;
 
-    public async Task<IEnumerable<PilotRatingEntity>> ExecuteAsync()
-        => await _repository.GetVigentesAsync();
+    public Task<IReadOnlyCollection<PilotRating>> ExecuteAsync(
+        CancellationToken cancellationToken = default)
+        => _repository.FindVigentesAsync();
 }
