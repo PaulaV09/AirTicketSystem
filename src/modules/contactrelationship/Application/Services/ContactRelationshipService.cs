@@ -1,11 +1,11 @@
 // src/modules/contactrelationship/Application/Services/ContactRelationshipService.cs
 using AirTicketSystem.modules.contactrelationship.Application.Interfaces;
 using AirTicketSystem.modules.contactrelationship.Application.UseCases;
-using AirTicketSystem.modules.contactrelationship.Infrastructure.entity;
+using AirTicketSystem.modules.contactrelationship.Domain.aggregate;
 
 namespace AirTicketSystem.modules.contactrelationship.Application.Services;
 
-public class ContactRelationshipService : IContactRelationshipService
+public sealed class ContactRelationshipService : IContactRelationshipService
 {
     private readonly CreateContactRelationshipUseCase _create;
     private readonly GetContactRelationshipByIdUseCase _getById;
@@ -27,17 +27,17 @@ public class ContactRelationshipService : IContactRelationshipService
         _delete  = delete;
     }
 
-    public Task<ContactRelationshipEntity> CreateAsync(string nombre)
-        => _create.ExecuteAsync(nombre);
+    public Task<ContactRelationship> CreateAsync(string descripcion)
+        => _create.ExecuteAsync(descripcion);
 
-    public Task<ContactRelationshipEntity?> GetByIdAsync(int id)
-        => _getById.ExecuteAsync(id)!;
+    public Task<ContactRelationship> GetByIdAsync(int id)
+        => _getById.ExecuteAsync(id);
 
-    public Task<IEnumerable<ContactRelationshipEntity>> GetAllAsync()
+    public Task<IReadOnlyCollection<ContactRelationship>> GetAllAsync()
         => _getAll.ExecuteAsync();
 
-    public Task<ContactRelationshipEntity> UpdateAsync(int id, string nombre)
-        => _update.ExecuteAsync(id, nombre);
+    public Task<ContactRelationship> UpdateAsync(int id, string descripcion)
+        => _update.ExecuteAsync(id, descripcion);
 
     public Task DeleteAsync(int id)
         => _delete.ExecuteAsync(id);

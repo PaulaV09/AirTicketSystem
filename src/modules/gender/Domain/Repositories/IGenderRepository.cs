@@ -1,11 +1,14 @@
 // src/modules/gender/Domain/Repositories/IGenderRepository.cs
-using AirTicketSystem.shared.contracts;
-using AirTicketSystem.modules.gender.Infrastructure.entity;
+using AirTicketSystem.modules.gender.Domain.aggregate;
 
 namespace AirTicketSystem.modules.gender.Domain.Repositories;
 
-public interface IGenderRepository : IRepository<GenderEntity>
+public interface IGenderRepository
 {
-    Task<GenderEntity?> GetByNombreAsync(string nombre);
+    Task<Gender?> FindByIdAsync(int id);
+    Task<IReadOnlyCollection<Gender>> FindAllAsync();
     Task<bool> ExistsByNombreAsync(string nombre);
+    Task SaveAsync(Gender gender);
+    Task UpdateAsync(Gender gender);
+    Task DeleteAsync(int id);
 }

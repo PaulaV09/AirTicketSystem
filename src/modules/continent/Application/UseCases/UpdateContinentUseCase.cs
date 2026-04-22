@@ -1,11 +1,11 @@
 // src/modules/continent/Application/UseCases/UpdateContinentUseCase.cs
+using AirTicketSystem.modules.continent.Domain.aggregate;
 using AirTicketSystem.modules.continent.Domain.Repositories;
-using AirTicketSystem.modules.continent.Infrastructure.entity;
 using AirTicketSystem.modules.continent.Domain.ValueObjects;
 
 namespace AirTicketSystem.modules.continent.Application.UseCases;
 
-public class UpdateContinentUseCase
+public sealed class UpdateContinentUseCase
 {
     private readonly IContinentRepository _repository;
 
@@ -14,31 +14,33 @@ public class UpdateContinentUseCase
         _repository = repository;
     }
 
-    public async Task<ContinentEntity> ExecuteAsync(
-        int id, string nombre, string codigo)
+    public async Task<Continent> ExecuteAsync(
+        int id,
+        string nombre,
+        string codigo,
+        CancellationToken cancellationToken = default)
     {
-        var continente = await _repository.GetByIdAsync(id)
+        var continent = await _repository.FindByIdAsync(id)
             ?? throw new KeyNotFoundException(
                 $"No se encontró un continente con ID {id}.");
 
         var nombreVO = NombreContinent.Crear(nombre);
         var codigoVO = CodigoContinent.Crear(codigo);
 
-        // Verificar unicidad solo si el valor cambió
-        if (codigoVO.Valor != continente.Codigo &&
+        if (!string.Equals(codigoVO.Valor, continent.Codigo.Valor, StringComparison.OrdinalIgnoreCase) &&
             await _repository.ExistsByCodigoAsync(codigoVO.Valor))
             throw new InvalidOperationException(
                 $"Ya existe otro continente con el código '{codigoVO.Valor}'.");
 
-        if (nombreVO.Valor != continente.Nombre &&
+        if (!string.Equals(nombreVO.Valor, continent.Nombre.Valor, StringComparison.OrdinalIgnoreCase) &&
             await _repository.ExistsByNombreAsync(nombreVO.Valor))
             throw new InvalidOperationException(
                 $"Ya existe otro continente con el nombre '{nombreVO.Valor}'.");
 
-        continente.Nombre = nombreVO.Valor;
-        continente.Codigo = codigoVO.Valor;
+        continent.ActualizarNombre(nombreVO.Valor);
+        continent.ActualizarCodigo(codigoVO.Valor);
 
-        await _repository.UpdateAsync(continente);
-        return continente;
+        await _repository.UpdateAsync(continent);
+        return continent;
     }
 }

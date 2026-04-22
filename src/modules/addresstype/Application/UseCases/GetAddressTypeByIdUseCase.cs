@@ -1,10 +1,10 @@
 // src/modules/addresstype/Application/UseCases/GetAddressTypeByIdUseCase.cs
+using AirTicketSystem.modules.addresstype.Domain.aggregate;
 using AirTicketSystem.modules.addresstype.Domain.Repositories;
-using AirTicketSystem.modules.addresstype.Infrastructure.entity;
 
 namespace AirTicketSystem.modules.addresstype.Application.UseCases;
 
-public class GetAddressTypeByIdUseCase
+public sealed class GetAddressTypeByIdUseCase
 {
     private readonly IAddressTypeRepository _repository;
 
@@ -13,12 +13,11 @@ public class GetAddressTypeByIdUseCase
         _repository = repository;
     }
 
-    public async Task<AddressTypeEntity> ExecuteAsync(int id)
+    public async Task<AddressType> ExecuteAsync(
+        int id,
+        CancellationToken cancellationToken = default)
     {
-        if (id <= 0)
-            throw new ArgumentException("El ID del tipo de dirección no es válido.");
-
-        return await _repository.GetByIdAsync(id)
+        return await _repository.FindByIdAsync(id)
             ?? throw new KeyNotFoundException(
                 $"No se encontró un tipo de dirección con ID {id}.");
     }

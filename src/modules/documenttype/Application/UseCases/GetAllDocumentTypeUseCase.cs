@@ -1,10 +1,10 @@
 // src/modules/documenttype/Application/UseCases/GetAllDocumentTypesUseCase.cs
+using AirTicketSystem.modules.documenttype.Domain.aggregate;
 using AirTicketSystem.modules.documenttype.Domain.Repositories;
-using AirTicketSystem.modules.documenttype.Infrastructure.entity;
 
 namespace AirTicketSystem.modules.documenttype.Application.UseCases;
 
-public class GetAllDocumentTypesUseCase
+public sealed class GetAllDocumentTypesUseCase
 {
     private readonly IDocumentTypeRepository _repository;
 
@@ -13,6 +13,9 @@ public class GetAllDocumentTypesUseCase
         _repository = repository;
     }
 
-    public async Task<IEnumerable<DocumentTypeEntity>> ExecuteAsync()
-        => (await _repository.GetAllAsync()).OrderBy(dt => dt.Descripcion);
+    public async Task<IReadOnlyCollection<DocumentType>> ExecuteAsync(
+        CancellationToken cancellationToken = default)
+    {
+        return await _repository.FindAllAsync();
+    }
 }

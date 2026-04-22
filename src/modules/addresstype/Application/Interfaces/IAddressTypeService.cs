@@ -1,13 +1,13 @@
 // src/modules/addresstype/Application/Interfaces/IAddressTypeService.cs
-using AirTicketSystem.modules.addresstype.Infrastructure.entity;
+using AirTicketSystem.modules.addresstype.Domain.aggregate;
 
 namespace AirTicketSystem.modules.addresstype.Application.Interfaces;
 
 public interface IAddressTypeService
 {
-    Task<AddressTypeEntity> CreateAsync(string nombre);
-    Task<AddressTypeEntity?> GetByIdAsync(int id);
-    Task<IEnumerable<AddressTypeEntity>> GetAllAsync();
-    Task<AddressTypeEntity> UpdateAsync(int id, string nombre);
+    Task<AddressType> CreateAsync(string descripcion);
+    Task<AddressType> GetByIdAsync(int id);
+    Task<IReadOnlyCollection<AddressType>> GetAllAsync();
+    Task<AddressType> UpdateAsync(int id, string descripcion);
     Task DeleteAsync(int id);
 }

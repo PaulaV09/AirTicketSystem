@@ -3,7 +3,7 @@ using AirTicketSystem.modules.addresstype.Domain.Repositories;
 
 namespace AirTicketSystem.modules.addresstype.Application.UseCases;
 
-public class DeleteAddressTypeUseCase
+public sealed class DeleteAddressTypeUseCase
 {
     private readonly IAddressTypeRepository _repository;
 
@@ -12,9 +12,11 @@ public class DeleteAddressTypeUseCase
         _repository = repository;
     }
 
-    public async Task ExecuteAsync(int id)
+    public async Task ExecuteAsync(
+        int id,
+        CancellationToken cancellationToken = default)
     {
-        _ = await _repository.GetByIdAsync(id)
+        _ = await _repository.FindByIdAsync(id)
             ?? throw new KeyNotFoundException(
                 $"No se encontró un tipo de dirección con ID {id}.");
 

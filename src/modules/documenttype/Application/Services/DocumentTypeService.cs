@@ -1,11 +1,11 @@
 // src/modules/documenttype/Application/Services/DocumentTypeService.cs
 using AirTicketSystem.modules.documenttype.Application.Interfaces;
 using AirTicketSystem.modules.documenttype.Application.UseCases;
-using AirTicketSystem.modules.documenttype.Infrastructure.entity;
+using AirTicketSystem.modules.documenttype.Domain.aggregate;
 
 namespace AirTicketSystem.modules.documenttype.Application.Services;
 
-public class DocumentTypeService : IDocumentTypeService
+public sealed class DocumentTypeService : IDocumentTypeService
 {
     private readonly CreateDocumentTypeUseCase _create;
     private readonly GetDocumentTypeByIdUseCase _getById;
@@ -27,17 +27,17 @@ public class DocumentTypeService : IDocumentTypeService
         _delete  = delete;
     }
 
-    public Task<DocumentTypeEntity> CreateAsync(string nombre)
-        => _create.ExecuteAsync(nombre);
+    public Task<DocumentType> CreateAsync(string descripcion)
+        => _create.ExecuteAsync(descripcion);
 
-    public Task<DocumentTypeEntity?> GetByIdAsync(int id)
-        => _getById.ExecuteAsync(id)!;
+    public Task<DocumentType> GetByIdAsync(int id)
+        => _getById.ExecuteAsync(id);
 
-    public Task<IEnumerable<DocumentTypeEntity>> GetAllAsync()
+    public Task<IReadOnlyCollection<DocumentType>> GetAllAsync()
         => _getAll.ExecuteAsync();
 
-    public Task<DocumentTypeEntity> UpdateAsync(int id, string nombre)
-        => _update.ExecuteAsync(id, nombre);
+    public Task<DocumentType> UpdateAsync(int id, string descripcion)
+        => _update.ExecuteAsync(id, descripcion);
 
     public Task DeleteAsync(int id)
         => _delete.ExecuteAsync(id);

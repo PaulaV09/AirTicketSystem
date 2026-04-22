@@ -1,11 +1,11 @@
 // src/modules/continent/Application/Services/ContinentService.cs
 using AirTicketSystem.modules.continent.Application.Interfaces;
 using AirTicketSystem.modules.continent.Application.UseCases;
-using AirTicketSystem.modules.continent.Infrastructure.entity;
+using AirTicketSystem.modules.continent.Domain.aggregate;
 
 namespace AirTicketSystem.modules.continent.Application.Services;
 
-public class ContinentService : IContinentService
+public sealed class ContinentService : IContinentService
 {
     private readonly CreateContinentUseCase _create;
     private readonly GetContinentByIdUseCase _getById;
@@ -27,16 +27,16 @@ public class ContinentService : IContinentService
         _delete  = delete;
     }
 
-    public Task<ContinentEntity> CreateAsync(string nombre, string codigo)
+    public Task<Continent> CreateAsync(string nombre, string codigo)
         => _create.ExecuteAsync(nombre, codigo);
 
-    public Task<ContinentEntity?> GetByIdAsync(int id)
-        => _getById.ExecuteAsync(id)!;
+    public Task<Continent> GetByIdAsync(int id)
+        => _getById.ExecuteAsync(id);
 
-    public Task<IEnumerable<ContinentEntity>> GetAllAsync()
+    public Task<IReadOnlyCollection<Continent>> GetAllAsync()
         => _getAll.ExecuteAsync();
 
-    public Task<ContinentEntity> UpdateAsync(int id, string nombre, string codigo)
+    public Task<Continent> UpdateAsync(int id, string nombre, string codigo)
         => _update.ExecuteAsync(id, nombre, codigo);
 
     public Task DeleteAsync(int id)

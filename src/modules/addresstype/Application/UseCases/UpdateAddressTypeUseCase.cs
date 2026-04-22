@@ -1,11 +1,11 @@
 // src/modules/addresstype/Application/UseCases/UpdateAddressTypeUseCase.cs
+using AirTicketSystem.modules.addresstype.Domain.aggregate;
 using AirTicketSystem.modules.addresstype.Domain.Repositories;
-using AirTicketSystem.modules.addresstype.Infrastructure.entity;
 using AirTicketSystem.modules.addresstype.Domain.ValueObjects;
 
 namespace AirTicketSystem.modules.addresstype.Application.UseCases;
 
-public class UpdateAddressTypeUseCase
+public sealed class UpdateAddressTypeUseCase
 {
     private readonly IAddressTypeRepository _repository;
 
@@ -14,21 +14,24 @@ public class UpdateAddressTypeUseCase
         _repository = repository;
     }
 
-    public async Task<AddressTypeEntity> ExecuteAsync(int id, string nombre)
+    public async Task<AddressType> ExecuteAsync(
+        int id,
+        string descripcion,
+        CancellationToken cancellationToken = default)
     {
-        var tipoDireccion = await _repository.GetByIdAsync(id)
+        var addressType = await _repository.FindByIdAsync(id)
             ?? throw new KeyNotFoundException(
                 $"No se encontró un tipo de dirección con ID {id}.");
 
-        var nombreVO = DescripcionAddressType.Crear(nombre);
+        var descripcionVO = DescripcionAddressType.Crear(descripcion);
 
-        if (nombreVO.Valor != tipoDireccion.Descripcion &&
-            await _repository.ExistsByDescripcionAsync(nombreVO.Valor))
+        if (!string.Equals(descripcionVO.Valor, addressType.Descripcion.Valor, StringComparison.OrdinalIgnoreCase) &&
+            await _repository.ExistsByDescripcionAsync(descripcionVO.Valor))
             throw new InvalidOperationException(
-                $"Ya existe otro tipo de dirección con la descripción '{nombreVO.Valor}'.");
+                $"Ya existe otro tipo de dirección con la descripción '{descripcionVO.Valor}'.");
 
-        tipoDireccion.Descripcion = nombreVO.Valor;
-        await _repository.UpdateAsync(tipoDireccion);
-        return tipoDireccion;
+        addressType.ActualizarDescripcion(descripcionVO.Valor);
+        await _repository.UpdateAsync(addressType);
+        return addressType;
     }
 }

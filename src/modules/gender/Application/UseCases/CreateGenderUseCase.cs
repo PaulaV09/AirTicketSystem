@@ -1,11 +1,11 @@
 // src/modules/gender/Application/UseCases/CreateGenderUseCase.cs
+using AirTicketSystem.modules.gender.Domain.aggregate;
 using AirTicketSystem.modules.gender.Domain.Repositories;
-using AirTicketSystem.modules.gender.Infrastructure.entity;
 using AirTicketSystem.modules.gender.Domain.ValueObjects;
 
 namespace AirTicketSystem.modules.gender.Application.UseCases;
 
-public class CreateGenderUseCase
+public sealed class CreateGenderUseCase
 {
     private readonly IGenderRepository _repository;
 
@@ -14,7 +14,9 @@ public class CreateGenderUseCase
         _repository = repository;
     }
 
-    public async Task<GenderEntity> ExecuteAsync(string nombre)
+    public async Task<Gender> ExecuteAsync(
+        string nombre,
+        CancellationToken cancellationToken = default)
     {
         var nombreVO = NombreGender.Crear(nombre);
 
@@ -22,8 +24,8 @@ public class CreateGenderUseCase
             throw new InvalidOperationException(
                 $"Ya existe un género con el nombre '{nombreVO.Valor}'.");
 
-        var entity = new GenderEntity { Nombre = nombreVO.Valor };
-        await _repository.AddAsync(entity);
-        return entity;
+        var gender = Gender.Crear(nombreVO.Valor);
+        await _repository.SaveAsync(gender);
+        return gender;
     }
 }

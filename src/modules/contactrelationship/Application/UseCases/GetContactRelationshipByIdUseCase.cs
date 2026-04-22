@@ -1,10 +1,10 @@
 // src/modules/contactrelationship/Application/UseCases/GetContactRelationshipByIdUseCase.cs
+using AirTicketSystem.modules.contactrelationship.Domain.aggregate;
 using AirTicketSystem.modules.contactrelationship.Domain.Repositories;
-using AirTicketSystem.modules.contactrelationship.Infrastructure.entity;
 
 namespace AirTicketSystem.modules.contactrelationship.Application.UseCases;
 
-public class GetContactRelationshipByIdUseCase
+public sealed class GetContactRelationshipByIdUseCase
 {
     private readonly IContactRelationshipRepository _repository;
 
@@ -13,13 +13,12 @@ public class GetContactRelationshipByIdUseCase
         _repository = repository;
     }
 
-    public async Task<ContactRelationshipEntity> ExecuteAsync(int id)
+    public async Task<ContactRelationship> ExecuteAsync(
+        int id,
+        CancellationToken cancellationToken = default)
     {
-        if (id <= 0)
-            throw new ArgumentException("El ID del tipo de relación de contacto no es válido.");
-
-        return await _repository.GetByIdAsync(id)
+        return await _repository.FindByIdAsync(id)
             ?? throw new KeyNotFoundException(
-                $"No se encontró un tipo de relación de contacto con ID {id}.");
+                $"No se encontró una relación de contacto con ID {id}.");
     }
 }

@@ -1,11 +1,11 @@
 // src/modules/gender/Application/UseCases/UpdateGenderUseCase.cs
+using AirTicketSystem.modules.gender.Domain.aggregate;
 using AirTicketSystem.modules.gender.Domain.Repositories;
-using AirTicketSystem.modules.gender.Infrastructure.entity;
 using AirTicketSystem.modules.gender.Domain.ValueObjects;
 
 namespace AirTicketSystem.modules.gender.Application.UseCases;
 
-public class UpdateGenderUseCase
+public sealed class UpdateGenderUseCase
 {
     private readonly IGenderRepository _repository;
 
@@ -14,21 +14,24 @@ public class UpdateGenderUseCase
         _repository = repository;
     }
 
-    public async Task<GenderEntity> ExecuteAsync(int id, string nombre)
+    public async Task<Gender> ExecuteAsync(
+        int id,
+        string nombre,
+        CancellationToken cancellationToken = default)
     {
-        var genero = await _repository.GetByIdAsync(id)
+        var gender = await _repository.FindByIdAsync(id)
             ?? throw new KeyNotFoundException(
                 $"No se encontró un género con ID {id}.");
 
         var nombreVO = NombreGender.Crear(nombre);
 
-        if (nombreVO.Valor != genero.Nombre &&
+        if (!string.Equals(nombreVO.Valor, gender.Nombre.Valor, StringComparison.OrdinalIgnoreCase) &&
             await _repository.ExistsByNombreAsync(nombreVO.Valor))
             throw new InvalidOperationException(
                 $"Ya existe otro género con el nombre '{nombreVO.Valor}'.");
 
-        genero.Nombre = nombreVO.Valor;
-        await _repository.UpdateAsync(genero);
-        return genero;
+        gender.ActualizarNombre(nombreVO.Valor);
+        await _repository.UpdateAsync(gender);
+        return gender;
     }
 }

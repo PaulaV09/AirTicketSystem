@@ -1,11 +1,14 @@
 // src/modules/emailtype/Domain/Repositories/IEmailTypeRepository.cs
-using AirTicketSystem.shared.contracts;
-using AirTicketSystem.modules.emailtype.Infrastructure.entity;
+using AirTicketSystem.modules.emailtype.Domain.aggregate;
 
 namespace AirTicketSystem.modules.emailtype.Domain.Repositories;
 
-public interface IEmailTypeRepository : IRepository<EmailTypeEntity>
+public interface IEmailTypeRepository
 {
-    Task<EmailTypeEntity?> GetByDescripcionAsync(string descripcion);
+    Task<EmailType?> FindByIdAsync(int id);
+    Task<IReadOnlyCollection<EmailType>> FindAllAsync();
     Task<bool> ExistsByDescripcionAsync(string descripcion);
+    Task SaveAsync(EmailType emailType);
+    Task UpdateAsync(EmailType emailType);
+    Task DeleteAsync(int id);
 }

@@ -1,11 +1,11 @@
 // src/modules/documenttype/Application/UseCases/UpdateDocumentTypeUseCase.cs
+using AirTicketSystem.modules.documenttype.Domain.aggregate;
 using AirTicketSystem.modules.documenttype.Domain.Repositories;
-using AirTicketSystem.modules.documenttype.Infrastructure.entity;
 using AirTicketSystem.modules.documenttype.Domain.ValueObjects;
 
 namespace AirTicketSystem.modules.documenttype.Application.UseCases;
 
-public class UpdateDocumentTypeUseCase
+public sealed class UpdateDocumentTypeUseCase
 {
     private readonly IDocumentTypeRepository _repository;
 
@@ -14,21 +14,24 @@ public class UpdateDocumentTypeUseCase
         _repository = repository;
     }
 
-    public async Task<DocumentTypeEntity> ExecuteAsync(int id, string nombre)
+    public async Task<DocumentType> ExecuteAsync(
+        int id,
+        string descripcion,
+        CancellationToken cancellationToken = default)
     {
-        var tipoDocumento = await _repository.GetByIdAsync(id)
+        var documentType = await _repository.FindByIdAsync(id)
             ?? throw new KeyNotFoundException(
                 $"No se encontró un tipo de documento con ID {id}.");
 
-        var nombreVO = DescripcionDocumentType.Crear(nombre);
+        var descripcionVO = DescripcionDocumentType.Crear(descripcion);
 
-        if (nombreVO.Valor != tipoDocumento.Descripcion &&
-            await _repository.ExistsByDescripcionAsync(nombreVO.Valor))
+        if (!string.Equals(descripcionVO.Valor, documentType.Descripcion.Valor, StringComparison.OrdinalIgnoreCase) &&
+            await _repository.ExistsByDescripcionAsync(descripcionVO.Valor))
             throw new InvalidOperationException(
-                $"Ya existe otro tipo de documento con la descripción '{nombreVO.Valor}'.");
+                $"Ya existe otro tipo de documento con la descripción '{descripcionVO.Valor}'.");
 
-        tipoDocumento.Descripcion = nombreVO.Valor;
-        await _repository.UpdateAsync(tipoDocumento);
-        return tipoDocumento;
+        documentType.ActualizarDescripcion(descripcionVO.Valor);
+        await _repository.UpdateAsync(documentType);
+        return documentType;
     }
 }

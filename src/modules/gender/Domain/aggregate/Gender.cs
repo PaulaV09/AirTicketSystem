@@ -18,6 +18,24 @@ public sealed class Gender
         };
     }
 
+    public static Gender Reconstituir(int id, string nombre)
+    {
+        if (id <= 0)
+            throw new ArgumentException("El ID del género no es válido.");
+
+        var gender = Crear(nombre);
+        gender.Id = id;
+        return gender;
+    }
+
+    public void EstablecerId(int id)
+    {
+        if (id <= 0)
+            throw new ArgumentException("El ID del género no es válido.");
+
+        Id = id;
+    }
+
     public void ActualizarNombre(string nombre)
     {
         Nombre = NombreGender.Crear(nombre);

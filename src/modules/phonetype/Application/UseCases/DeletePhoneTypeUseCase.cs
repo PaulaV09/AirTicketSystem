@@ -3,7 +3,7 @@ using AirTicketSystem.modules.phonetype.Domain.Repositories;
 
 namespace AirTicketSystem.modules.phonetype.Application.UseCases;
 
-public class DeletePhoneTypeUseCase
+public sealed class DeletePhoneTypeUseCase
 {
     private readonly IPhoneTypeRepository _repository;
 
@@ -12,9 +12,11 @@ public class DeletePhoneTypeUseCase
         _repository = repository;
     }
 
-    public async Task ExecuteAsync(int id)
+    public async Task ExecuteAsync(
+        int id,
+        CancellationToken cancellationToken = default)
     {
-        _ = await _repository.GetByIdAsync(id)
+        _ = await _repository.FindByIdAsync(id)
             ?? throw new KeyNotFoundException(
                 $"No se encontró un tipo de teléfono con ID {id}.");
 

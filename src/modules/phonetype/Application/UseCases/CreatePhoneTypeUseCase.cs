@@ -1,11 +1,11 @@
 // src/modules/phonetype/Application/UseCases/CreatePhoneTypeUseCase.cs
+using AirTicketSystem.modules.phonetype.Domain.aggregate;
 using AirTicketSystem.modules.phonetype.Domain.Repositories;
-using AirTicketSystem.modules.phonetype.Infrastructure.entity;
 using AirTicketSystem.modules.phonetype.Domain.ValueObjects;
 
 namespace AirTicketSystem.modules.phonetype.Application.UseCases;
 
-public class CreatePhoneTypeUseCase
+public sealed class CreatePhoneTypeUseCase
 {
     private readonly IPhoneTypeRepository _repository;
 
@@ -14,16 +14,18 @@ public class CreatePhoneTypeUseCase
         _repository = repository;
     }
 
-    public async Task<PhoneTypeEntity> ExecuteAsync(string nombre)
+    public async Task<PhoneType> ExecuteAsync(
+        string descripcion,
+        CancellationToken cancellationToken = default)
     {
-        var nombreVO = DescripcionPhoneType.Crear(nombre);
+        var descripcionVO = DescripcionPhoneType.Crear(descripcion);
 
-        if (await _repository.ExistsByDescripcionAsync(nombreVO.Valor))
+        if (await _repository.ExistsByDescripcionAsync(descripcionVO.Valor))
             throw new InvalidOperationException(
-                $"Ya existe un tipo de teléfono con el nombre '{nombreVO.Valor}'.");
+                $"Ya existe un tipo de teléfono con la descripción '{descripcionVO.Valor}'.");
 
-        var entity = new PhoneTypeEntity { Descripcion = nombreVO.Valor };
-        await _repository.AddAsync(entity);
-        return entity;
+        var phoneType = PhoneType.Crear(descripcionVO.Valor);
+        await _repository.SaveAsync(phoneType);
+        return phoneType;
     }
 }

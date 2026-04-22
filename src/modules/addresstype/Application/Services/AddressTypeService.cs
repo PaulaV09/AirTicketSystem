@@ -1,11 +1,11 @@
 // src/modules/addresstype/Application/Services/AddressTypeService.cs
 using AirTicketSystem.modules.addresstype.Application.Interfaces;
 using AirTicketSystem.modules.addresstype.Application.UseCases;
-using AirTicketSystem.modules.addresstype.Infrastructure.entity;
+using AirTicketSystem.modules.addresstype.Domain.aggregate;
 
 namespace AirTicketSystem.modules.addresstype.Application.Services;
 
-public class AddressTypeService : IAddressTypeService
+public sealed class AddressTypeService : IAddressTypeService
 {
     private readonly CreateAddressTypeUseCase _create;
     private readonly GetAddressTypeByIdUseCase _getById;
@@ -27,17 +27,17 @@ public class AddressTypeService : IAddressTypeService
         _delete  = delete;
     }
 
-    public Task<AddressTypeEntity> CreateAsync(string nombre)
-        => _create.ExecuteAsync(nombre);
+    public Task<AddressType> CreateAsync(string descripcion)
+        => _create.ExecuteAsync(descripcion);
 
-    public Task<AddressTypeEntity?> GetByIdAsync(int id)
-        => _getById.ExecuteAsync(id)!;
+    public Task<AddressType> GetByIdAsync(int id)
+        => _getById.ExecuteAsync(id);
 
-    public Task<IEnumerable<AddressTypeEntity>> GetAllAsync()
+    public Task<IReadOnlyCollection<AddressType>> GetAllAsync()
         => _getAll.ExecuteAsync();
 
-    public Task<AddressTypeEntity> UpdateAsync(int id, string nombre)
-        => _update.ExecuteAsync(id, nombre);
+    public Task<AddressType> UpdateAsync(int id, string descripcion)
+        => _update.ExecuteAsync(id, descripcion);
 
     public Task DeleteAsync(int id)
         => _delete.ExecuteAsync(id);

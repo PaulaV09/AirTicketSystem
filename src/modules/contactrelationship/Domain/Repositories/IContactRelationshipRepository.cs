@@ -1,11 +1,14 @@
 // src/modules/contactrelationship/Domain/Repositories/IContactRelationshipRepository.cs
-using AirTicketSystem.shared.contracts;
-using AirTicketSystem.modules.contactrelationship.Infrastructure.entity;
+using AirTicketSystem.modules.contactrelationship.Domain.aggregate;
 
 namespace AirTicketSystem.modules.contactrelationship.Domain.Repositories;
 
-public interface IContactRelationshipRepository : IRepository<ContactRelationshipEntity>
+public interface IContactRelationshipRepository
 {
-    Task<ContactRelationshipEntity?> GetByDescripcionAsync(string descripcion);
+    Task<ContactRelationship?> FindByIdAsync(int id);
+    Task<IReadOnlyCollection<ContactRelationship>> FindAllAsync();
     Task<bool> ExistsByDescripcionAsync(string descripcion);
+    Task SaveAsync(ContactRelationship contactRelationship);
+    Task UpdateAsync(ContactRelationship contactRelationship);
+    Task DeleteAsync(int id);
 }

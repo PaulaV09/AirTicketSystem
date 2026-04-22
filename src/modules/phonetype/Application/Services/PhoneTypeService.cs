@@ -1,11 +1,11 @@
 // src/modules/phonetype/Application/Services/PhoneTypeService.cs
 using AirTicketSystem.modules.phonetype.Application.Interfaces;
 using AirTicketSystem.modules.phonetype.Application.UseCases;
-using AirTicketSystem.modules.phonetype.Infrastructure.entity;
+using AirTicketSystem.modules.phonetype.Domain.aggregate;
 
 namespace AirTicketSystem.modules.phonetype.Application.Services;
 
-public class PhoneTypeService : IPhoneTypeService
+public sealed class PhoneTypeService : IPhoneTypeService
 {
     private readonly CreatePhoneTypeUseCase _create;
     private readonly GetPhoneTypeByIdUseCase _getById;
@@ -27,17 +27,17 @@ public class PhoneTypeService : IPhoneTypeService
         _delete  = delete;
     }
 
-    public Task<PhoneTypeEntity> CreateAsync(string nombre)
-        => _create.ExecuteAsync(nombre);
+    public Task<PhoneType> CreateAsync(string descripcion)
+        => _create.ExecuteAsync(descripcion);
 
-    public Task<PhoneTypeEntity?> GetByIdAsync(int id)
-        => _getById.ExecuteAsync(id)!;
+    public Task<PhoneType> GetByIdAsync(int id)
+        => _getById.ExecuteAsync(id);
 
-    public Task<IEnumerable<PhoneTypeEntity>> GetAllAsync()
+    public Task<IReadOnlyCollection<PhoneType>> GetAllAsync()
         => _getAll.ExecuteAsync();
 
-    public Task<PhoneTypeEntity> UpdateAsync(int id, string nombre)
-        => _update.ExecuteAsync(id, nombre);
+    public Task<PhoneType> UpdateAsync(int id, string descripcion)
+        => _update.ExecuteAsync(id, descripcion);
 
     public Task DeleteAsync(int id)
         => _delete.ExecuteAsync(id);

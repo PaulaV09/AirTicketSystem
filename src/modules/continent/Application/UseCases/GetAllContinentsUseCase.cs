@@ -1,10 +1,10 @@
 // src/modules/continent/Application/UseCases/GetAllContinentsUseCase.cs
+using AirTicketSystem.modules.continent.Domain.aggregate;
 using AirTicketSystem.modules.continent.Domain.Repositories;
-using AirTicketSystem.modules.continent.Infrastructure.entity;
 
 namespace AirTicketSystem.modules.continent.Application.UseCases;
 
-public class GetAllContinentsUseCase
+public sealed class GetAllContinentsUseCase
 {
     private readonly IContinentRepository _repository;
 
@@ -13,13 +13,9 @@ public class GetAllContinentsUseCase
         _repository = repository;
     }
 
-    public async Task<IEnumerable<ContinentEntity>> ExecuteAsync()
+    public async Task<IReadOnlyCollection<Continent>> ExecuteAsync(
+        CancellationToken cancellationToken = default)
     {
-        var continentes = await _repository.GetAllAsync();
-
-        if (!continentes.Any())
-            return Enumerable.Empty<ContinentEntity>();
-
-        return continentes.OrderBy(c => c.Nombre);
+        return await _repository.FindAllAsync();
     }
 }

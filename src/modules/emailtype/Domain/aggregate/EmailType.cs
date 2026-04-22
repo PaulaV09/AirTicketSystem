@@ -18,6 +18,24 @@ public sealed class EmailType
         };
     }
 
+    public static EmailType Reconstituir(int id, string descripcion)
+    {
+        if (id <= 0)
+            throw new ArgumentException("El ID del tipo de email no es válido.");
+
+        var emailType = Crear(descripcion);
+        emailType.Id = id;
+        return emailType;
+    }
+
+    public void EstablecerId(int id)
+    {
+        if (id <= 0)
+            throw new ArgumentException("El ID del tipo de email no es válido.");
+
+        Id = id;
+    }
+
     public void ActualizarDescripcion(string descripcion)
     {
         Descripcion = DescripcionEmailType.Crear(descripcion);

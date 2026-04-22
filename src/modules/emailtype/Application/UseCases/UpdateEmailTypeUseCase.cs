@@ -1,11 +1,11 @@
 // src/modules/emailtype/Application/UseCases/UpdateEmailTypeUseCase.cs
+using AirTicketSystem.modules.emailtype.Domain.aggregate;
 using AirTicketSystem.modules.emailtype.Domain.Repositories;
-using AirTicketSystem.modules.emailtype.Infrastructure.entity;
 using AirTicketSystem.modules.emailtype.Domain.ValueObjects;
 
 namespace AirTicketSystem.modules.emailtype.Application.UseCases;
 
-public class UpdateEmailTypeUseCase
+public sealed class UpdateEmailTypeUseCase
 {
     private readonly IEmailTypeRepository _repository;
 
@@ -14,21 +14,24 @@ public class UpdateEmailTypeUseCase
         _repository = repository;
     }
 
-    public async Task<EmailTypeEntity> ExecuteAsync(int id, string nombre)
+    public async Task<EmailType> ExecuteAsync(
+        int id,
+        string descripcion,
+        CancellationToken cancellationToken = default)
     {
-        var tipoEmail = await _repository.GetByIdAsync(id)
+        var emailType = await _repository.FindByIdAsync(id)
             ?? throw new KeyNotFoundException(
                 $"No se encontró un tipo de email con ID {id}.");
 
-        var nombreVO = DescripcionEmailType.Crear(nombre);
+        var descripcionVO = DescripcionEmailType.Crear(descripcion);
 
-        if (nombreVO.Valor != tipoEmail.Descripcion &&
-            await _repository.ExistsByDescripcionAsync(nombreVO.Valor))
+        if (!string.Equals(descripcionVO.Valor, emailType.Descripcion.Valor, StringComparison.OrdinalIgnoreCase) &&
+            await _repository.ExistsByDescripcionAsync(descripcionVO.Valor))
             throw new InvalidOperationException(
-                $"Ya existe otro tipo de email con la descripción '{nombreVO.Valor}'.");
+                $"Ya existe otro tipo de email con la descripción '{descripcionVO.Valor}'.");
 
-        tipoEmail.Descripcion = nombreVO.Valor;
-        await _repository.UpdateAsync(tipoEmail);
-        return tipoEmail;
+        emailType.ActualizarDescripcion(descripcionVO.Valor);
+        await _repository.UpdateAsync(emailType);
+        return emailType;
     }
 }

@@ -1,11 +1,11 @@
 // src/modules/gender/Application/Services/GenderService.cs
 using AirTicketSystem.modules.gender.Application.Interfaces;
 using AirTicketSystem.modules.gender.Application.UseCases;
-using AirTicketSystem.modules.gender.Infrastructure.entity;
+using AirTicketSystem.modules.gender.Domain.aggregate;
 
 namespace AirTicketSystem.modules.gender.Application.Services;
 
-public class GenderService : IGenderService
+public sealed class GenderService : IGenderService
 {
     private readonly CreateGenderUseCase _create;
     private readonly GetGenderByIdUseCase _getById;
@@ -27,16 +27,16 @@ public class GenderService : IGenderService
         _delete  = delete;
     }
 
-    public Task<GenderEntity> CreateAsync(string nombre)
+    public Task<Gender> CreateAsync(string nombre)
         => _create.ExecuteAsync(nombre);
 
-    public Task<GenderEntity?> GetByIdAsync(int id)
-        => _getById.ExecuteAsync(id)!;
+    public Task<Gender> GetByIdAsync(int id)
+        => _getById.ExecuteAsync(id);
 
-    public Task<IEnumerable<GenderEntity>> GetAllAsync()
+    public Task<IReadOnlyCollection<Gender>> GetAllAsync()
         => _getAll.ExecuteAsync();
 
-    public Task<GenderEntity> UpdateAsync(int id, string nombre)
+    public Task<Gender> UpdateAsync(int id, string nombre)
         => _update.ExecuteAsync(id, nombre);
 
     public Task DeleteAsync(int id)

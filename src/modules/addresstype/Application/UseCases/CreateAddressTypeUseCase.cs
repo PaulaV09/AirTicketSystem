@@ -1,11 +1,11 @@
 // src/modules/addresstype/Application/UseCases/CreateAddressTypeUseCase.cs
+using AirTicketSystem.modules.addresstype.Domain.aggregate;
 using AirTicketSystem.modules.addresstype.Domain.Repositories;
-using AirTicketSystem.modules.addresstype.Infrastructure.entity;
 using AirTicketSystem.modules.addresstype.Domain.ValueObjects;
 
 namespace AirTicketSystem.modules.addresstype.Application.UseCases;
 
-public class CreateAddressTypeUseCase
+public sealed class CreateAddressTypeUseCase
 {
     private readonly IAddressTypeRepository _repository;
 
@@ -14,16 +14,18 @@ public class CreateAddressTypeUseCase
         _repository = repository;
     }
 
-    public async Task<AddressTypeEntity> ExecuteAsync(string nombre)
+    public async Task<AddressType> ExecuteAsync(
+        string descripcion,
+        CancellationToken cancellationToken = default)
     {
-        var nombreVO = DescripcionAddressType.Crear(nombre);
+        var descripcionVO = DescripcionAddressType.Crear(descripcion);
 
-        if (await _repository.ExistsByDescripcionAsync(nombreVO.Valor))
+        if (await _repository.ExistsByDescripcionAsync(descripcionVO.Valor))
             throw new InvalidOperationException(
-                $"Ya existe un tipo de dirección con el nombre '{nombreVO.Valor}'.");
+                $"Ya existe un tipo de dirección con la descripción '{descripcionVO.Valor}'.");
 
-        var entity = new AddressTypeEntity { Descripcion = nombreVO.Valor };
-        await _repository.AddAsync(entity);
-        return entity;
+        var addressType = AddressType.Crear(descripcionVO.Valor);
+        await _repository.SaveAsync(addressType);
+        return addressType;
     }
 }

@@ -1,11 +1,11 @@
 // src/modules/continent/Application/UseCases/CreateContinentUseCase.cs
+using AirTicketSystem.modules.continent.Domain.aggregate;
 using AirTicketSystem.modules.continent.Domain.Repositories;
-using AirTicketSystem.modules.continent.Infrastructure.entity;
 using AirTicketSystem.modules.continent.Domain.ValueObjects;
 
 namespace AirTicketSystem.modules.continent.Application.UseCases;
 
-public class CreateContinentUseCase
+public sealed class CreateContinentUseCase
 {
     private readonly IContinentRepository _repository;
 
@@ -14,13 +14,14 @@ public class CreateContinentUseCase
         _repository = repository;
     }
 
-    public async Task<ContinentEntity> ExecuteAsync(string nombre, string codigo)
+    public async Task<Continent> ExecuteAsync(
+        string nombre,
+        string codigo,
+        CancellationToken cancellationToken = default)
     {
-        // Validamos con Value Objects — si algo está mal, lanzan excepción
         var nombreVO = NombreContinent.Crear(nombre);
         var codigoVO = CodigoContinent.Crear(codigo);
 
-        // Verificamos unicidad antes de persistir
         if (await _repository.ExistsByCodigoAsync(codigoVO.Valor))
             throw new InvalidOperationException(
                 $"Ya existe un continente con el código '{codigoVO.Valor}'.");
@@ -29,13 +30,8 @@ public class CreateContinentUseCase
             throw new InvalidOperationException(
                 $"Ya existe un continente con el nombre '{nombreVO.Valor}'.");
 
-        var entity = new ContinentEntity
-        {
-            Nombre = nombreVO.Valor,
-            Codigo = codigoVO.Valor
-        };
-
-        await _repository.AddAsync(entity);
-        return entity;
+        var continent = Continent.Crear(nombreVO.Valor, codigoVO.Valor);
+        await _repository.SaveAsync(continent);
+        return continent;
     }
 }

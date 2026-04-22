@@ -3,7 +3,7 @@ using AirTicketSystem.modules.gender.Domain.Repositories;
 
 namespace AirTicketSystem.modules.gender.Application.UseCases;
 
-public class DeleteGenderUseCase
+public sealed class DeleteGenderUseCase
 {
     private readonly IGenderRepository _repository;
 
@@ -12,9 +12,11 @@ public class DeleteGenderUseCase
         _repository = repository;
     }
 
-    public async Task ExecuteAsync(int id)
+    public async Task ExecuteAsync(
+        int id,
+        CancellationToken cancellationToken = default)
     {
-        _ = await _repository.GetByIdAsync(id)
+        _ = await _repository.FindByIdAsync(id)
             ?? throw new KeyNotFoundException(
                 $"No se encontró un género con ID {id}.");
 

@@ -1,13 +1,13 @@
 // src/modules/emailtype/Application/Interfaces/IEmailTypeService.cs
-using AirTicketSystem.modules.emailtype.Infrastructure.entity;
+using AirTicketSystem.modules.emailtype.Domain.aggregate;
 
 namespace AirTicketSystem.modules.emailtype.Application.Interfaces;
 
 public interface IEmailTypeService
 {
-    Task<EmailTypeEntity> CreateAsync(string nombre);
-    Task<EmailTypeEntity?> GetByIdAsync(int id);
-    Task<IEnumerable<EmailTypeEntity>> GetAllAsync();
-    Task<EmailTypeEntity> UpdateAsync(int id, string nombre);
+    Task<EmailType> CreateAsync(string descripcion);
+    Task<EmailType> GetByIdAsync(int id);
+    Task<IReadOnlyCollection<EmailType>> GetAllAsync();
+    Task<EmailType> UpdateAsync(int id, string descripcion);
     Task DeleteAsync(int id);
 }

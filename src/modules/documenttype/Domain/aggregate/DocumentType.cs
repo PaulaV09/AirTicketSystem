@@ -18,6 +18,24 @@ public sealed class DocumentType
         };
     }
 
+    public static DocumentType Reconstituir(int id, string descripcion)
+    {
+        if (id <= 0)
+            throw new ArgumentException("El ID del tipo de documento no es válido.");
+
+        var documentType = Crear(descripcion);
+        documentType.Id = id;
+        return documentType;
+    }
+
+    public void EstablecerId(int id)
+    {
+        if (id <= 0)
+            throw new ArgumentException("El ID del tipo de documento no es válido.");
+
+        Id = id;
+    }
+
     public void ActualizarDescripcion(string descripcion)
     {
         Descripcion = DescripcionDocumentType.Crear(descripcion);

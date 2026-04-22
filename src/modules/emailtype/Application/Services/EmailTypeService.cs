@@ -1,11 +1,11 @@
 // src/modules/emailtype/Application/Services/EmailTypeService.cs
 using AirTicketSystem.modules.emailtype.Application.Interfaces;
 using AirTicketSystem.modules.emailtype.Application.UseCases;
-using AirTicketSystem.modules.emailtype.Infrastructure.entity;
+using AirTicketSystem.modules.emailtype.Domain.aggregate;
 
 namespace AirTicketSystem.modules.emailtype.Application.Services;
 
-public class EmailTypeService : IEmailTypeService
+public sealed class EmailTypeService : IEmailTypeService
 {
     private readonly CreateEmailTypeUseCase _create;
     private readonly GetEmailTypeByIdUseCase _getById;
@@ -27,17 +27,17 @@ public class EmailTypeService : IEmailTypeService
         _delete  = delete;
     }
 
-    public Task<EmailTypeEntity> CreateAsync(string nombre)
-        => _create.ExecuteAsync(nombre);
+    public Task<EmailType> CreateAsync(string descripcion)
+        => _create.ExecuteAsync(descripcion);
 
-    public Task<EmailTypeEntity?> GetByIdAsync(int id)
-        => _getById.ExecuteAsync(id)!;
+    public Task<EmailType> GetByIdAsync(int id)
+        => _getById.ExecuteAsync(id);
 
-    public Task<IEnumerable<EmailTypeEntity>> GetAllAsync()
+    public Task<IReadOnlyCollection<EmailType>> GetAllAsync()
         => _getAll.ExecuteAsync();
 
-    public Task<EmailTypeEntity> UpdateAsync(int id, string nombre)
-        => _update.ExecuteAsync(id, nombre);
+    public Task<EmailType> UpdateAsync(int id, string descripcion)
+        => _update.ExecuteAsync(id, descripcion);
 
     public Task DeleteAsync(int id)
         => _delete.ExecuteAsync(id);

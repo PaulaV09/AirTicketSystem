@@ -18,6 +18,24 @@ public sealed class AddressType
         };
     }
 
+    public static AddressType Reconstituir(int id, string descripcion)
+    {
+        if (id <= 0)
+            throw new ArgumentException("El ID del tipo de dirección no es válido.");
+
+        var addressType = Crear(descripcion);
+        addressType.Id = id;
+        return addressType;
+    }
+
+    public void EstablecerId(int id)
+    {
+        if (id <= 0)
+            throw new ArgumentException("El ID del tipo de dirección no es válido.");
+
+        Id = id;
+    }
+
     public void ActualizarDescripcion(string descripcion)
     {
         Descripcion = DescripcionAddressType.Crear(descripcion);

@@ -1,11 +1,11 @@
 // src/modules/emailtype/Application/UseCases/CreateEmailTypeUseCase.cs
+using AirTicketSystem.modules.emailtype.Domain.aggregate;
 using AirTicketSystem.modules.emailtype.Domain.Repositories;
-using AirTicketSystem.modules.emailtype.Infrastructure.entity;
 using AirTicketSystem.modules.emailtype.Domain.ValueObjects;
 
 namespace AirTicketSystem.modules.emailtype.Application.UseCases;
 
-public class CreateEmailTypeUseCase
+public sealed class CreateEmailTypeUseCase
 {
     private readonly IEmailTypeRepository _repository;
 
@@ -14,16 +14,18 @@ public class CreateEmailTypeUseCase
         _repository = repository;
     }
 
-    public async Task<EmailTypeEntity> ExecuteAsync(string nombre)
+    public async Task<EmailType> ExecuteAsync(
+        string descripcion,
+        CancellationToken cancellationToken = default)
     {
-        var nombreVO = DescripcionEmailType.Crear(nombre);
+        var descripcionVO = DescripcionEmailType.Crear(descripcion);
 
-        if (await _repository.ExistsByDescripcionAsync(nombreVO.Valor))
+        if (await _repository.ExistsByDescripcionAsync(descripcionVO.Valor))
             throw new InvalidOperationException(
-                $"Ya existe un tipo de email con el nombre '{nombreVO.Valor}'.");
+                $"Ya existe un tipo de email con la descripción '{descripcionVO.Valor}'.");
 
-        var entity = new EmailTypeEntity { Descripcion = nombreVO.Valor };
-        await _repository.AddAsync(entity);
-        return entity;
+        var emailType = EmailType.Crear(descripcionVO.Valor);
+        await _repository.SaveAsync(emailType);
+        return emailType;
     }
 }

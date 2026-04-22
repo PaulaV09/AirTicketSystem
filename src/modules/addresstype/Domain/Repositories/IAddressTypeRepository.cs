@@ -1,11 +1,14 @@
 // src/modules/addresstype/Domain/Repositories/IAddressTypeRepository.cs
-using AirTicketSystem.shared.contracts;
-using AirTicketSystem.modules.addresstype.Infrastructure.entity;
+using AirTicketSystem.modules.addresstype.Domain.aggregate;
 
 namespace AirTicketSystem.modules.addresstype.Domain.Repositories;
 
-public interface IAddressTypeRepository : IRepository<AddressTypeEntity>
+public interface IAddressTypeRepository
 {
-    Task<AddressTypeEntity?> GetByDescripcionAsync(string descripcion);
+    Task<AddressType?> FindByIdAsync(int id);
+    Task<IReadOnlyCollection<AddressType>> FindAllAsync();
     Task<bool> ExistsByDescripcionAsync(string descripcion);
+    Task SaveAsync(AddressType addressType);
+    Task UpdateAsync(AddressType addressType);
+    Task DeleteAsync(int id);
 }

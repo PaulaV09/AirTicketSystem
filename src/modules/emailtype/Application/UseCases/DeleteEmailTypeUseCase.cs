@@ -3,7 +3,7 @@ using AirTicketSystem.modules.emailtype.Domain.Repositories;
 
 namespace AirTicketSystem.modules.emailtype.Application.UseCases;
 
-public class DeleteEmailTypeUseCase
+public sealed class DeleteEmailTypeUseCase
 {
     private readonly IEmailTypeRepository _repository;
 
@@ -12,9 +12,11 @@ public class DeleteEmailTypeUseCase
         _repository = repository;
     }
 
-    public async Task ExecuteAsync(int id)
+    public async Task ExecuteAsync(
+        int id,
+        CancellationToken cancellationToken = default)
     {
-        _ = await _repository.GetByIdAsync(id)
+        _ = await _repository.FindByIdAsync(id)
             ?? throw new KeyNotFoundException(
                 $"No se encontró un tipo de email con ID {id}.");
 

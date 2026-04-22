@@ -1,11 +1,11 @@
 // src/modules/phonetype/Application/UseCases/UpdatePhoneTypeUseCase.cs
+using AirTicketSystem.modules.phonetype.Domain.aggregate;
 using AirTicketSystem.modules.phonetype.Domain.Repositories;
-using AirTicketSystem.modules.phonetype.Infrastructure.entity;
 using AirTicketSystem.modules.phonetype.Domain.ValueObjects;
 
 namespace AirTicketSystem.modules.phonetype.Application.UseCases;
 
-public class UpdatePhoneTypeUseCase
+public sealed class UpdatePhoneTypeUseCase
 {
     private readonly IPhoneTypeRepository _repository;
 
@@ -14,21 +14,24 @@ public class UpdatePhoneTypeUseCase
         _repository = repository;
     }
 
-    public async Task<PhoneTypeEntity> ExecuteAsync(int id, string nombre)
+    public async Task<PhoneType> ExecuteAsync(
+        int id,
+        string descripcion,
+        CancellationToken cancellationToken = default)
     {
-        var tipoTelefono = await _repository.GetByIdAsync(id)
+        var phoneType = await _repository.FindByIdAsync(id)
             ?? throw new KeyNotFoundException(
                 $"No se encontró un tipo de teléfono con ID {id}.");
 
-        var nombreVO = DescripcionPhoneType.Crear(nombre);
+        var descripcionVO = DescripcionPhoneType.Crear(descripcion);
 
-        if (nombreVO.Valor != tipoTelefono.Descripcion &&
-            await _repository.ExistsByDescripcionAsync(nombreVO.Valor))
+        if (!string.Equals(descripcionVO.Valor, phoneType.Descripcion.Valor, StringComparison.OrdinalIgnoreCase) &&
+            await _repository.ExistsByDescripcionAsync(descripcionVO.Valor))
             throw new InvalidOperationException(
-                $"Ya existe otro tipo de teléfono con la descripción '{nombreVO.Valor}'.");
+                $"Ya existe otro tipo de teléfono con la descripción '{descripcionVO.Valor}'.");
 
-        tipoTelefono.Descripcion = nombreVO.Valor;
-        await _repository.UpdateAsync(tipoTelefono);
-        return tipoTelefono;
+        phoneType.ActualizarDescripcion(descripcionVO.Valor);
+        await _repository.UpdateAsync(phoneType);
+        return phoneType;
     }
 }

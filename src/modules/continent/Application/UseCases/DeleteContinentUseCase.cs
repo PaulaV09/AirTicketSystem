@@ -3,7 +3,7 @@ using AirTicketSystem.modules.continent.Domain.Repositories;
 
 namespace AirTicketSystem.modules.continent.Application.UseCases;
 
-public class DeleteContinentUseCase
+public sealed class DeleteContinentUseCase
 {
     private readonly IContinentRepository _repository;
 
@@ -12,15 +12,14 @@ public class DeleteContinentUseCase
         _repository = repository;
     }
 
-    public async Task ExecuteAsync(int id)
+    public async Task ExecuteAsync(
+        int id,
+        CancellationToken cancellationToken = default)
     {
-        var continente = await _repository.GetByIdAsync(id)
+        _ = await _repository.FindByIdAsync(id)
             ?? throw new KeyNotFoundException(
                 $"No se encontró un continente con ID {id}.");
 
-        // Un continente con países asociados no puede eliminarse
-        // Esta regla la protege la FK en la BD, pero la verificamos
-        // antes para dar un mensaje descriptivo al usuario
         await _repository.DeleteAsync(id);
     }
 }

@@ -18,6 +18,24 @@ public sealed class ContactRelationship
         };
     }
 
+    public static ContactRelationship Reconstituir(int id, string descripcion)
+    {
+        if (id <= 0)
+            throw new ArgumentException("El ID de la relación de contacto no es válido.");
+
+        var contactRelationship = Crear(descripcion);
+        contactRelationship.Id = id;
+        return contactRelationship;
+    }
+
+    public void EstablecerId(int id)
+    {
+        if (id <= 0)
+            throw new ArgumentException("El ID de la relación de contacto no es válido.");
+
+        Id = id;
+    }
+
     public void ActualizarDescripcion(string descripcion)
     {
         Descripcion = DescripcionContactRelationship.Crear(descripcion);

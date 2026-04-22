@@ -25,6 +25,24 @@ public sealed class Continent
         Nombre = NombreContinent.Crear(nombre);
     }
 
+    public static Continent Reconstituir(int id, string nombre, string codigo)
+    {
+        if (id <= 0)
+            throw new ArgumentException("El ID del continente no es válido.");
+
+        var continent = Crear(nombre, codigo);
+        continent.Id = id;
+        return continent;
+    }
+
+    public void EstablecerId(int id)
+    {
+        if (id <= 0)
+            throw new ArgumentException("El ID del continente no es válido.");
+
+        Id = id;
+    }
+
     public void ActualizarCodigo(string codigo)
     {
         Codigo = CodigoContinent.Crear(codigo);

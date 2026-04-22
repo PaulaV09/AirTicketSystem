@@ -1,13 +1,13 @@
-
-using AirTicketSystem.modules.documenttype.Infrastructure.entity;
+// src/modules/documenttype/Application/Interfaces/IDocumentTypeService.cs
+using AirTicketSystem.modules.documenttype.Domain.aggregate;
 
 namespace AirTicketSystem.modules.documenttype.Application.Interfaces;
 
 public interface IDocumentTypeService
 {
-    Task<DocumentTypeEntity> CreateAsync(string nombre);
-    Task<DocumentTypeEntity?> GetByIdAsync(int id);
-    Task<IEnumerable<DocumentTypeEntity>> GetAllAsync();
-    Task<DocumentTypeEntity> UpdateAsync(int id, string nombre);
+    Task<DocumentType> CreateAsync(string descripcion);
+    Task<DocumentType> GetByIdAsync(int id);
+    Task<IReadOnlyCollection<DocumentType>> GetAllAsync();
+    Task<DocumentType> UpdateAsync(int id, string descripcion);
     Task DeleteAsync(int id);
 }

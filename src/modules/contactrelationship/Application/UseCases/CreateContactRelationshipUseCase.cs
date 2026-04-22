@@ -1,11 +1,11 @@
 // src/modules/contactrelationship/Application/UseCases/CreateContactRelationshipUseCase.cs
+using AirTicketSystem.modules.contactrelationship.Domain.aggregate;
 using AirTicketSystem.modules.contactrelationship.Domain.Repositories;
-using AirTicketSystem.modules.contactrelationship.Infrastructure.entity;
 using AirTicketSystem.modules.contactrelationship.Domain.ValueObjects;
 
 namespace AirTicketSystem.modules.contactrelationship.Application.UseCases;
 
-public class CreateContactRelationshipUseCase
+public sealed class CreateContactRelationshipUseCase
 {
     private readonly IContactRelationshipRepository _repository;
 
@@ -14,16 +14,18 @@ public class CreateContactRelationshipUseCase
         _repository = repository;
     }
 
-    public async Task<ContactRelationshipEntity> ExecuteAsync(string nombre)
+    public async Task<ContactRelationship> ExecuteAsync(
+        string descripcion,
+        CancellationToken cancellationToken = default)
     {
-        var nombreVO = DescripcionContactRelationship.Crear(nombre);
+        var descripcionVO = DescripcionContactRelationship.Crear(descripcion);
 
-        if (await _repository.ExistsByDescripcionAsync(nombreVO.Valor))
+        if (await _repository.ExistsByDescripcionAsync(descripcionVO.Valor))
             throw new InvalidOperationException(
-                $"Ya existe un tipo de relación de contacto con el nombre '{nombreVO.Valor}'.");
+                $"Ya existe una relación de contacto con la descripción '{descripcionVO.Valor}'.");
 
-        var entity = new ContactRelationshipEntity { Descripcion = nombreVO.Valor };
-        await _repository.AddAsync(entity);
-        return entity;
+        var contactRelationship = ContactRelationship.Crear(descripcionVO.Valor);
+        await _repository.SaveAsync(contactRelationship);
+        return contactRelationship;
     }
 }

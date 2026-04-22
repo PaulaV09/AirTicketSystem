@@ -1,10 +1,10 @@
 // src/modules/contactrelationship/Application/UseCases/GetAllContactRelationshipsUseCase.cs
+using AirTicketSystem.modules.contactrelationship.Domain.aggregate;
 using AirTicketSystem.modules.contactrelationship.Domain.Repositories;
-using AirTicketSystem.modules.contactrelationship.Infrastructure.entity;
 
 namespace AirTicketSystem.modules.contactrelationship.Application.UseCases;
 
-public class GetAllContactRelationshipsUseCase
+public sealed class GetAllContactRelationshipsUseCase
 {
     private readonly IContactRelationshipRepository _repository;
 
@@ -13,6 +13,9 @@ public class GetAllContactRelationshipsUseCase
         _repository = repository;
     }
 
-    public async Task<IEnumerable<ContactRelationshipEntity>> ExecuteAsync()
-        => (await _repository.GetAllAsync()).OrderBy(et => et.Descripcion);
+    public async Task<IReadOnlyCollection<ContactRelationship>> ExecuteAsync(
+        CancellationToken cancellationToken = default)
+    {
+        return await _repository.FindAllAsync();
+    }
 }
