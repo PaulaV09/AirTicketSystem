@@ -18,6 +18,15 @@ public sealed class PaymentMethod
         };
     }
 
+    public static PaymentMethod Reconstituir(int id, string nombre)
+    {
+        var method = Crear(nombre);
+        method.Id = id;
+        return method;
+    }
+
+    public void EstablecerId(int id) => Id = id;
+
     public void ActualizarNombre(string nombre)
     {
         Nombre = NombrePaymentMethod.Crear(nombre);

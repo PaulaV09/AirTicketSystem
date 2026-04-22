@@ -120,6 +120,32 @@ public sealed class Invoice
         }
     }
 
+    public static Invoice Reconstituir(
+        int id,
+        int reservaId,
+        int direccionFacturacionId,
+        string numeroFactura,
+        DateTime fechaEmision,
+        decimal subtotal,
+        decimal impuestos,
+        decimal total)
+    {
+        var invoice = new Invoice
+        {
+            ReservaId              = reservaId,
+            DireccionFacturacionId = direccionFacturacionId,
+            NumeroFactura          = NumeroFacturaInvoice.Crear(numeroFactura),
+            FechaEmision           = FechaEmisionInvoice.Crear(fechaEmision),
+            Subtotal               = SubtotalInvoice.Crear(subtotal),
+            Impuestos              = ImpuestosInvoice.Crear(impuestos),
+            Total                  = TotalInvoice.Crear(total)
+        };
+        invoice.Id = id;
+        return invoice;
+    }
+
+    public void EstablecerId(int id) => Id = id;
+
     public override string ToString() =>
         $"Factura [{NumeroFactura}] — " +
         $"Reserva #{ReservaId} | Total: {Total}";

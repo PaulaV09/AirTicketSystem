@@ -31,6 +31,14 @@ public sealed class FechaVencimientoPayment
     public static FechaVencimientoPayment EstandarDesde(DateTime fechaCreacion)
         => new(fechaCreacion.AddHours(24));
 
+    public static FechaVencimientoPayment Reconstituir(DateTime valor)
+    {
+        if (valor == default)
+            throw new ArgumentException(
+                "La fecha de vencimiento del pago no puede estar vacía.");
+        return new FechaVencimientoPayment(valor);
+    }
+
     public bool EstaVencido => DateTime.UtcNow > Valor;
 
     public int HorasRestantes

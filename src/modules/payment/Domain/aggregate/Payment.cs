@@ -130,6 +130,38 @@ public sealed class Payment
     public decimal CalcularCambio(decimal valorRequerido)
         => Monto.CambioContra(valorRequerido);
 
+    public static Payment Reconstituir(
+        int id,
+        int reservaId,
+        int metodoPagoId,
+        decimal monto,
+        string estado,
+        string? referencia,
+        DateTime? fechaPago,
+        DateTime? fechaVencimiento)
+    {
+        var payment = new Payment
+        {
+            ReservaId    = reservaId,
+            MetodoPagoId = metodoPagoId,
+            Monto        = MontoPayment.Crear(monto),
+            Estado       = EstadoPayment.Crear(estado),
+            Referencia   = referencia is not null
+                ? ReferenciaPayment.Crear(referencia)
+                : null,
+            FechaPago    = fechaPago.HasValue
+                ? FechaPagoPayment.Crear(fechaPago.Value)
+                : null,
+            FechaVencimiento = fechaVencimiento.HasValue
+                ? FechaVencimientoPayment.Reconstituir(fechaVencimiento.Value)
+                : FechaVencimientoPayment.EstandarDesde(DateTime.UtcNow)
+        };
+        payment.Id = id;
+        return payment;
+    }
+
+    public void EstablecerId(int id) => Id = id;
+
     public override string ToString() =>
         $"Pago Reserva #{ReservaId} — {Monto} | " +
         $"{Estado} | Ref: {Referencia?.Valor ?? "Sin referencia"}";
