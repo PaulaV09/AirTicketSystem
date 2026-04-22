@@ -34,6 +34,29 @@ public sealed class PersonEmail
         };
     }
 
+    public static PersonEmail Reconstituir(
+        int id,
+        int personaId,
+        int tipoEmailId,
+        string email,
+        bool esPrincipal)
+    {
+        if (id <= 0)
+            throw new ArgumentException("El ID del email no es válido.");
+
+        var pe = Crear(personaId, tipoEmailId, email, esPrincipal);
+        pe.Id = id;
+        return pe;
+    }
+
+    public void EstablecerId(int id)
+    {
+        if (id <= 0)
+            throw new ArgumentException("El ID del email no es válido.");
+
+        Id = id;
+    }
+
     public void MarcarComoPrincipal()
     {
         EsPrincipal = EsPrincipalPersonEmail.Principal();

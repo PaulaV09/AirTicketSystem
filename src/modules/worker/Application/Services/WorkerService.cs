@@ -1,29 +1,29 @@
 // src/modules/worker/Application/Services/WorkerService.cs
+using AirTicketSystem.modules.worker.Domain.aggregate;
 using AirTicketSystem.modules.worker.Application.Interfaces;
 using AirTicketSystem.modules.worker.Application.UseCases;
-using AirTicketSystem.modules.worker.Infrastructure.entity;
 
 namespace AirTicketSystem.modules.worker.Application.Services;
 
-public class WorkerService : IWorkerService
+public sealed class WorkerService : IWorkerService
 {
-    private readonly CreateWorkerUseCase _create;
-    private readonly GetWorkerByIdUseCase _getById;
-    private readonly GetWorkerByPersonUseCase _getByPerson;
-    private readonly GetAllWorkersUseCase _getAll;
-    private readonly GetWorkersByAirlineUseCase _getByAirline;
-    private readonly GetWorkersByAirportUseCase _getByAirport;
+    private readonly CreateWorkerUseCase           _create;
+    private readonly GetWorkerByIdUseCase          _getById;
+    private readonly GetWorkerByPersonUseCase      _getByPerson;
+    private readonly GetAllWorkersUseCase          _getAll;
+    private readonly GetWorkersByAirlineUseCase    _getByAirline;
+    private readonly GetWorkersByAirportUseCase    _getByAirport;
     private readonly GetWorkersByWorkerTypeUseCase _getByWorkerType;
-    private readonly GetActiveWorkersUseCase _getActivos;
-    private readonly GetQualifiedPilotsUseCase _getQualifiedPilots;
-    private readonly UpdateWorkerSalaryUseCase _updateSalary;
-    private readonly UpdateWorkerAirportUseCase _updateAirport;
-    private readonly AssignWorkerSpecialtyUseCase _assignSpecialty;
-    private readonly RemoveWorkerSpecialtyUseCase _removeSpecialty;
-    private readonly AssignUserToWorkerUseCase _assignUser;
-    private readonly ActivateWorkerUseCase _activate;
-    private readonly DeactivateWorkerUseCase _deactivate;
-    private readonly DeleteWorkerUseCase _delete;
+    private readonly GetActiveWorkersUseCase       _getActivos;
+    private readonly GetQualifiedPilotsUseCase     _getQualifiedPilots;
+    private readonly UpdateWorkerSalaryUseCase     _updateSalary;
+    private readonly UpdateWorkerAirportUseCase    _updateAirport;
+    private readonly AssignWorkerSpecialtyUseCase  _assignSpecialty;
+    private readonly RemoveWorkerSpecialtyUseCase  _removeSpecialty;
+    private readonly AssignUserToWorkerUseCase     _assignUser;
+    private readonly ActivateWorkerUseCase         _activate;
+    private readonly DeactivateWorkerUseCase       _deactivate;
+    private readonly DeleteWorkerUseCase           _delete;
 
     public WorkerService(
         CreateWorkerUseCase create,
@@ -63,54 +63,58 @@ public class WorkerService : IWorkerService
         _delete             = delete;
     }
 
-    public Task<WorkerEntity> CreateAsync(
+    public Task<Worker> CreateAsync(
         int personaId, int tipoTrabajadorId, int aeropuertoBaseId,
         DateOnly fechaContratacion, decimal salario,
         int? aerolineaId, int? usuarioId)
-        => _create.ExecuteAsync(
-            personaId, tipoTrabajadorId, aeropuertoBaseId,
+        => _create.ExecuteAsync(personaId, tipoTrabajadorId, aeropuertoBaseId,
             fechaContratacion, salario, aerolineaId, usuarioId);
 
-    public Task<WorkerEntity?> GetByIdAsync(int id)
-        => _getById.ExecuteAsync(id)!;
+    public Task<Worker> GetByIdAsync(int id)
+        => _getById.ExecuteAsync(id);
 
-    public Task<WorkerEntity?> GetByPersonAsync(int personaId)
-        => _getByPerson.ExecuteAsync(personaId)!;
+    public Task<Worker> GetByPersonAsync(int personaId)
+        => _getByPerson.ExecuteAsync(personaId);
 
-    public Task<IEnumerable<WorkerEntity>> GetAllAsync()
+    public Task<IReadOnlyCollection<Worker>> GetAllAsync()
         => _getAll.ExecuteAsync();
 
-    public Task<IEnumerable<WorkerEntity>> GetByAirlineAsync(int aerolineaId)
+    public Task<IReadOnlyCollection<Worker>> GetByAirlineAsync(int aerolineaId)
         => _getByAirline.ExecuteAsync(aerolineaId);
 
-    public Task<IEnumerable<WorkerEntity>> GetByAirportAsync(int aeropuertoId)
+    public Task<IReadOnlyCollection<Worker>> GetByAirportAsync(int aeropuertoId)
         => _getByAirport.ExecuteAsync(aeropuertoId);
 
-    public Task<IEnumerable<WorkerEntity>> GetByWorkerTypeAsync(int tipoTrabajadorId)
+    public Task<IReadOnlyCollection<Worker>> GetByWorkerTypeAsync(int tipoTrabajadorId)
         => _getByWorkerType.ExecuteAsync(tipoTrabajadorId);
 
-    public Task<IEnumerable<WorkerEntity>> GetActivosAsync()
+    public Task<IReadOnlyCollection<Worker>> GetActivosAsync()
         => _getActivos.ExecuteAsync();
 
-    public Task<IEnumerable<WorkerEntity>> GetPilotosHabilitadosAsync(int modeloAvionId)
+    public Task<IReadOnlyCollection<Worker>> GetQualifiedPilotsAsync(int modeloAvionId)
         => _getQualifiedPilots.ExecuteAsync(modeloAvionId);
 
-    public Task<WorkerEntity> UpdateSalaryAsync(int id, decimal nuevoSalario)
+    public Task<Worker> UpdateSalaryAsync(int id, decimal nuevoSalario)
         => _updateSalary.ExecuteAsync(id, nuevoSalario);
 
-    public Task<WorkerEntity> UpdateAirportAsync(int id, int aeropuertoBaseId)
+    public Task<Worker> UpdateAirportAsync(int id, int aeropuertoBaseId)
         => _updateAirport.ExecuteAsync(id, aeropuertoBaseId);
 
-    public Task AssignSpecialtyAsync(int trabajadorId, int especialidadId)
+    public Task<WorkerSpecialty> AssignSpecialtyAsync(int trabajadorId, int especialidadId)
         => _assignSpecialty.ExecuteAsync(trabajadorId, especialidadId);
 
     public Task RemoveSpecialtyAsync(int workerSpecialtyId)
         => _removeSpecialty.ExecuteAsync(workerSpecialtyId);
 
-    public Task AssignUserAsync(int trabajadorId, int usuarioId)
+    public Task<Worker> AssignUserAsync(int trabajadorId, int usuarioId)
         => _assignUser.ExecuteAsync(trabajadorId, usuarioId);
 
-    public Task ActivateAsync(int id) => _activate.ExecuteAsync(id);
-    public Task DeactivateAsync(int id) => _deactivate.ExecuteAsync(id);
-    public Task DeleteAsync(int id) => _delete.ExecuteAsync(id);
+    public Task<Worker> ActivateAsync(int id)
+        => _activate.ExecuteAsync(id);
+
+    public Task<Worker> DeactivateAsync(int id)
+        => _deactivate.ExecuteAsync(id);
+
+    public Task DeleteAsync(int id)
+        => _delete.ExecuteAsync(id);
 }

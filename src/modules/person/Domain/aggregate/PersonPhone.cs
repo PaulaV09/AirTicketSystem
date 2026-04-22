@@ -39,6 +39,30 @@ public sealed class PersonPhone
         };
     }
 
+    public static PersonPhone Reconstituir(
+        int id,
+        int personaId,
+        int tipoTelefonoId,
+        string numero,
+        string? indicativoPais,
+        bool esPrincipal)
+    {
+        if (id <= 0)
+            throw new ArgumentException("El ID del teléfono no es válido.");
+
+        var phone = Crear(personaId, tipoTelefonoId, numero, indicativoPais, esPrincipal);
+        phone.Id = id;
+        return phone;
+    }
+
+    public void EstablecerId(int id)
+    {
+        if (id <= 0)
+            throw new ArgumentException("El ID del teléfono no es válido.");
+
+        Id = id;
+    }
+
     public void MarcarComoPrincipal()
     {
         EsPrincipal = EsPrincipalPersonPhone.Principal();

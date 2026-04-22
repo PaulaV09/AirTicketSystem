@@ -28,6 +28,28 @@ public sealed class WorkerSpecialty
         };
     }
 
+    public static WorkerSpecialty Reconstituir(int id, int trabajadorId, int especialidadId)
+    {
+        if (id <= 0)
+            throw new ArgumentException("El ID de la especialidad del trabajador no es válido.");
+
+        var ws = new WorkerSpecialty
+        {
+            TrabajadorId   = trabajadorId,
+            EspecialidadId = especialidadId
+        };
+        ws.Id = id;
+        return ws;
+    }
+
+    public void EstablecerId(int id)
+    {
+        if (id <= 0)
+            throw new ArgumentException("El ID de la especialidad del trabajador no es válido.");
+
+        Id = id;
+    }
+
     public override string ToString() =>
         $"Trabajador #{TrabajadorId} — Especialidad #{EspecialidadId}";
 }

@@ -32,6 +32,37 @@ public sealed class AccessLog
         };
     }
 
+    public static AccessLog Reconstituir(
+        int id,
+        int usuarioId,
+        DateTime fechaAcceso,
+        string tipo,
+        string? ipAddress)
+    {
+        if (id <= 0)
+            throw new ArgumentException("El ID del log de acceso no es válido.");
+
+        var log = new AccessLog
+        {
+            UsuarioId   = usuarioId,
+            FechaAcceso = FechaAccesoAccessLog.Crear(fechaAcceso),
+            Tipo        = TipoAccessLog.Crear(tipo),
+            IpAddress   = ipAddress is not null
+                ? IpAddressAccessLog.Crear(ipAddress)
+                : null
+        };
+        log.Id = id;
+        return log;
+    }
+
+    public void EstablecerId(int id)
+    {
+        if (id <= 0)
+            throw new ArgumentException("El ID del log de acceso no es válido.");
+
+        Id = id;
+    }
+
     // Métodos de fábrica expresivos para los tres tipos de evento
     public static AccessLog CrearLogin(int usuarioId, string? ipAddress = null)
         => Crear(usuarioId, "LOGIN", ipAddress);

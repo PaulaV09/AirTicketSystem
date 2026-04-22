@@ -1,13 +1,14 @@
 // src/modules/worker/Domain/Repositories/IWorkerSpecialtyRepository.cs
-using AirTicketSystem.shared.contracts;
-using AirTicketSystem.modules.worker.Infrastructure.entity;
+using AirTicketSystem.modules.worker.Domain.aggregate;
 
 namespace AirTicketSystem.modules.worker.Domain.Repositories;
 
-public interface IWorkerSpecialtyRepository : IRepository<WorkerSpecialtyEntity>
+public interface IWorkerSpecialtyRepository
 {
-    Task<IEnumerable<WorkerSpecialtyEntity>> GetByTrabajadorAsync(int trabajadorId);
-    Task<IEnumerable<WorkerSpecialtyEntity>> GetByEspecialidadAsync(int especialidadId);
-    Task<bool> ExistsByTrabajadorAndEspecialidadAsync(
-        int trabajadorId, int especialidadId);
+    Task<WorkerSpecialty?> FindByIdAsync(int id);
+    Task<IReadOnlyCollection<WorkerSpecialty>> FindByTrabajadorAsync(int trabajadorId);
+    Task<IReadOnlyCollection<WorkerSpecialty>> FindByEspecialidadAsync(int especialidadId);
+    Task<bool> ExistsByTrabajadorAndEspecialidadAsync(int trabajadorId, int especialidadId);
+    Task SaveAsync(WorkerSpecialty specialty);
+    Task DeleteAsync(int id);
 }

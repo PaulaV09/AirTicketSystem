@@ -30,6 +30,35 @@ public sealed class Client
         };
     }
 
+    public static Client Reconstituir(
+        int id,
+        int personaId,
+        int usuarioId,
+        bool activo,
+        DateTime fechaRegistro)
+    {
+        if (id <= 0)
+            throw new ArgumentException("El ID del cliente no es válido.");
+
+        var client = new Client
+        {
+            PersonaId     = personaId,
+            UsuarioId     = usuarioId,
+            Activo        = ActivoClient.Crear(activo),
+            FechaRegistro = FechaRegistroClient.Crear(fechaRegistro)
+        };
+        client.Id = id;
+        return client;
+    }
+
+    public void EstablecerId(int id)
+    {
+        if (id <= 0)
+            throw new ArgumentException("El ID del cliente no es válido.");
+
+        Id = id;
+    }
+
     public void Activar()
     {
         if (Activo.Valor)

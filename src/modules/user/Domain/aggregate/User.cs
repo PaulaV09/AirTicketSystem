@@ -42,6 +42,45 @@ public sealed class User
         };
     }
 
+    public static User Reconstituir(
+        int id,
+        int personaId,
+        int rolId,
+        string username,
+        string passwordHash,
+        bool activo,
+        DateTime fechaRegistro,
+        DateTime? ultimoLogin,
+        int intentosFallidos)
+    {
+        if (id <= 0)
+            throw new ArgumentException("El ID del usuario no es válido.");
+
+        var user = new User
+        {
+            PersonaId        = personaId,
+            RolId            = rolId,
+            Username         = UsernameUser.Crear(username),
+            PasswordHash     = PasswordHashUser.Crear(passwordHash),
+            Activo           = ActivoUser.Crear(activo),
+            FechaRegistro    = FechaRegistroUser.Crear(fechaRegistro),
+            UltimoLogin      = ultimoLogin.HasValue
+                ? UltimoLoginUser.Crear(ultimoLogin.Value)
+                : null,
+            IntentosFallidos = IntentosFallidosUser.Crear(intentosFallidos)
+        };
+        user.Id = id;
+        return user;
+    }
+
+    public void EstablecerId(int id)
+    {
+        if (id <= 0)
+            throw new ArgumentException("El ID del usuario no es válido.");
+
+        Id = id;
+    }
+
     // ── Autenticación ────────────────────────────────────────
 
     /// <summary>

@@ -1,25 +1,23 @@
 // src/modules/worker/Application/UseCases/GetWorkerByPersonUseCase.cs
+using AirTicketSystem.modules.worker.Domain.aggregate;
 using AirTicketSystem.modules.worker.Domain.Repositories;
-using AirTicketSystem.modules.worker.Infrastructure.entity;
 
 namespace AirTicketSystem.modules.worker.Application.UseCases;
 
-public class GetWorkerByPersonUseCase
+public sealed class GetWorkerByPersonUseCase
 {
     private readonly IWorkerRepository _repository;
 
-    public GetWorkerByPersonUseCase(IWorkerRepository repository)
-    {
-        _repository = repository;
-    }
+    public GetWorkerByPersonUseCase(IWorkerRepository repository) => _repository = repository;
 
-    public async Task<WorkerEntity> ExecuteAsync(int personaId)
+    public async Task<Worker> ExecuteAsync(
+        int personaId, CancellationToken cancellationToken = default)
     {
         if (personaId <= 0)
             throw new ArgumentException("El ID de la persona no es válido.");
 
-        return await _repository.GetByPersonaAsync(personaId)
+        return await _repository.FindByPersonaAsync(personaId)
             ?? throw new KeyNotFoundException(
-                $"No se encontró un trabajador asociado a la persona con ID {personaId}.");
+                $"No se encontró un trabajador para la persona con ID {personaId}.");
     }
 }

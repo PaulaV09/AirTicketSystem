@@ -1,23 +1,21 @@
 // src/modules/worker/Application/UseCases/GetWorkersByAirportUseCase.cs
+using AirTicketSystem.modules.worker.Domain.aggregate;
 using AirTicketSystem.modules.worker.Domain.Repositories;
-using AirTicketSystem.modules.worker.Infrastructure.entity;
 
 namespace AirTicketSystem.modules.worker.Application.UseCases;
 
-public class GetWorkersByAirportUseCase
+public sealed class GetWorkersByAirportUseCase
 {
     private readonly IWorkerRepository _repository;
 
-    public GetWorkersByAirportUseCase(IWorkerRepository repository)
-    {
-        _repository = repository;
-    }
+    public GetWorkersByAirportUseCase(IWorkerRepository repository) => _repository = repository;
 
-    public async Task<IEnumerable<WorkerEntity>> ExecuteAsync(int aeropuertoId)
+    public async Task<IReadOnlyCollection<Worker>> ExecuteAsync(
+        int aeropuertoId, CancellationToken cancellationToken = default)
     {
         if (aeropuertoId <= 0)
             throw new ArgumentException("El ID del aeropuerto no es válido.");
 
-        return await _repository.GetByAeropuertoBaseAsync(aeropuertoId);
+        return await _repository.FindByAeropuertoBaseAsync(aeropuertoId);
     }
 }

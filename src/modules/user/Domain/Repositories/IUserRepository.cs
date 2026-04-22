@@ -1,14 +1,18 @@
 // src/modules/user/Domain/Repositories/IUserRepository.cs
-using AirTicketSystem.shared.contracts;
-using AirTicketSystem.modules.user.Infrastructure.entity;
+using AirTicketSystem.modules.user.Domain.aggregate;
 
 namespace AirTicketSystem.modules.user.Domain.Repositories;
 
-public interface IUserRepository : IRepository<UserEntity>
+public interface IUserRepository
 {
-    Task<UserEntity?> GetByUsernameAsync(string username);
-    Task<UserEntity?> GetByPersonaAsync(int personaId);
-    Task<IEnumerable<UserEntity>> GetByRolAsync(int rolId);
+    Task<User?> FindByIdAsync(int id);
+    Task<IReadOnlyCollection<User>> FindAllAsync();
+    Task<User?> FindByUsernameAsync(string username);
+    Task<User?> FindByPersonaAsync(int personaId);
+    Task<IReadOnlyCollection<User>> FindByRolAsync(int rolId);
+    Task<IReadOnlyCollection<User>> FindActivosAsync();
     Task<bool> ExistsByUsernameAsync(string username);
-    Task<IEnumerable<UserEntity>> GetActivosAsync();
+    Task SaveAsync(User user);
+    Task UpdateAsync(User user);
+    Task DeleteAsync(int id);
 }

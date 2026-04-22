@@ -50,6 +50,33 @@ public sealed class PersonAddress
         };
     }
 
+    public static PersonAddress Reconstituir(
+        int id,
+        int personaId,
+        int tipoDireccionId,
+        int ciudadId,
+        string direccionLinea1,
+        string? direccionLinea2,
+        string? codigoPostal,
+        bool esPrincipal)
+    {
+        if (id <= 0)
+            throw new ArgumentException("El ID de la dirección no es válido.");
+
+        var addr = Crear(personaId, tipoDireccionId, ciudadId,
+            direccionLinea1, direccionLinea2, codigoPostal, esPrincipal);
+        addr.Id = id;
+        return addr;
+    }
+
+    public void EstablecerId(int id)
+    {
+        if (id <= 0)
+            throw new ArgumentException("El ID de la dirección no es válido.");
+
+        Id = id;
+    }
+
     public void ActualizarDireccion(
         string direccionLinea1,
         string? direccionLinea2 = null,

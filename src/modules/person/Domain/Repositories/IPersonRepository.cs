@@ -1,12 +1,15 @@
 // src/modules/person/Domain/Repositories/IPersonRepository.cs
-using AirTicketSystem.shared.contracts;
-using AirTicketSystem.modules.person.Infrastructure.entity;
+using AirTicketSystem.modules.person.Domain.aggregate;
 
 namespace AirTicketSystem.modules.person.Domain.Repositories;
 
-public interface IPersonRepository : IRepository<PersonEntity>
+public interface IPersonRepository
 {
-    Task<PersonEntity?> GetByDocumentoAsync(int tipoDocId, string numeroDoc);
-    Task<PersonEntity?> GetByIdWithDetailsAsync(int id);
+    Task<Person?> FindByIdAsync(int id);
+    Task<IReadOnlyCollection<Person>> FindAllAsync();
+    Task<Person?> FindByDocumentoAsync(int tipoDocId, string numeroDoc);
     Task<bool> ExistsByDocumentoAsync(int tipoDocId, string numeroDoc);
+    Task SaveAsync(Person person);
+    Task UpdateAsync(Person person);
+    Task DeleteAsync(int id);
 }

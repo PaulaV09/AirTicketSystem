@@ -1,18 +1,16 @@
 // src/modules/worker/Application/UseCases/GetActiveWorkersUseCase.cs
+using AirTicketSystem.modules.worker.Domain.aggregate;
 using AirTicketSystem.modules.worker.Domain.Repositories;
-using AirTicketSystem.modules.worker.Infrastructure.entity;
 
 namespace AirTicketSystem.modules.worker.Application.UseCases;
 
-public class GetActiveWorkersUseCase
+public sealed class GetActiveWorkersUseCase
 {
     private readonly IWorkerRepository _repository;
 
-    public GetActiveWorkersUseCase(IWorkerRepository repository)
-    {
-        _repository = repository;
-    }
+    public GetActiveWorkersUseCase(IWorkerRepository repository) => _repository = repository;
 
-    public async Task<IEnumerable<WorkerEntity>> ExecuteAsync()
-        => await _repository.GetActivosAsync();
+    public Task<IReadOnlyCollection<Worker>> ExecuteAsync(
+        CancellationToken cancellationToken = default)
+        => _repository.FindActivosAsync();
 }

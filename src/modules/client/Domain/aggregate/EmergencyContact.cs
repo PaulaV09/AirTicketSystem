@@ -41,6 +41,35 @@ public sealed class EmergencyContact
         };
     }
 
+    public static EmergencyContact Reconstituir(
+        int id,
+        int clienteId,
+        int personaId,
+        int relacionId,
+        bool esPrincipal)
+    {
+        if (id <= 0)
+            throw new ArgumentException("El ID del contacto de emergencia no es válido.");
+
+        var contact = new EmergencyContact
+        {
+            ClienteId   = clienteId,
+            PersonaId   = personaId,
+            RelacionId  = relacionId,
+            EsPrincipal = EsPrincipalEmergencyContact.Crear(esPrincipal)
+        };
+        contact.Id = id;
+        return contact;
+    }
+
+    public void EstablecerId(int id)
+    {
+        if (id <= 0)
+            throw new ArgumentException("El ID del contacto de emergencia no es válido.");
+
+        Id = id;
+    }
+
     public void MarcarComoPrincipal()
     {
         if (EsPrincipal.Valor)

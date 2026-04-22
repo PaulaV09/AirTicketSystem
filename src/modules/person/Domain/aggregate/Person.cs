@@ -42,6 +42,33 @@ public sealed class Person
         };
     }
 
+    public static Person Reconstituir(
+        int id,
+        int tipoDocId,
+        string numeroDoc,
+        string nombres,
+        string apellidos,
+        DateOnly? fechaNacimiento,
+        int? generoId,
+        int? nacionalidadId)
+    {
+        if (id <= 0)
+            throw new ArgumentException("El ID de la persona no es válido.");
+
+        var person = Crear(tipoDocId, numeroDoc, nombres, apellidos,
+            fechaNacimiento, generoId, nacionalidadId);
+        person.Id = id;
+        return person;
+    }
+
+    public void EstablecerId(int id)
+    {
+        if (id <= 0)
+            throw new ArgumentException("El ID de la persona no es válido.");
+
+        Id = id;
+    }
+
     public void ActualizarNombre(string nombres, string apellidos)
     {
         Nombres   = NombresPerson.Crear(nombres);

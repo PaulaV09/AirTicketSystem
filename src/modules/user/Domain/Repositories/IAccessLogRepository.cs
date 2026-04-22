@@ -1,15 +1,14 @@
 // src/modules/user/Domain/Repositories/IAccessLogRepository.cs
-using AirTicketSystem.shared.contracts;
-using AirTicketSystem.modules.user.Infrastructure.entity;
+using AirTicketSystem.modules.user.Domain.aggregate;
 
 namespace AirTicketSystem.modules.user.Domain.Repositories;
 
-public interface IAccessLogRepository : IRepository<AccessLogEntity>
+public interface IAccessLogRepository
 {
-    Task<IEnumerable<AccessLogEntity>> GetByUsuarioAsync(int usuarioId);
-    Task<IEnumerable<AccessLogEntity>> GetByUsuarioAndTipoAsync(
-        int usuarioId, string tipo);
-    Task<AccessLogEntity?> GetUltimoLoginAsync(int usuarioId);
-    Task<int> ContarIntentosFallidosRecientesAsync(
-        int usuarioId, DateTime desde);
+    Task<AccessLog?> FindByIdAsync(int id);
+    Task<IReadOnlyCollection<AccessLog>> FindByUsuarioAsync(int usuarioId);
+    Task<IReadOnlyCollection<AccessLog>> FindByUsuarioAndTipoAsync(int usuarioId, string tipo);
+    Task<AccessLog?> FindUltimoLoginAsync(int usuarioId);
+    Task<int> ContarIntentosFallidosRecientesAsync(int usuarioId, DateTime desde);
+    Task SaveAsync(AccessLog log);
 }
