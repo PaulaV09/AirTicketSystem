@@ -17,6 +17,48 @@ public sealed class LuggageRestriction
 
     private LuggageRestriction() { }
 
+    public static LuggageRestriction Reconstituir(
+        int id,
+        int tarifaId,
+        int tipoEquipajeId,
+        int piezasIncluidas,
+        decimal pesoMaximoKg,
+        decimal costoExcesoKg,
+        int? largoMaxCm,
+        int? anchoMaxCm,
+        int? altoMaxCm)
+    {
+        if (id <= 0)
+            throw new ArgumentException("El ID de la restricción no es válido.");
+
+        return new LuggageRestriction
+        {
+            Id              = id,
+            TarifaId        = tarifaId,
+            TipoEquipajeId  = tipoEquipajeId,
+            PiezasIncluidas = PiezasIncluidasLuggageRestriction.Crear(piezasIncluidas),
+            PesoMaximoKg    = PesoMaximoKgLuggageRestriction.Crear(pesoMaximoKg),
+            CostoExcesoKg   = CostoExcesoKgLuggageRestriction.Crear(costoExcesoKg),
+            LargoMaxCm      = largoMaxCm is not null
+                ? LargoMaxCmLuggageRestriction.Crear(largoMaxCm.Value)
+                : null,
+            AnchoMaxCm = anchoMaxCm is not null
+                ? AnchoMaxCmLuggageRestriction.Crear(anchoMaxCm.Value)
+                : null,
+            AltoMaxCm = altoMaxCm is not null
+                ? AltoMaxCmLuggageRestriction.Crear(altoMaxCm.Value)
+                : null
+        };
+    }
+
+    public void EstablecerId(int id)
+    {
+        if (id <= 0)
+            throw new ArgumentException("El ID de la restricción no es válido.");
+
+        Id = id;
+    }
+
     public static LuggageRestriction Crear(
         int tarifaId,
         int tipoEquipajeId,

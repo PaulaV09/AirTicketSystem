@@ -10,6 +10,22 @@ public sealed class LuggageType
 
     private LuggageType() { }
 
+    public static LuggageType Reconstituir(int id, string nombre)
+    {
+        if (id <= 0)
+            throw new ArgumentException("El ID del tipo de equipaje no es válido.");
+
+        return new LuggageType { Id = id, Nombre = NombreLuggageType.Crear(nombre) };
+    }
+
+    public void EstablecerId(int id)
+    {
+        if (id <= 0)
+            throw new ArgumentException("El ID del tipo de equipaje no es válido.");
+
+        Id = id;
+    }
+
     public static LuggageType Crear(string nombre)
     {
         return new LuggageType

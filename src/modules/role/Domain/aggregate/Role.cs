@@ -10,6 +10,22 @@ public sealed class Role
 
     private Role() { }
 
+    public static Role Reconstituir(int id, string nombre)
+    {
+        if (id <= 0)
+            throw new ArgumentException("El ID del rol no es válido.");
+
+        return new Role { Id = id, Nombre = NombreRole.Crear(nombre) };
+    }
+
+    public void EstablecerId(int id)
+    {
+        if (id <= 0)
+            throw new ArgumentException("El ID del rol no es válido.");
+
+        Id = id;
+    }
+
     public static Role Crear(string nombre)
     {
         return new Role

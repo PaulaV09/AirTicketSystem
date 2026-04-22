@@ -1,14 +1,16 @@
 // src/modules/luggagerestriction/Domain/Repositories/ILuggageRestrictionRepository.cs
-using AirTicketSystem.shared.contracts;
-using AirTicketSystem.modules.luggagerestriction.Infrastructure.entity;
+using AirTicketSystem.modules.luggagerestriction.Domain.aggregate;
 
 namespace AirTicketSystem.modules.luggagerestriction.Domain.Repositories;
 
-public interface ILuggageRestrictionRepository : IRepository<LuggageRestrictionEntity>
+public interface ILuggageRestrictionRepository
 {
-    Task<IEnumerable<LuggageRestrictionEntity>> GetByTarifaAsync(int tarifaId);
-    Task<LuggageRestrictionEntity?> GetByTarifaAndTipoEquipajeAsync(
-        int tarifaId, int tipoEquipajeId);
-    Task<bool> ExistsByTarifaAndTipoEquipajeAsync(
-        int tarifaId, int tipoEquipajeId);
+    Task<LuggageRestriction?> FindByIdAsync(int id);
+    Task<IReadOnlyCollection<LuggageRestriction>> FindAllAsync();
+    Task<IReadOnlyCollection<LuggageRestriction>> FindByTarifaAsync(int tarifaId);
+    Task<LuggageRestriction?> FindByTarifaAndTipoEquipajeAsync(int tarifaId, int tipoEquipajeId);
+    Task<bool> ExistsByTarifaAndTipoEquipajeAsync(int tarifaId, int tipoEquipajeId);
+    Task SaveAsync(LuggageRestriction restriction);
+    Task UpdateAsync(LuggageRestriction restriction);
+    Task DeleteAsync(int id);
 }

@@ -19,6 +19,48 @@ public sealed class Fare
 
     private Fare() { }
 
+    public static Fare Reconstituir(
+        int id,
+        int rutaId,
+        int claseServicioId,
+        string nombre,
+        decimal precioBase,
+        decimal impuestos,
+        decimal precioTotal,
+        bool permiteCambios,
+        bool permiteReembolso,
+        bool activa,
+        DateOnly? vigenteHasta)
+    {
+        if (id <= 0)
+            throw new ArgumentException("El ID de la tarifa no es válido.");
+
+        return new Fare
+        {
+            Id               = id,
+            RutaId           = rutaId,
+            ClaseServicioId  = claseServicioId,
+            Nombre           = NombreFare.Crear(nombre),
+            PrecioBase       = PrecioBaseFare.Crear(precioBase),
+            Impuestos        = ImpuestosFare.Crear(impuestos),
+            PrecioTotal      = PrecioTotalFare.Crear(precioTotal),
+            PermiteCambios   = PermiteCambiosFare.Crear(permiteCambios),
+            PermiteReembolso = PermiteReembolsoFare.Crear(permiteReembolso),
+            Activa           = ActivaFare.Crear(activa),
+            VigenteHasta     = vigenteHasta is not null
+                ? VigenteHastaFare.Crear(vigenteHasta.Value)
+                : null
+        };
+    }
+
+    public void EstablecerId(int id)
+    {
+        if (id <= 0)
+            throw new ArgumentException("El ID de la tarifa no es válido.");
+
+        Id = id;
+    }
+
     public static Fare Crear(
         int rutaId,
         int claseServicioId,

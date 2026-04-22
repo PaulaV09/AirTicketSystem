@@ -13,6 +13,34 @@ public sealed class AdditionalCharge
 
     private AdditionalCharge() { }
 
+    public static AdditionalCharge Reconstituir(
+        int id,
+        int reservaId,
+        string concepto,
+        decimal monto,
+        DateTime fecha)
+    {
+        if (id <= 0)
+            throw new ArgumentException("El ID del cargo adicional no es válido.");
+
+        return new AdditionalCharge
+        {
+            Id        = id,
+            ReservaId = reservaId,
+            Concepto  = ConceptoAdditionalCharge.Crear(concepto),
+            Monto     = MontoAdditionalCharge.Crear(monto),
+            Fecha     = FechaAdditionalCharge.Crear(fecha)
+        };
+    }
+
+    public void EstablecerId(int id)
+    {
+        if (id <= 0)
+            throw new ArgumentException("El ID del cargo adicional no es válido.");
+
+        Id = id;
+    }
+
     public static AdditionalCharge Crear(
         int reservaId,
         string concepto,

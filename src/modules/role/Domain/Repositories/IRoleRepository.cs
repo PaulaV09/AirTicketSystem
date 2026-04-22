@@ -1,11 +1,14 @@
 // src/modules/role/Domain/Repositories/IRoleRepository.cs
-using AirTicketSystem.shared.contracts;
-using AirTicketSystem.modules.role.Infrastructure.entity;
+using AirTicketSystem.modules.role.Domain.aggregate;
 
 namespace AirTicketSystem.modules.role.Domain.Repositories;
 
-public interface IRoleRepository : IRepository<RoleEntity>
+public interface IRoleRepository
 {
-    Task<RoleEntity?> GetByNombreAsync(string nombre);
+    Task<Role?> FindByIdAsync(int id);
+    Task<IReadOnlyCollection<Role>> FindAllAsync();
     Task<bool> ExistsByNombreAsync(string nombre);
+    Task SaveAsync(Role role);
+    Task UpdateAsync(Role role);
+    Task DeleteAsync(int id);
 }

@@ -1,16 +1,18 @@
 // src/modules/fare/Domain/Repositories/IFareRepository.cs
-using AirTicketSystem.shared.contracts;
-using AirTicketSystem.modules.fare.Infrastructure.entity;
+using AirTicketSystem.modules.fare.Domain.aggregate;
 
 namespace AirTicketSystem.modules.fare.Domain.Repositories;
 
-public interface IFareRepository : IRepository<FareEntity>
+public interface IFareRepository
 {
-    Task<IEnumerable<FareEntity>> GetByRutaAsync(int rutaId);
-    Task<IEnumerable<FareEntity>> GetByRutaAndClaseAsync(
-        int rutaId, int claseServicioId);
-    Task<IEnumerable<FareEntity>> GetActivasAsync();
-    Task<IEnumerable<FareEntity>> GetActivasByRutaAsync(int rutaId);
-    Task<bool> ExistsByRutaClaseNombreAsync(
-        int rutaId, int claseServicioId, string nombre);
+    Task<Fare?> FindByIdAsync(int id);
+    Task<IReadOnlyCollection<Fare>> FindAllAsync();
+    Task<IReadOnlyCollection<Fare>> FindByRutaAsync(int rutaId);
+    Task<IReadOnlyCollection<Fare>> FindByRutaAndClaseAsync(int rutaId, int claseServicioId);
+    Task<IReadOnlyCollection<Fare>> FindActivasAsync();
+    Task<IReadOnlyCollection<Fare>> FindActivasByRutaAsync(int rutaId);
+    Task<bool> ExistsByRutaClaseNombreAsync(int rutaId, int claseServicioId, string nombre);
+    Task SaveAsync(Fare fare);
+    Task UpdateAsync(Fare fare);
+    Task DeleteAsync(int id);
 }
