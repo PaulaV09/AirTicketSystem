@@ -127,6 +127,17 @@ using AirTicketSystem.modules.aircraftmanufacturer.Application.UseCases;
 using AirTicketSystem.modules.aircraftmodel.Application.UseCases;
 using AirTicketSystem.modules.aircraft.Application.UseCases;
 using AirTicketSystem.modules.aircraftseat.Application.UseCases;
+using AirTicketSystem.modules.airport.Application.UseCases;
+using AirTicketSystem.modules.terminal.Application.UseCases;
+using AirTicketSystem.modules.gate.Application.UseCases;
+using AirTicketSystem.modules.airline.Application.UseCases;
+using AirTicketSystem.modules.route.Application.UseCases;
+using AirTicketSystem.modules.fare.Application.UseCases;
+using AirTicketSystem.modules.luggagerestriction.Application.UseCases;
+using AirTicketSystem.modules.flight.Application.UseCases;
+using AirTicketSystem.modules.booking.Application.UseCases;
+using AirTicketSystem.modules.bookingpassenger.Application.UseCases;
+using AirTicketSystem.modules.checkin.Application.UseCases;
 
 namespace AirTicketSystem.shared;
 
@@ -371,6 +382,131 @@ public static class DependencyInjection
         services.AddScoped<ActivateAircraftSeatUseCase>();
         services.AddScoped<DeactivateAircraftSeatUseCase>();
         services.AddScoped<DeleteAircraftSeatUseCase>();
+
+        // Airport
+        services.AddScoped<GetAllAirportsUseCase>();
+        services.AddScoped<GetAirportByIdUseCase>();
+        services.AddScoped<GetAirportByIataUseCase>();
+        services.AddScoped<GetActiveAirportsUseCase>();
+        services.AddScoped<GetAirportsByCityUseCase>();
+        services.AddScoped<CreateAirportUseCase>();
+        services.AddScoped<UpdateAirportUseCase>();
+        services.AddScoped<ActivateAirportUseCase>();
+        services.AddScoped<DeactivateAirportUseCase>();
+        services.AddScoped<DeleteAirportUseCase>();
+
+        // Terminal
+        services.AddScoped<GetTerminalByIdUseCase>();
+        services.AddScoped<GetTerminalsByAirportUseCase>();
+        services.AddScoped<CreateTerminalUseCase>();
+        services.AddScoped<UpdateTerminalUseCase>();
+        services.AddScoped<DeleteTerminalUseCase>();
+
+        // Gate
+        services.AddScoped<GetGateByIdUseCase>();
+        services.AddScoped<GetGatesByTerminalUseCase>();
+        services.AddScoped<GetActiveGatesByTerminalUseCase>();
+        services.AddScoped<CreateGateUseCase>();
+        services.AddScoped<UpdateGateUseCase>();
+        services.AddScoped<ActivateGateUseCase>();
+        services.AddScoped<DeactivateGateUseCase>();
+        services.AddScoped<DeleteGateUseCase>();
+
+        // Airline
+        services.AddScoped<GetAllAirlinesUseCase>();
+        services.AddScoped<GetAirlineByIdUseCase>();
+        services.AddScoped<GetAirlineByIataUseCase>();
+        services.AddScoped<GetActiveAirlinesUseCase>();
+        services.AddScoped<CreateAirlineUseCase>();
+        services.AddScoped<UpdateAirlineUseCase>();
+        services.AddScoped<ActivateAirlineUseCase>();
+        services.AddScoped<DeactivateAirlineUseCase>();
+        services.AddScoped<DeleteAirlineUseCase>();
+        services.AddScoped<AddAirlineEmailUseCase>();
+        services.AddScoped<RemoveAirlineEmailUseCase>();
+        services.AddScoped<AddAirlinePhoneUseCase>();
+        services.AddScoped<RemoveAirlinePhoneUseCase>();
+
+        // Route
+        services.AddScoped<GetAllRoutesUseCase>();
+        services.AddScoped<GetRouteByIdUseCase>();
+        services.AddScoped<GetActiveRoutesUseCase>();
+        services.AddScoped<GetRoutesByAirlineUseCase>();
+        services.AddScoped<GetRoutesByOriginUseCase>();
+        services.AddScoped<GetRoutesByDestinationUseCase>();
+        services.AddScoped<SearchRoutesUseCase>();
+        services.AddScoped<CreateRouteUseCase>();
+        services.AddScoped<UpdateRouteUseCase>();
+        services.AddScoped<ActivateRouteUseCase>();
+        services.AddScoped<DeactivateRouteUseCase>();
+        services.AddScoped<DeleteRouteUseCase>();
+
+        // Fare
+        services.AddScoped<GetAllFaresUseCase>();
+        services.AddScoped<GetFareByIdUseCase>();
+        services.AddScoped<GetActiveFaresUseCase>();
+        services.AddScoped<GetFaresByRouteUseCase>();
+        services.AddScoped<GetActiveFaresByRouteUseCase>();
+        services.AddScoped<CreateFareUseCase>();
+        services.AddScoped<UpdateFareUseCase>();
+        services.AddScoped<ActivateFareUseCase>();
+        services.AddScoped<DeactivateFareUseCase>();
+        services.AddScoped<DeleteFareUseCase>();
+
+        // LuggageRestriction
+        services.AddScoped<GetAllRestrictionsUseCase>();
+        services.AddScoped<GetLuggageRestrictionByIdUseCase>();
+        services.AddScoped<GetRestrictionsByFareUseCase>();
+        services.AddScoped<CreateLuggageRestrictionUseCase>();
+        services.AddScoped<UpdateLuggageRestrictionUseCase>();
+        services.AddScoped<DeleteLuggageRestrictionUseCase>();
+
+        // Flight
+        services.AddScoped<GetAllFlightsUseCase>();
+        services.AddScoped<GetFlightByIdUseCase>();
+        services.AddScoped<GetFlightByNumberAndDateUseCase>();
+        services.AddScoped<GetFlightsByDateUseCase>();
+        services.AddScoped<GetFlightsByRouteUseCase>();
+        services.AddScoped<GetScheduledFlightsUseCase>();
+        services.AddScoped<SearchFlightsUseCase>();
+        services.AddScoped<GetFlightsWithOpenCheckinUseCase>();
+        services.AddScoped<CreateFlightUseCase>();
+        services.AddScoped<UpdateFlightUseCase>();
+        services.AddScoped<AssignGateToFlightUseCase>();
+        services.AddScoped<OpenCheckinUseCase>();
+        services.AddScoped<StartBoardingUseCase>();
+        services.AddScoped<StartFlightUseCase>();
+        services.AddScoped<RegisterLandingFlightUseCase>();
+        services.AddScoped<DelayFlightUseCase>();
+        services.AddScoped<CancelFlightUseCase>();
+        services.AddScoped<DivertFlightUseCase>();
+        services.AddScoped<DeleteFlightUseCase>();
+
+        // Booking
+        services.AddScoped<CreateBookingUseCase>();
+        services.AddScoped<GetBookingByIdUseCase>();
+        services.AddScoped<GetBookingByCodigoUseCase>();
+        services.AddScoped<GetBookingsByClienteUseCase>();
+        services.AddScoped<ConfirmBookingUseCase>();
+        services.AddScoped<CancelBookingUseCase>();
+        services.AddScoped<ExpireBookingUseCase>();
+        services.AddScoped<ExtendBookingUseCase>();
+        services.AddScoped<UpdateBookingObservationsUseCase>();
+        services.AddScoped<DeleteBookingUseCase>();
+
+        // BookingPassenger
+        services.AddScoped<AddPassengerUseCase>();
+        services.AddScoped<GetPassengersByBookingUseCase>();
+        services.AddScoped<AssignSeatUseCase>();
+        services.AddScoped<ChangeSeatUseCase>();
+        services.AddScoped<ReleaseSeatUseCase>();
+
+        // CheckIn
+        services.AddScoped<CreateVirtualCheckInUseCase>();
+        services.AddScoped<CreatePresentialCheckInUseCase>();
+        services.AddScoped<CompleteCheckInUseCase>();
+        services.AddScoped<CancelCheckInUseCase>();
+        services.AddScoped<GetCheckInByIdUseCase>();
 
         return services;
     }

@@ -2,6 +2,9 @@
 using AirTicketSystem.shared.UI;
 using AirTicketSystem.UI.Admin.GeoConfig;
 using AirTicketSystem.UI.Admin.Aeronautica;
+using AirTicketSystem.UI.Admin.AirportsRoutes;
+using AirTicketSystem.UI.Admin.Flights;
+using AirTicketSystem.UI.Admin.Reservations;
 
 namespace AirTicketSystem.UI.Admin;
 
@@ -51,6 +54,18 @@ public sealed class AdminPortal
 
                 case "2. Gestión aeronáutica":
                     await new AeronauticaMenu(_provider).MostrarAsync();
+                    break;
+
+                case "3. Aeropuertos y rutas":
+                    await new AirportsRoutesMenu(_provider).MostrarAsync();
+                    break;
+
+                case "5. Vuelos":
+                    await new FlightMenu(_provider).MostrarAsync();
+                    break;
+
+                case "6. Reservas y pasajeros":
+                    await new ReservationsMenu(_provider, _session).MostrarAsync();
                     break;
 
                 default:
