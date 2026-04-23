@@ -676,6 +676,9 @@ public static class DependencyInjection
         services.AddScoped<GetPaymentMethodByIdUseCase>();
         services.AddScoped<UpdatePaymentMethodUseCase>();
 
+        // Seed
+        services.AddSingleton<SeedFullDataUseCase>(sp => new SeedFullDataUseCase(sp));
+
         return services;
     }
 }

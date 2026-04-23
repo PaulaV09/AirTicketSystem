@@ -319,23 +319,20 @@ public sealed class MyProfileMenu
                 switch (opcion)
                 {
                     case "Agregar contacto":
+                        SpectreHelper.MostrarInfo("El contacto debe ser una persona registrada en el sistema.");
+                        var personaIdC = SpectreHelper.PedirEntero("ID de la persona (contacto)");
                         var relacionId = SpectreHelper.PedirEntero("ID de la relación de contacto");
-                        var nombres    = SpectreHelper.PedirTexto("Nombres del contacto");
-                        var apellidos  = SpectreHelper.PedirTexto("Apellidos del contacto");
-                        var telefono   = SpectreHelper.PedirTexto("Teléfono");
                         var prinStr    = SpectreHelper.PedirTexto("¿Es principal? (s/n)");
                         var c2 = await scope.ServiceProvider.GetRequiredService<AddEmergencyContactUseCase>()
-                            .ExecuteAsync(cliente.Id, cliente.PersonaId, relacionId, prinStr.Trim().ToLower() == "s");
+                            .ExecuteAsync(cliente.Id, personaIdC, relacionId, prinStr.Trim().ToLower() == "s");
                         SpectreHelper.MostrarExito($"Contacto de emergencia agregado correctamente (ID {c2.Id}).");
                         SpectreHelper.EsperarTecla();
                         break;
 
                     case "Actualizar contacto":
                         var idUpd  = SpectreHelper.PedirEntero("ID del contacto");
-                        var nomUpd = SpectreHelper.PedirTexto("Nuevos nombres");
-                        var apeUpd = SpectreHelper.PedirTexto("Nuevos apellidos");
-                        var telUpd = SpectreHelper.PedirTexto("Nuevo teléfono");
-                        await scope.ServiceProvider.GetRequiredService<UpdateEmergencyContactUseCase>().ExecuteAsync(idUpd, 0);
+                        var relUpd = SpectreHelper.PedirEntero("Nuevo ID de relación de contacto");
+                        await scope.ServiceProvider.GetRequiredService<UpdateEmergencyContactUseCase>().ExecuteAsync(idUpd, relUpd);
                         SpectreHelper.MostrarExito("Contacto actualizado.");
                         SpectreHelper.EsperarTecla();
                         break;

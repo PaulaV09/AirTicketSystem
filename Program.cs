@@ -46,7 +46,20 @@ try
 catch (Exception ex)
 {
     Console.ForegroundColor = ConsoleColor.Yellow;
-    Console.WriteLine($"  ⚠ Advertencia en seed inicial: {ex.Message}");
+    Console.WriteLine($"  ⚠ Advertencia en seed admin: {ex.Message}");
+    Console.ResetColor();
+}
+
+// ── Seed completo de datos de prueba ─────────────────────────────────────────
+try
+{
+    var seedFull = provider.GetRequiredService<AirTicketSystem.shared.SeedFullDataUseCase>();
+    await seedFull.ExecuteAsync();
+}
+catch (Exception ex)
+{
+    Console.ForegroundColor = ConsoleColor.Yellow;
+    Console.WriteLine($"  ⚠ Advertencia en seed de datos: {ex.Message}");
     Console.ResetColor();
 }
 
