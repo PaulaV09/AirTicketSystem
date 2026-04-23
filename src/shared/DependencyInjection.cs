@@ -123,6 +123,10 @@ using AirTicketSystem.modules.serviceclass.Application.UseCases;
 using AirTicketSystem.modules.workertype.Application.UseCases;
 using AirTicketSystem.modules.specialty.Application.UseCases;
 using AirTicketSystem.modules.luggagetype.Application.UseCases;
+using AirTicketSystem.modules.aircraftmanufacturer.Application.UseCases;
+using AirTicketSystem.modules.aircraftmodel.Application.UseCases;
+using AirTicketSystem.modules.aircraft.Application.UseCases;
+using AirTicketSystem.modules.aircraftseat.Application.UseCases;
 
 namespace AirTicketSystem.shared;
 
@@ -325,6 +329,48 @@ public static class DependencyInjection
         services.AddScoped<CreateLuggageTypeUseCase>();
         services.AddScoped<UpdateLuggageTypeUseCase>();
         services.AddScoped<DeleteLuggageTypeUseCase>();
+
+        // AircraftManufacturer
+        services.AddScoped<GetAllAircraftManufacturersUseCase>();
+        services.AddScoped<GetAircraftManufacturerByIdUseCase>();
+        services.AddScoped<GetAircraftManufacturersByCountryUseCase>();
+        services.AddScoped<CreateAircraftManufacturerUseCase>();
+        services.AddScoped<UpdateAircraftManufacturerUseCase>();
+        services.AddScoped<DeleteAircraftManufacturerUseCase>();
+
+        // AircraftModel
+        services.AddScoped<GetAllAircraftModelsUseCase>();
+        services.AddScoped<GetAircraftModelByIdUseCase>();
+        services.AddScoped<GetAircraftModelsByManufacturerUseCase>();
+        services.AddScoped<CreateAircraftModelUseCase>();
+        services.AddScoped<UpdateAircraftModelUseCase>();
+        services.AddScoped<DeleteAircraftModelUseCase>();
+
+        // Aircraft
+        services.AddScoped<GetAllAircraftUseCase>();
+        services.AddScoped<GetAircraftByIdUseCase>();
+        services.AddScoped<GetAircraftByMatriculaUseCase>();
+        services.AddScoped<GetAircraftByAirlineUseCase>();
+        services.AddScoped<GetAvailableAircraftUseCase>();
+        services.AddScoped<GetAircraftWithUrgentMaintenanceUseCase>();
+        services.AddScoped<CreateAircraftUseCase>();
+        services.AddScoped<UpdateAircraftUseCase>();
+        services.AddScoped<SendToMaintenanceUseCase>();
+        services.AddScoped<RegisterMaintenanceUseCase>();
+        services.AddScoped<RegisterLandingUseCase>();
+        services.AddScoped<DecommissionAircraftUseCase>();
+        services.AddScoped<ReactivateAircraftUseCase>();
+        services.AddScoped<DeleteAircraftUseCase>();
+
+        // AircraftSeat
+        services.AddScoped<GetSeatsByAircraftUseCase>();
+        services.AddScoped<GetSeatsByAircraftAndClassUseCase>();
+        services.AddScoped<GetAircraftSeatByIdUseCase>();
+        services.AddScoped<CreateAircraftSeatUseCase>();
+        services.AddScoped<UpdateAircraftSeatUseCase>();
+        services.AddScoped<ActivateAircraftSeatUseCase>();
+        services.AddScoped<DeactivateAircraftSeatUseCase>();
+        services.AddScoped<DeleteAircraftSeatUseCase>();
 
         return services;
     }

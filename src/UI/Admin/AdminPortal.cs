@@ -1,6 +1,7 @@
 // src/UI/Admin/AdminPortal.cs
 using AirTicketSystem.shared.UI;
 using AirTicketSystem.UI.Admin.GeoConfig;
+using AirTicketSystem.UI.Admin.Aeronautica;
 
 namespace AirTicketSystem.UI.Admin;
 
@@ -46,6 +47,10 @@ public sealed class AdminPortal
             {
                 case "1. Configuración geográfica":
                     await new GeoConfigMenu(_provider).MostrarAsync();
+                    break;
+
+                case "2. Gestión aeronáutica":
+                    await new AeronauticaMenu(_provider).MostrarAsync();
                     break;
 
                 default:
