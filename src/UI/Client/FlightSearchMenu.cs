@@ -78,7 +78,7 @@ public sealed class FlightSearchMenu
                     SpectreHelper.AgregarFila(tabla,
                         v.Id.ToString(), v.NumeroVuelo.Valor, v.RutaId.ToString(),
                         v.FechaSalida.Valor.ToString("yyyy-MM-dd HH:mm"),
-                        v.FechaLlegada.Valor.ToString("yyyy-MM-dd HH:mm"),
+                        v.FechaLlegadaEstimada.Valor.ToString("yyyy-MM-dd HH:mm"),
                         $"{v.Estado.Valor} ({disponibles.Count} asientos)");
             }
             SpectreHelper.MostrarTabla(tabla);

@@ -105,8 +105,7 @@ public sealed class MyProfileMenu
             var fechaStr  = SpectreHelper.PedirTexto("Nueva fecha de nacimiento (yyyy-MM-dd, opcional)");
             DateOnly? fecha = DateOnly.TryParse(fechaStr, out var f) ? f : null;
 
-            await scope.ServiceProvider.GetRequiredService<UpdatePersonUseCase>()
-                .ExecuteAsync(cliente.PersonaId, nombres, apellidos, fecha, null, null);
+            await scope.ServiceProvider.GetRequiredService<UpdatePersonUseCase>().ExecuteAsync(cliente.PersonaId, nombres, apellidos, fecha, null, null, default);
             SpectreHelper.MostrarExito("Datos actualizados correctamente.");
             SpectreHelper.EsperarTecla();
         });
@@ -211,8 +210,7 @@ public sealed class MyProfileMenu
                         var tipoId   = SpectreHelper.PedirEntero("ID tipo de email");
                         var email    = SpectreHelper.PedirTexto("Dirección de email");
                         var prinStr  = SpectreHelper.PedirTexto("¿Principal? (s/n)");
-                        var em2 = await scope.ServiceProvider.GetRequiredService<AddPersonEmailUseCase>()
-                            .ExecuteAsync(cliente.PersonaId, tipoId, email, prinStr.Trim().ToLower() == "s");
+                        var em2 = await scope.ServiceProvider.GetRequiredService<AddPersonEmailUseCase>().ExecuteAsync(cliente.PersonaId, tipoId, email, prinStr.Trim().ToLower() == "s", default);
                         SpectreHelper.MostrarExito($"Email '{em2.Email.Valor}' agregado.");
                         SpectreHelper.EsperarTecla();
                         break;
@@ -327,8 +325,8 @@ public sealed class MyProfileMenu
                         var telefono   = SpectreHelper.PedirTexto("Teléfono");
                         var prinStr    = SpectreHelper.PedirTexto("¿Es principal? (s/n)");
                         var c2 = await scope.ServiceProvider.GetRequiredService<AddEmergencyContactUseCase>()
-                            .ExecuteAsync(cliente.Id, relacionId, nombres, apellidos, telefono, prinStr.Trim().ToLower() == "s");
-                        SpectreHelper.MostrarExito($"Contacto de emergencia '{c2.Nombres.Valor}' agregado.");
+                            .ExecuteAsync(cliente.Id, cliente.PersonaId, relacionId, prinStr.Trim().ToLower() == "s");
+                        SpectreHelper.MostrarExito($"Contacto de emergencia agregado correctamente (ID {c2.Id}).");
                         SpectreHelper.EsperarTecla();
                         break;
 
@@ -337,8 +335,7 @@ public sealed class MyProfileMenu
                         var nomUpd = SpectreHelper.PedirTexto("Nuevos nombres");
                         var apeUpd = SpectreHelper.PedirTexto("Nuevos apellidos");
                         var telUpd = SpectreHelper.PedirTexto("Nuevo teléfono");
-                        await scope.ServiceProvider.GetRequiredService<UpdateEmergencyContactUseCase>()
-                            .ExecuteAsync(idUpd, nomUpd, apeUpd, telUpd);
+                        await scope.ServiceProvider.GetRequiredService<UpdateEmergencyContactUseCase>().ExecuteAsync(idUpd, 0);
                         SpectreHelper.MostrarExito("Contacto actualizado.");
                         SpectreHelper.EsperarTecla();
                         break;
