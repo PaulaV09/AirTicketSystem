@@ -1,5 +1,6 @@
 // src/UI/Client/ClientPortal.cs
 using AirTicketSystem.shared.UI;
+using AirTicketSystem.shared.helpers;
 
 namespace AirTicketSystem.UI.Client;
 
@@ -36,9 +37,20 @@ public sealed class ClientPortal
                 return;
             }
 
-            SpectreHelper.MostrarTitulo(opcion);
-            SpectreHelper.MostrarAdvertencia("Módulo en construcción.");
-            SpectreHelper.EsperarTecla();
+            switch (opcion)
+            {
+                case "1. Buscar vuelos y reservar":
+                    await new FlightSearchMenu(_provider, _session).MostrarAsync();
+                    break;
+
+                case "2. Mis reservas":
+                    await new MyBookingsMenu(_provider, _session).MostrarAsync();
+                    break;
+
+                case "3. Mi perfil":
+                    await new MyProfileMenu(_provider, _session).MostrarAsync();
+                    break;
+            }
         }
     }
 }

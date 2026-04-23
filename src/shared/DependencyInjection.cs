@@ -138,6 +138,13 @@ using AirTicketSystem.modules.flight.Application.UseCases;
 using AirTicketSystem.modules.booking.Application.UseCases;
 using AirTicketSystem.modules.bookingpassenger.Application.UseCases;
 using AirTicketSystem.modules.checkin.Application.UseCases;
+using AirTicketSystem.modules.payment.Application.UseCases;
+using AirTicketSystem.modules.invoice.Application.UseCases;
+using AirTicketSystem.modules.role.Application.UseCases;
+using AirTicketSystem.modules.client.Application.UseCases;
+using AirTicketSystem.modules.ticket.Application.UseCases;
+using AirTicketSystem.modules.boardingpass.Application.UseCases;
+using AirTicketSystem.modules.seatavailability.Application.UseCases;
 
 namespace AirTicketSystem.shared;
 
@@ -499,7 +506,7 @@ public static class DependencyInjection
         services.AddScoped<GetPassengersByBookingUseCase>();
         services.AddScoped<AssignSeatUseCase>();
         services.AddScoped<ChangeSeatUseCase>();
-        services.AddScoped<ReleaseSeatUseCase>();
+        services.AddScoped<AirTicketSystem.modules.bookingpassenger.Application.UseCases.ReleaseSeatUseCase>();
 
         // CheckIn
         services.AddScoped<CreateVirtualCheckInUseCase>();
@@ -507,6 +514,70 @@ public static class DependencyInjection
         services.AddScoped<CompleteCheckInUseCase>();
         services.AddScoped<CancelCheckInUseCase>();
         services.AddScoped<GetCheckInByIdUseCase>();
+
+        // Payment
+        services.AddScoped<CreatePaymentUseCase>();
+        services.AddScoped<ApprovePaymentUseCase>();
+        services.AddScoped<RejectPaymentUseCase>();
+        services.AddScoped<RefundPaymentUseCase>();
+        services.AddScoped<RetryPaymentUseCase>();
+        services.AddScoped<GetPaymentsByBookingUseCase>();
+
+        // Invoice
+        services.AddScoped<GenerateInvoiceUseCase>();
+        services.AddScoped<GetInvoiceByBookingUseCase>();
+        services.AddScoped<GetInvoiceByNumeroUseCase>();
+        services.AddScoped<UpdateInvoiceAddressUseCase>();
+
+        // Role
+        services.AddScoped<GetAllRolesUseCase>();
+        services.AddScoped<GetRoleByIdUseCase>();
+        services.AddScoped<CreateRoleUseCase>();
+        services.AddScoped<UpdateRoleUseCase>();
+        services.AddScoped<DeleteRoleUseCase>();
+
+        // User (admin ops — Login y Register ya registrados arriba)
+        services.AddScoped<CreateUserUseCase>();
+        services.AddScoped<GetUserByIdUseCase>();
+        services.AddScoped<GetAllUsersUseCase>();
+        services.AddScoped<GetUserByUsernameUseCase>();
+        services.AddScoped<ChangePasswordUseCase>();
+        services.AddScoped<ChangeRoleUseCase>();
+        services.AddScoped<ActivateUserUseCase>();
+        services.AddScoped<DeactivateUserUseCase>();
+        services.AddScoped<DeleteUserUseCase>();
+
+        // Client
+        services.AddScoped<CreateClientUseCase>();
+        services.AddScoped<GetClientByIdUseCase>();
+        services.AddScoped<GetAllClientsUseCase>();
+        services.AddScoped<GetActiveClientsUseCase>();
+        services.AddScoped<ActivateClientUseCase>();
+        services.AddScoped<DeactivateClientUseCase>();
+        services.AddScoped<DeleteClientUseCase>();
+        services.AddScoped<AddEmergencyContactUseCase>();
+        services.AddScoped<SetPrincipalEmergencyContactUseCase>();
+        services.AddScoped<UpdateEmergencyContactUseCase>();
+        services.AddScoped<DeleteEmergencyContactUseCase>();
+
+        // Ticket
+        services.AddScoped<EmitTicketUseCase>();
+        services.AddScoped<GetTicketByCodeUseCase>();
+        services.AddScoped<CheckInTicketUseCase>();
+        services.AddScoped<BoardTicketUseCase>();
+        services.AddScoped<VoidTicketUseCase>();
+
+        // BoardingPass
+        services.AddScoped<GenerateBoardingPassUseCase>();
+        services.AddScoped<GetBoardingPassByCodeUseCase>();
+        services.AddScoped<AssignGateUseCase>();
+        services.AddScoped<AssignBoardingTimeUseCase>();
+
+        // SeatAvailability
+        services.AddScoped<GetAvailableSeatsByFlightUseCase>();
+        services.AddScoped<ReserveSeatUseCase>();
+        services.AddScoped<AirTicketSystem.modules.seatavailability.Application.UseCases.ReleaseSeatUseCase>();
+        services.AddScoped<BlockSeatUseCase>();
 
         return services;
     }

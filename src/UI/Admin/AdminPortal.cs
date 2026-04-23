@@ -5,6 +5,7 @@ using AirTicketSystem.UI.Admin.Aeronautica;
 using AirTicketSystem.UI.Admin.AirportsRoutes;
 using AirTicketSystem.UI.Admin.Flights;
 using AirTicketSystem.UI.Admin.Reservations;
+using AirTicketSystem.UI.Admin.Billing;
 
 namespace AirTicketSystem.UI.Admin;
 
@@ -66,6 +67,14 @@ public sealed class AdminPortal
 
                 case "6. Reservas y pasajeros":
                     await new ReservationsMenu(_provider, _session).MostrarAsync();
+                    break;
+
+                case "7. Pagos y facturación":
+                    await new BillingMenu(_provider).MostrarAsync();
+                    break;
+
+                case "8. Usuarios y roles":
+                    await new BillingMenu(_provider).MostrarAsync();
                     break;
 
                 default:
