@@ -5,19 +5,22 @@ namespace AirTicketSystem.shared.UI;
 
 public static class SpectreHelper
 {
+    private static string Esc(string? texto)
+        => Markup.Escape(texto ?? string.Empty);
+
     // ── Títulos y secciones ─────────────────────────────────────────
 
     public static void MostrarTitulo(string titulo)
     {
         AnsiConsole.Clear();
-        AnsiConsole.Write(new Rule($"[bold deepskyblue1]{titulo}[/]")
+        AnsiConsole.Write(new Rule($"[bold deepskyblue1]{Esc(titulo)}[/]")
             .RuleStyle("deepskyblue1"));
         AnsiConsole.WriteLine();
     }
 
     public static void MostrarSubtitulo(string texto)
     {
-        AnsiConsole.MarkupLine($"[bold yellow]  {texto}[/]");
+        AnsiConsole.MarkupLine($"[bold yellow]  {Esc(texto)}[/]");
         AnsiConsole.WriteLine();
     }
 
@@ -30,25 +33,25 @@ public static class SpectreHelper
 
     public static void MostrarExito(string mensaje)
     {
-        AnsiConsole.MarkupLine($"[bold green]  ✓ {Markup.Escape(mensaje)}[/]");
+        AnsiConsole.MarkupLine($"[bold green]  ✓ {Esc(mensaje)}[/]");
         AnsiConsole.WriteLine();
     }
 
     public static void MostrarError(string mensaje)
     {
-        AnsiConsole.MarkupLine($"[bold red]  ✗ {Markup.Escape(mensaje)}[/]");
+        AnsiConsole.MarkupLine($"[bold red]  ✗ {Esc(mensaje)}[/]");
         AnsiConsole.WriteLine();
     }
 
     public static void MostrarAdvertencia(string mensaje)
     {
-        AnsiConsole.MarkupLine($"[bold yellow]  ⚠ {Markup.Escape(mensaje)}[/]");
+        AnsiConsole.MarkupLine($"[bold yellow]  ⚠ {Esc(mensaje)}[/]");
         AnsiConsole.WriteLine();
     }
 
     public static void MostrarInfo(string mensaje)
     {
-        AnsiConsole.MarkupLine($"[deepskyblue1]  ℹ {Markup.Escape(mensaje)}[/]");
+        AnsiConsole.MarkupLine($"[deepskyblue1]  ℹ {Esc(mensaje)}[/]");
         AnsiConsole.WriteLine();
     }
 
@@ -103,13 +106,13 @@ public static class SpectreHelper
 
     public static bool Confirmar(string mensaje)
     {
-        return AnsiConsole.Confirm($"  [yellow]{mensaje}[/]");
+        return AnsiConsole.Confirm($"  [yellow]{Esc(mensaje)}[/]");
     }
 
     public static void EsperarTecla(string mensaje = "Presione Enter para continuar...")
     {
         AnsiConsole.WriteLine();
-        AnsiConsole.MarkupLine($"[grey]  {mensaje}[/]");
+        AnsiConsole.MarkupLine($"[grey]  {Esc(mensaje)}[/]");
         Console.ReadLine();
     }
 
@@ -120,10 +123,10 @@ public static class SpectreHelper
     {
         return AnsiConsole.Prompt(
             new SelectionPrompt<T>()
-                .Title($"  [bold]{titulo}[/]")
+                .Title($"  [bold]{Esc(titulo)}[/]")
                 .PageSize(12)
                 .AddChoices(opciones)
-                .UseConverter(etiqueta));
+                .UseConverter(x => Esc(etiqueta(x))));
     }
 
     public static string SeleccionarOpcionTexto(string titulo,
@@ -131,9 +134,10 @@ public static class SpectreHelper
     {
         return AnsiConsole.Prompt(
             new SelectionPrompt<string>()
-                .Title($"  [bold]{titulo}[/]")
+                .Title($"  [bold]{Esc(titulo)}[/]")
                 .PageSize(12)
-                .AddChoices(opciones));
+                .AddChoices(opciones)
+                .UseConverter(Esc));
     }
 
     // ── Tablas ────────────────────────────────────────────────────────
@@ -167,9 +171,9 @@ public static class SpectreHelper
     public static void MostrarPanel(string titulo, string contenido,
         Color? color = null)
     {
-        var panel = new Panel(contenido)
+        var panel = new Panel(Esc(contenido))
         {
-            Header = new PanelHeader($"[bold]{titulo}[/]"),
+            Header = new PanelHeader($"[bold]{Esc(titulo)}[/]"),
             Border = BoxBorder.Rounded,
             BorderStyle = new Style(color ?? Color.DeepSkyBlue1)
         };
@@ -182,12 +186,12 @@ public static class SpectreHelper
     public static async Task ConSpinner(string mensaje, Func<Task> accion)
     {
         await AnsiConsole.Status()
-            .StartAsync($"[deepskyblue1]{mensaje}[/]", async _ => await accion());
+            .StartAsync($"[deepskyblue1]{Esc(mensaje)}[/]", async _ => await accion());
     }
 
     public static async Task<T> ConSpinner<T>(string mensaje, Func<Task<T>> accion)
     {
         return await AnsiConsole.Status()
-            .StartAsync($"[deepskyblue1]{mensaje}[/]", async _ => await accion());
+            .StartAsync($"[deepskyblue1]{Esc(mensaje)}[/]", async _ => await accion());
     }
 }

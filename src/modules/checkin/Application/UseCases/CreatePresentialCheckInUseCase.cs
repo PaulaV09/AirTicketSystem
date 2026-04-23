@@ -39,7 +39,8 @@ public sealed class CreatePresentialCheckInUseCase
             throw new InvalidOperationException(
                 "El trabajador asignado no está activo.");
 
-        if (await _checkInRepository.ExistsByPasajeroReservaAsync(pasajeroReservaId))
+        var existing = await _checkInRepository.FindByPasajeroReservaAsync(pasajeroReservaId);
+        if (existing is not null)
             throw new InvalidOperationException(
                 "Ya existe un check-in registrado para este pasajero en esta reserva.");
 

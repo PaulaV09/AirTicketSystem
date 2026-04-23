@@ -8,8 +8,10 @@ using AirTicketSystem.modules.ticket.Application.UseCases;
 using AirTicketSystem.modules.boardingpass.Application.UseCases;
 using AirTicketSystem.modules.checkin.Application.UseCases;
 using AirTicketSystem.modules.payment.Application.UseCases;
+using AirTicketSystem.modules.additionalcharge.Application.UseCases;
 using AirTicketSystem.modules.client.Application.UseCases;
 using AirTicketSystem.modules.luggage.Application.UseCases;
+using AirTicketSystem.modules.luggagetype.Domain.aggregate;
 
 namespace AirTicketSystem.UI.Client;
 
@@ -87,12 +89,11 @@ public sealed class MyBookingsMenu
 
     private async Task DetalleReservaAsync()
     {
-        var codigo = SpectreHelper.PedirTexto("Código de la reserva");
         await ConsoleErrorHandler.ExecuteAsync(async () =>
         {
-            await using var scope = _provider.CreateAsyncScope();
-            var b = await scope.ServiceProvider.GetRequiredService<GetBookingByCodigoUseCase>()
-                .ExecuteAsync(codigo);
+            var clienteId = await ObtenerClienteIdAsync();
+            var b = await SelectorUI.SeleccionarReservaAsync(_provider, clienteId);
+            if (b is null) return;
 
             var tabla = SpectreHelper.CrearTabla("Campo", "Valor");
             SpectreHelper.AgregarFila(tabla, "ID",            b.Id.ToString());
@@ -111,12 +112,15 @@ public sealed class MyBookingsMenu
 
     private async Task VerPasajerosAsync()
     {
-        var reservaId = SpectreHelper.PedirEntero("ID de la reserva");
         await ConsoleErrorHandler.ExecuteAsync(async () =>
         {
+            var clienteId = await ObtenerClienteIdAsync();
+            var b = await SelectorUI.SeleccionarReservaAsync(_provider, clienteId);
+            if (b is null) return;
+
             await using var scope = _provider.CreateAsyncScope();
             var lista = await scope.ServiceProvider.GetRequiredService<GetPassengersByBookingUseCase>()
-                .ExecuteAsync(reservaId);
+                .ExecuteAsync(b.Id);
 
             if (lista.Count == 0) { SpectreHelper.MostrarInfo("Sin pasajeros en esa reserva."); SpectreHelper.EsperarTecla(); return; }
 
@@ -133,15 +137,18 @@ public sealed class MyBookingsMenu
 
     private async Task CancelarReservaAsync()
     {
-        var reservaId = SpectreHelper.PedirEntero("ID de la reserva a cancelar");
         var motivo    = SpectreHelper.PedirTexto("Motivo de cancelación");
         if (!SpectreHelper.Confirmar("¿Confirma cancelar la reserva?")) { SpectreHelper.EsperarTecla(); return; }
 
         await ConsoleErrorHandler.ExecuteAsync(async () =>
         {
+            var clienteId = await ObtenerClienteIdAsync();
+            var bSel = await SelectorUI.SeleccionarReservaAsync(_provider, clienteId);
+            if (bSel is null) return;
+
             await using var scope = _provider.CreateAsyncScope();
             var b = await scope.ServiceProvider.GetRequiredService<CancelBookingUseCase>()
-                .ExecuteAsync(reservaId, motivo, _session.CurrentUserId > 0 ? _session.CurrentUserId : null);
+                .ExecuteAsync(bSel.Id, motivo, _session.CurrentUserId > 0 ? _session.CurrentUserId : null);
             SpectreHelper.MostrarExito($"Reserva [{b.CodigoReserva.Valor}] cancelada.");
         });
         SpectreHelper.EsperarTecla();
@@ -149,12 +156,15 @@ public sealed class MyBookingsMenu
 
     private async Task VerPagosAsync()
     {
-        var reservaId = SpectreHelper.PedirEntero("ID de la reserva");
         await ConsoleErrorHandler.ExecuteAsync(async () =>
         {
+            var clienteId = await ObtenerClienteIdAsync();
+            var b = await SelectorUI.SeleccionarReservaAsync(_provider, clienteId);
+            if (b is null) return;
+
             await using var scope = _provider.CreateAsyncScope();
             var lista = await scope.ServiceProvider.GetRequiredService<GetPaymentsByBookingUseCase>()
-                .ExecuteAsync(reservaId);
+                .ExecuteAsync(b.Id);
 
             if (lista.Count == 0) { SpectreHelper.MostrarInfo("Sin pagos para esa reserva."); SpectreHelper.EsperarTecla(); return; }
 
@@ -172,12 +182,24 @@ public sealed class MyBookingsMenu
 
     private async Task VerTiquetesAsync()
     {
-        var pasajeroReservaId = SpectreHelper.PedirEntero("ID del pasajero-reserva");
         await ConsoleErrorHandler.ExecuteAsync(async () =>
         {
             await using var scope = _provider.CreateAsyncScope();
+
+            var clienteId = await ObtenerClienteIdAsync();
+            var reserva = await SelectorUI.SeleccionarReservaAsync(_provider, clienteId);
+            if (reserva is null) { SpectreHelper.EsperarTecla(); return; }
+
+            var pasajeros = await scope.ServiceProvider.GetRequiredService<GetPassengersByBookingUseCase>()
+                .ExecuteAsync(reserva.Id);
+            if (pasajeros.Count == 0) { SpectreHelper.MostrarInfo("Esta reserva no tiene pasajeros."); SpectreHelper.EsperarTecla(); return; }
+
+            var pasajero = SpectreHelper.SeleccionarOpcion("Seleccione el pasajero",
+                pasajeros,
+                p => $"  PasajeroReserva #{p.Id}  PersonaID:{p.PersonaId}  Tipo:{p.TipoPasajero.Valor}");
+
             var t = await scope.ServiceProvider.GetRequiredService<EmitTicketUseCase>()
-                .ExecuteAsync(pasajeroReservaId);
+                .ExecuteAsync(pasajero.Id);
             SpectreHelper.MostrarExito(
                 $"Tiquete emitido.\n" +
                 $"  Código  : {t.CodigoTiquete.Valor}\n" +
@@ -189,12 +211,23 @@ public sealed class MyBookingsMenu
 
     private async Task ConsultarTiqueteAsync()
     {
-        var codigo = SpectreHelper.PedirTexto("Código del tiquete");
         await ConsoleErrorHandler.ExecuteAsync(async () =>
         {
             await using var scope = _provider.CreateAsyncScope();
-            var t = await scope.ServiceProvider.GetRequiredService<GetTicketByCodeUseCase>()
-                .ExecuteAsync(codigo);
+            var clienteId = await ObtenerClienteIdAsync();
+            var reserva = await SelectorUI.SeleccionarReservaAsync(_provider, clienteId);
+            if (reserva is null) { SpectreHelper.EsperarTecla(); return; }
+
+            var pasajeros = await scope.ServiceProvider.GetRequiredService<GetPassengersByBookingUseCase>()
+                .ExecuteAsync(reserva.Id);
+            if (pasajeros.Count == 0) { SpectreHelper.MostrarInfo("Esta reserva no tiene pasajeros."); SpectreHelper.EsperarTecla(); return; }
+
+            var pasajero = SpectreHelper.SeleccionarOpcion("Seleccione el pasajero",
+                pasajeros,
+                p => $"  PasajeroReserva #{p.Id}  PersonaID:{p.PersonaId}  Tipo:{p.TipoPasajero.Valor}");
+
+            var t = await scope.ServiceProvider.GetRequiredService<GetTicketByPassengerUseCase>()
+                .ExecuteAsync(pasajero.Id);
 
             var tabla = SpectreHelper.CrearTabla("Campo", "Valor");
             SpectreHelper.AgregarFila(tabla, "ID",              t.Id.ToString());
@@ -210,12 +243,28 @@ public sealed class MyBookingsMenu
 
     private async Task VerPaseAbordarAsync()
     {
-        var codigo = SpectreHelper.PedirTexto("Código del pase de abordar");
         await ConsoleErrorHandler.ExecuteAsync(async () =>
         {
             await using var scope = _provider.CreateAsyncScope();
-            var bp = await scope.ServiceProvider.GetRequiredService<GetBoardingPassByCodeUseCase>()
-                .ExecuteAsync(codigo);
+            var clienteId = await ObtenerClienteIdAsync();
+            var reserva = await SelectorUI.SeleccionarReservaAsync(_provider, clienteId);
+            if (reserva is null) { SpectreHelper.EsperarTecla(); return; }
+
+            var pasajeros = await scope.ServiceProvider.GetRequiredService<GetPassengersByBookingUseCase>()
+                .ExecuteAsync(reserva.Id);
+            if (pasajeros.Count == 0) { SpectreHelper.MostrarInfo("Esta reserva no tiene pasajeros."); SpectreHelper.EsperarTecla(); return; }
+
+            var pasajero = SpectreHelper.SeleccionarOpcion("Seleccione el pasajero",
+                pasajeros,
+                p => $"  PasajeroReserva #{p.Id}  PersonaID:{p.PersonaId}  Tipo:{p.TipoPasajero.Valor}");
+
+            // 1) Buscar check-in del pasajero
+            var checkin = await scope.ServiceProvider.GetRequiredService<GetCheckInByPassengerUseCase>()
+                .ExecuteAsync(pasajero.Id);
+
+            // 2) Obtener pase por check-in
+            var bp = await scope.ServiceProvider.GetRequiredService<GetBoardingPassByCheckInUseCase>()
+                .ExecuteAsync(checkin.Id);
 
             var tabla = SpectreHelper.CrearTabla("Campo", "Valor");
             SpectreHelper.AgregarFila(tabla, "ID",           bp.Id.ToString());
@@ -233,12 +282,24 @@ public sealed class MyBookingsMenu
     // ── 2.4 Hacer check-in virtual ───────────────────────────────────────────
     private async Task HacerCheckinVirtualAsync()
     {
-        var pasajeroReservaId = SpectreHelper.PedirEntero("ID del pasajero-reserva");
         await ConsoleErrorHandler.ExecuteAsync(async () =>
         {
             await using var scope = _provider.CreateAsyncScope();
+
+            var clienteId = await ObtenerClienteIdAsync();
+            var reserva = await SelectorUI.SeleccionarReservaAsync(_provider, clienteId);
+            if (reserva is null) { SpectreHelper.EsperarTecla(); return; }
+
+            var pasajeros = await scope.ServiceProvider.GetRequiredService<GetPassengersByBookingUseCase>()
+                .ExecuteAsync(reserva.Id);
+            if (pasajeros.Count == 0) { SpectreHelper.MostrarInfo("Esta reserva no tiene pasajeros."); SpectreHelper.EsperarTecla(); return; }
+
+            var pasajero = SpectreHelper.SeleccionarOpcion("Seleccione el pasajero",
+                pasajeros,
+                p => $"  PasajeroReserva #{p.Id}  PersonaID:{p.PersonaId}  Tipo:{p.TipoPasajero.Valor}");
+
             var c = await scope.ServiceProvider.GetRequiredService<CreateVirtualCheckInUseCase>()
-                .ExecuteAsync(pasajeroReservaId);
+                .ExecuteAsync(pasajero.Id);
             SpectreHelper.MostrarExito($"Check-in virtual realizado (ID {c.Id}). Estado: {c.Estado.Valor}.");
         });
         SpectreHelper.EsperarTecla();
@@ -260,7 +321,19 @@ public sealed class MyBookingsMenu
                 switch (opcion)
                 {
                     case "Ver mi equipaje":
-                        var pasajeroId = SpectreHelper.PedirEntero("ID del pasajero-reserva");
+                        var clienteId = await ObtenerClienteIdAsync();
+                        var reserva = await SelectorUI.SeleccionarReservaAsync(_provider, clienteId);
+                        if (reserva is null) { SpectreHelper.EsperarTecla(); return; }
+
+                        var pasajeros = await scope.ServiceProvider.GetRequiredService<GetPassengersByBookingUseCase>()
+                            .ExecuteAsync(reserva.Id);
+                        if (pasajeros.Count == 0) { SpectreHelper.MostrarInfo("Esta reserva no tiene pasajeros."); SpectreHelper.EsperarTecla(); return; }
+
+                        var pasajero = SpectreHelper.SeleccionarOpcion("Seleccione el pasajero",
+                            pasajeros,
+                            p => $"  PasajeroReserva #{p.Id}  PersonaID:{p.PersonaId}  Tipo:{p.TipoPasajero.Valor}");
+                        var pasajeroId = pasajero.Id;
+
                         var lista = await scope.ServiceProvider.GetRequiredService<GetLuggageByPassengerUseCase>()
                             .ExecuteAsync(pasajeroId);
                         if (lista.Count == 0) { SpectreHelper.MostrarInfo("Sin equipaje registrado."); SpectreHelper.EsperarTecla(); return; }
@@ -275,15 +348,51 @@ public sealed class MyBookingsMenu
                         break;
 
                     case "Agregar equipaje":
-                        var pId   = SpectreHelper.PedirEntero("ID del pasajero-reserva");
-                        var vId   = SpectreHelper.PedirEntero("ID del vuelo");
-                        var tId   = SpectreHelper.PedirEntero("ID del tipo de equipaje");
+                        var cId = await ObtenerClienteIdAsync();
+                        var bSel = await SelectorUI.SeleccionarReservaAsync(_provider, cId);
+                        if (bSel is null) { SpectreHelper.EsperarTecla(); return; }
+
+                        var pax = await scope.ServiceProvider.GetRequiredService<GetPassengersByBookingUseCase>()
+                            .ExecuteAsync(bSel.Id);
+                        if (pax.Count == 0) { SpectreHelper.MostrarInfo("Esta reserva no tiene pasajeros."); SpectreHelper.EsperarTecla(); return; }
+
+                        var paxSel = SpectreHelper.SeleccionarOpcion("Seleccione el pasajero",
+                            pax,
+                            p => $"  PasajeroReserva #{p.Id}  PersonaID:{p.PersonaId}  Tipo:{p.TipoPasajero.Valor}");
+
+                        var pId = paxSel.Id;
+                        var vId = bSel.VueloId;
+                        var tipoEquip = await SelectorUI.SeleccionarTipoEquipajeAsync(scope.ServiceProvider);
+                        if (tipoEquip is null) {
+                            SpectreHelper.EsperarTecla();
+                            return;
+                        }
+                        var tId   = tipoEquip.Id;
                         var desc  = SpectreHelper.PedirTexto("Descripción (opcional)");
                         var pesoS = SpectreHelper.PedirTexto("Peso en kg (opcional)");
                         string? dOpc = string.IsNullOrWhiteSpace(desc) ? null : desc;
                         decimal? peso = decimal.TryParse(pesoS, out var p) ? p : null;
                         var lug = await scope.ServiceProvider.GetRequiredService<RegisterLuggageUseCase>()
                             .ExecuteAsync(pId, vId, tId, dOpc, peso);
+
+                        // Cobro adicional y pago por equipaje (si aplica)
+                        var cobrar = SpectreHelper.Confirmar("¿Desea pagar este equipaje adicional ahora?");
+                        if (cobrar)
+                        {
+                            var monto = SpectreHelper.PedirDecimal("Monto a pagar por el equipaje");
+                            var metodo = await SelectorUI.SeleccionarMetodoPagoAsync(_provider);
+                            if (metodo is null) { SpectreHelper.EsperarTecla(); return; }
+
+                            _ = await scope.ServiceProvider.GetRequiredService<CreateAdditionalChargeUseCase>()
+                                .ExecuteAsync(bSel.Id, $"Equipaje adicional ({tipoEquip.Nombre.Valor})", monto);
+
+                            var pago = await scope.ServiceProvider.GetRequiredService<CreatePaymentUseCase>()
+                                .ExecuteAsync(bSel.Id, metodo.Id, monto);
+
+                            _ = await scope.ServiceProvider.GetRequiredService<ApprovePaymentUseCase>()
+                                .ExecuteAsync(pago.Id, $"LUGGAGE-{Guid.NewGuid():N}");
+                        }
+
                         SpectreHelper.MostrarExito($"Equipaje registrado (ID {lug.Id}).");
                         SpectreHelper.EsperarTecla();
                         break;

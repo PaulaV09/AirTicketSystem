@@ -50,7 +50,8 @@ public sealed class AircraftSeat
             Columna          = columnaVO,
             EsVentana        = EsVentanaAircraftSeat.Crear(esVentana),
             EsPasillo        = EsPasilloAircraftSeat.Crear(esPasillo),
-            Activo           = ActivoAircraftSeat.Activo()
+            Activo           = ActivoAircraftSeat.Activo(),
+            CostoSeleccion   = CostoSeleccionAircraftSeat.Crear(0)
         };
     }
 

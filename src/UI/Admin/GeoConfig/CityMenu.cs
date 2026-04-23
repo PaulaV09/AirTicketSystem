@@ -3,7 +3,6 @@ using Microsoft.Extensions.DependencyInjection;
 using AirTicketSystem.shared.UI;
 using AirTicketSystem.shared.helpers;
 using AirTicketSystem.modules.city.Application.UseCases;
-using AirTicketSystem.modules.department.Application.UseCases;
 
 namespace AirTicketSystem.UI.Admin.GeoConfig;
 
@@ -18,18 +17,17 @@ public sealed class CityMenu
         while (true)
         {
             SpectreHelper.MostrarTitulo("Ciudades");
-
             var opcion = SpectreHelper.SeleccionarOpcionTexto("Seleccione una acción",
-                ["Listar todas", "Listar por región", "Crear", "Editar", "Eliminar", "Volver"]);
+                ["Listar todas", "Listar por región/dpto", "Crear", "Editar", "Eliminar", "Volver"]);
 
             switch (opcion)
             {
-                case "Listar todas":      await ListarTodasAsync();     break;
-                case "Listar por región": await ListarPorRegionAsync(); break;
-                case "Crear":             await CrearAsync();           break;
-                case "Editar":            await EditarAsync();          break;
-                case "Eliminar":          await EliminarAsync();        break;
-                case "Volver":            return;
+                case "Listar todas":        await ListarTodasAsync();   break;
+                case "Listar por región/dpto": await ListarPorDeptAsync(); break;
+                case "Crear":               await CrearAsync();         break;
+                case "Editar":              await EditarAsync();        break;
+                case "Eliminar":            await EliminarAsync();      break;
+                case "Volver":              return;
             }
         }
     }
@@ -39,118 +37,72 @@ public sealed class CityMenu
         await ConsoleErrorHandler.ExecuteAsync(async () =>
         {
             await using var scope = _provider.CreateAsyncScope();
-            var uc    = scope.ServiceProvider.GetRequiredService<GetAllCitiesUseCase>();
-            var lista = await uc.ExecuteAsync();
-
-            if (lista.Count == 0) { SpectreHelper.MostrarInfo("No hay ciudades registradas."); SpectreHelper.EsperarTecla(); return; }
-
-            var tabla = SpectreHelper.CrearTabla("ID", "Nombre", "Cód. Postal", "DeptoID");
-            foreach (var c in lista)
-                SpectreHelper.AgregarFila(tabla, c.Id.ToString(), c.Nombre.Valor,
-                    c.CodigoPostal?.Valor ?? "-", c.DepartamentoId.ToString());
-
-            SpectreHelper.MostrarTabla(tabla);
-            SpectreHelper.EsperarTecla();
+            var lista = await scope.ServiceProvider.GetRequiredService<GetAllCitiesUseCase>().ExecuteAsync();
+            if (lista.Count == 0) { SpectreHelper.MostrarInfo("Sin ciudades."); SpectreHelper.EsperarTecla(); return; }
+            var tabla = SpectreHelper.CrearTabla("ID", "Nombre", "DepartamentoID");
+            foreach (var c in lista) SpectreHelper.AgregarFila(tabla, c.Id.ToString(), c.Nombre.Valor, c.DepartamentoId.ToString());
+            SpectreHelper.MostrarTabla(tabla); SpectreHelper.EsperarTecla();
         });
     }
 
-    private async Task ListarPorRegionAsync()
+    private async Task ListarPorDeptAsync()
     {
-        var regionId = SpectreHelper.PedirEntero("ID de la región");
-
+        var dept = await SelectorUI.SeleccionarDepartamentoAsync(_provider);
+        if (dept is null) return;
         await ConsoleErrorHandler.ExecuteAsync(async () =>
         {
             await using var scope = _provider.CreateAsyncScope();
-            var uc    = scope.ServiceProvider.GetRequiredService<GetCitiesByDepartmentUseCase>();
-            var lista = await uc.ExecuteAsync(regionId);
-
-            if (lista.Count == 0) { SpectreHelper.MostrarInfo("Sin resultados."); SpectreHelper.EsperarTecla(); return; }
-
-            var tabla = SpectreHelper.CrearTabla("ID", "Nombre", "Cód. Postal");
-            foreach (var c in lista)
-                SpectreHelper.AgregarFila(tabla, c.Id.ToString(), c.Nombre.Valor, c.CodigoPostal?.Valor ?? "-");
-
-            SpectreHelper.MostrarTabla(tabla);
-            SpectreHelper.EsperarTecla();
+            var lista = await scope.ServiceProvider.GetRequiredService<GetCitiesByDepartmentUseCase>().ExecuteAsync(dept.Id);
+            if (lista.Count == 0) { SpectreHelper.MostrarInfo($"Sin ciudades en {dept.Nombre.Valor}."); SpectreHelper.EsperarTecla(); return; }
+            var tabla = SpectreHelper.CrearTabla("ID", "Nombre");
+            foreach (var c in lista) SpectreHelper.AgregarFila(tabla, c.Id.ToString(), c.Nombre.Valor);
+            SpectreHelper.MostrarTabla(tabla); SpectreHelper.EsperarTecla();
         });
     }
 
     private async Task CrearAsync()
     {
         SpectreHelper.MostrarSubtitulo("Nueva Ciudad");
-
-        await MostrarDepartamentosAsync();
-
-        var dptoId = SpectreHelper.PedirEntero("ID del departamento");
-        var nombre = SpectreHelper.PedirTexto("Nombre");
-        var cp     = SpectreHelper.PedirTexto("Código postal (opcional, Enter para omitir)");
-        string? cpOpc = string.IsNullOrWhiteSpace(cp) ? null : cp;
-
+        var dept = await SelectorUI.SeleccionarDepartamentoAsync(_provider);
+        if (dept is null) return;
+        var nombre = SpectreHelper.PedirTexto("Nombre de la ciudad");
         await ConsoleErrorHandler.ExecuteAsync(async () =>
         {
             await using var scope = _provider.CreateAsyncScope();
-            var uc     = scope.ServiceProvider.GetRequiredService<CreateCityUseCase>();
-            var result = await uc.ExecuteAsync(dptoId, nombre, cpOpc);
-            SpectreHelper.MostrarExito($"Ciudad '{result.Nombre.Valor}' creada (ID {result.Id}).");
+            var codigoPostal = SpectreHelper.PedirTexto("Código postal (opcional, Enter para omitir)", obligatorio: false);
+            var c = await scope.ServiceProvider.GetRequiredService<CreateCityUseCase>().ExecuteAsync(dept.Id, nombre, string.IsNullOrWhiteSpace(codigoPostal) ? null : codigoPostal, default);
+            SpectreHelper.MostrarExito($"Ciudad '{c.Nombre.Valor}' creada en {dept.Nombre.Valor} (ID {c.Id}).");
         });
-
         SpectreHelper.EsperarTecla();
     }
 
     private async Task EditarAsync()
     {
-        SpectreHelper.MostrarSubtitulo("Editar Ciudad");
-        var id     = SpectreHelper.PedirEntero("ID de la ciudad");
-        var nombre = SpectreHelper.PedirTexto("Nuevo nombre");
-        var cp     = SpectreHelper.PedirTexto("Nuevo código postal (opcional, Enter para omitir)");
-        string? cpOpc = string.IsNullOrWhiteSpace(cp) ? null : cp;
-
+        var ciudad = await SelectorUI.SeleccionarCiudadAsync(_provider);
+        if (ciudad is null) return;
+        SpectreHelper.MostrarSubtitulo($"Editando: {ciudad.Nombre.Valor}");
+        var nombre = SpectreHelper.PedirTexto($"Nuevo nombre  (actual: {ciudad.Nombre.Valor})");
         await ConsoleErrorHandler.ExecuteAsync(async () =>
         {
             await using var scope = _provider.CreateAsyncScope();
-            var uc     = scope.ServiceProvider.GetRequiredService<UpdateCityUseCase>();
-            var result = await uc.ExecuteAsync(id, nombre, cpOpc);
-            SpectreHelper.MostrarExito($"Ciudad '{result.Nombre.Valor}' actualizada.");
+            var codigoPostal = SpectreHelper.PedirTexto("Nuevo código postal (actual: " + (ciudad.CodigoPostal?.Valor ?? "") + ", Enter para omitir)", obligatorio: false);
+            var c = await scope.ServiceProvider.GetRequiredService<UpdateCityUseCase>().ExecuteAsync(ciudad.Id, nombre, string.IsNullOrWhiteSpace(codigoPostal) ? null : codigoPostal, default);
+            SpectreHelper.MostrarExito($"Ciudad '{c.Nombre.Valor}' actualizada.");
         });
-
         SpectreHelper.EsperarTecla();
     }
 
     private async Task EliminarAsync()
     {
-        SpectreHelper.MostrarSubtitulo("Eliminar Ciudad");
-        var id = SpectreHelper.PedirEntero("ID de la ciudad a eliminar");
-
-        if (!SpectreHelper.Confirmar("¿Confirma la eliminación?"))
-        {
-            SpectreHelper.MostrarInfo("Operación cancelada.");
-            SpectreHelper.EsperarTecla();
-            return;
-        }
-
+        var ciudad = await SelectorUI.SeleccionarCiudadAsync(_provider);
+        if (ciudad is null) return;
+        if (!SpectreHelper.Confirmar($"¿Eliminar '{ciudad.Nombre.Valor}'?")) { SpectreHelper.EsperarTecla(); return; }
         await ConsoleErrorHandler.ExecuteAsync(async () =>
         {
             await using var scope = _provider.CreateAsyncScope();
-            var uc = scope.ServiceProvider.GetRequiredService<DeleteCityUseCase>();
-            await uc.ExecuteAsync(id);
-            SpectreHelper.MostrarExito("Ciudad eliminada correctamente.");
+            await scope.ServiceProvider.GetRequiredService<DeleteCityUseCase>().ExecuteAsync(ciudad.Id);
+            SpectreHelper.MostrarExito($"Ciudad '{ciudad.Nombre.Valor}' eliminada.");
         });
-
         SpectreHelper.EsperarTecla();
-    }
-
-    private async Task MostrarDepartamentosAsync()
-    {
-        await ConsoleErrorHandler.ExecuteAsync(async () =>
-        {
-            await using var scope = _provider.CreateAsyncScope();
-            var uc    = scope.ServiceProvider.GetRequiredService<GetAllDepartmentsUseCase>();
-            var lista = await uc.ExecuteAsync();
-            if (lista.Count == 0) return;
-            var tabla = SpectreHelper.CrearTabla("ID", "Departamento", "RegiónID");
-            foreach (var d in lista)
-                SpectreHelper.AgregarFila(tabla, d.Id.ToString(), d.Nombre.Valor, d.RegionId.ToString());
-            SpectreHelper.MostrarTabla(tabla);
-        });
     }
 }

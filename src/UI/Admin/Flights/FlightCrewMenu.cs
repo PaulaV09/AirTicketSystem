@@ -3,6 +3,8 @@ using Microsoft.Extensions.DependencyInjection;
 using AirTicketSystem.shared.UI;
 using AirTicketSystem.shared.helpers;
 using AirTicketSystem.modules.flightcrew.Application.UseCases;
+using AirTicketSystem.modules.flight.Domain.aggregate;
+using AirTicketSystem.modules.worker.Domain.aggregate;
 
 namespace AirTicketSystem.UI.Admin.Flights;
 
@@ -42,7 +44,12 @@ public sealed class FlightCrewMenu
 
     private async Task VerTripulacionAsync()
     {
-        var vueloId = SpectreHelper.PedirEntero("ID del vuelo");
+        var vuelo = await SelectorUI.SeleccionarVueloAsync(_provider);
+        if (vuelo is null) {
+            SpectreHelper.EsperarTecla();
+            return;
+        }
+        var vueloId = vuelo.Id;
         await ConsoleErrorHandler.ExecuteAsync(async () =>
         {
             await using var scope = _provider.CreateAsyncScope();
@@ -59,7 +66,12 @@ public sealed class FlightCrewMenu
 
     private async Task ValidarTripulacionAsync()
     {
-        var vueloId = SpectreHelper.PedirEntero("ID del vuelo a validar");
+        var vuelo = await SelectorUI.SeleccionarVueloAsync(_provider);
+        if (vuelo is null) {
+            SpectreHelper.EsperarTecla();
+            return;
+        }
+        var vueloId = vuelo.Id;
         await ConsoleErrorHandler.ExecuteAsync(async () =>
         {
             await using var scope = _provider.CreateAsyncScope();
@@ -75,8 +87,20 @@ public sealed class FlightCrewMenu
     private async Task AsignarAsync()
     {
         SpectreHelper.MostrarSubtitulo("Asignar Miembro de Tripulación");
-        var vueloId      = SpectreHelper.PedirEntero("ID del vuelo");
-        var trabajadorId = SpectreHelper.PedirEntero("ID del trabajador");
+        var vuelo = await SelectorUI.SeleccionarVueloAsync(_provider);
+        if (vuelo is null) {
+            SpectreHelper.EsperarTecla();
+            return;
+        }
+        var vueloId = vuelo.Id;
+
+        var trabajador = await SelectorUI.SeleccionarTrabajadorAsync(_provider);
+        if (trabajador is null) {
+            SpectreHelper.EsperarTecla();
+            return;
+        }
+        var trabajadorId = trabajador.Id;
+
         var rol          = SpectreHelper.PedirTexto("Rol (PILOTO, COPILOTO, AUXILIAR_CABINA, AUXILIAR_CARGA)");
 
         await ConsoleErrorHandler.ExecuteAsync(async () =>

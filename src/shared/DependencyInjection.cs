@@ -154,6 +154,7 @@ using AirTicketSystem.modules.luggage.Application.UseCases;
 using AirTicketSystem.modules.additionalcharge.Application.UseCases;
 using AirTicketSystem.modules.flighthistory.Application.UseCases;
 using AirTicketSystem.modules.paymentmethod.Application.UseCases;
+using AirTicketSystem.modules.luggagerestriction.Application.UseCases;
 
 namespace AirTicketSystem.shared;
 
@@ -523,6 +524,7 @@ public static class DependencyInjection
         services.AddScoped<CompleteCheckInUseCase>();
         services.AddScoped<CancelCheckInUseCase>();
         services.AddScoped<GetCheckInByIdUseCase>();
+        services.AddScoped<GetCheckInByPassengerUseCase>();
 
         // Payment
         services.AddScoped<CreatePaymentUseCase>();
@@ -572,6 +574,7 @@ public static class DependencyInjection
         // Ticket
         services.AddScoped<EmitTicketUseCase>();
         services.AddScoped<GetTicketByCodeUseCase>();
+        services.AddScoped<GetTicketByPassengerUseCase>();
         services.AddScoped<CheckInTicketUseCase>();
         services.AddScoped<BoardTicketUseCase>();
         services.AddScoped<VoidTicketUseCase>();
@@ -579,6 +582,7 @@ public static class DependencyInjection
         // BoardingPass
         services.AddScoped<GenerateBoardingPassUseCase>();
         services.AddScoped<GetBoardingPassByCodeUseCase>();
+        services.AddScoped<GetBoardingPassByCheckInUseCase>();
         services.AddScoped<AssignGateUseCase>();
         services.AddScoped<AssignBoardingTimeUseCase>();
 
@@ -672,6 +676,7 @@ public static class DependencyInjection
         services.AddScoped<GetLastFlightChangeUseCase>();
 
         // PaymentMethod
+        services.AddScoped<GetAllPaymentMethodsUseCase>();
         services.AddScoped<CreatePaymentMethodUseCase>();
         services.AddScoped<GetPaymentMethodByIdUseCase>();
         services.AddScoped<UpdatePaymentMethodUseCase>();

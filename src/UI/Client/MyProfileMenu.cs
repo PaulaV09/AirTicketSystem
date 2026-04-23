@@ -143,13 +143,14 @@ public sealed class MyProfileMenu
                         break;
 
                     case "Agregar teléfono":
-                        var tipoId    = SpectreHelper.PedirEntero("ID tipo de teléfono");
+                        var tipoTel2  = await SelectorUI.SeleccionarTipoTelefonoAsync(_provider);
+                        if (tipoTel2 is null) { SpectreHelper.EsperarTecla(); return; }
                         var numero    = SpectreHelper.PedirTexto("Número");
-                        var indic     = SpectreHelper.PedirTexto("Indicativo país (opcional)");
+                        var indic     = SpectreHelper.PedirTexto("Indicativo país (ej: +57, opcional)", obligatorio: false);
                         var prinStr   = SpectreHelper.PedirTexto("¿Principal? (s/n)");
                         string? indOpc = string.IsNullOrWhiteSpace(indic) ? null : indic;
                         var ph2 = await scope.ServiceProvider.GetRequiredService<AddPersonPhoneUseCase>()
-                            .ExecuteAsync(cliente.PersonaId, tipoId, numero, indOpc, prinStr.Trim().ToLower() == "s");
+                            .ExecuteAsync(cliente.PersonaId, tipoTel2.Id, numero, indOpc, prinStr.Trim().ToLower() == "s");
                         SpectreHelper.MostrarExito($"Teléfono '{ph2.Numero.Valor}' agregado.");
                         SpectreHelper.EsperarTecla();
                         break;
@@ -207,10 +208,11 @@ public sealed class MyProfileMenu
                         break;
 
                     case "Agregar email":
-                        var tipoId   = SpectreHelper.PedirEntero("ID tipo de email");
+                        var tipoEm2  = await SelectorUI.SeleccionarTipoEmailAsync(_provider);
+                        if (tipoEm2 is null) { SpectreHelper.EsperarTecla(); return; }
                         var email    = SpectreHelper.PedirTexto("Dirección de email");
                         var prinStr  = SpectreHelper.PedirTexto("¿Principal? (s/n)");
-                        var em2 = await scope.ServiceProvider.GetRequiredService<AddPersonEmailUseCase>().ExecuteAsync(cliente.PersonaId, tipoId, email, prinStr.Trim().ToLower() == "s", default);
+                        var em2 = await scope.ServiceProvider.GetRequiredService<AddPersonEmailUseCase>().ExecuteAsync(cliente.PersonaId, tipoEm2.Id, email, prinStr.Trim().ToLower() == "s", default);
                         SpectreHelper.MostrarExito($"Email '{em2.Email.Valor}' agregado.");
                         SpectreHelper.EsperarTecla();
                         break;
@@ -268,12 +270,14 @@ public sealed class MyProfileMenu
                         break;
 
                     case "Agregar dirección":
-                        var tipoId   = SpectreHelper.PedirEntero("ID tipo de dirección");
+                        var tipoDir2 = await SelectorUI.SeleccionarTipoDireccionAsync(_provider);
+                        if (tipoDir2 is null) { SpectreHelper.EsperarTecla(); return; }
+                        var ciudad2  = await SelectorUI.SeleccionarCiudadAsync(_provider);
+                        if (ciudad2 is null) { SpectreHelper.EsperarTecla(); return; }
                         var dir      = SpectreHelper.PedirTexto("Dirección completa");
-                        var ciudadId = SpectreHelper.PedirEntero("ID de la ciudad");
                         var prinStr  = SpectreHelper.PedirTexto("¿Principal? (s/n)");
                         var addr2 = await scope.ServiceProvider.GetRequiredService<AddPersonAddressUseCase>()
-                            .ExecuteAsync(cliente.PersonaId, tipoId, ciudadId, dir, null, null, prinStr.Trim().ToLower() == "s");
+                            .ExecuteAsync(cliente.PersonaId, tipoDir2.Id, ciudad2.Id, dir, null, null, prinStr.Trim().ToLower() == "s");
                         SpectreHelper.MostrarExito($"Dirección agregada (ID {addr2.Id}).");
                         SpectreHelper.EsperarTecla();
                         break;

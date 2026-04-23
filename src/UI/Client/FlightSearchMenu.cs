@@ -8,6 +8,7 @@ using AirTicketSystem.modules.seatavailability.Application.UseCases;
 using AirTicketSystem.modules.booking.Application.UseCases;
 using AirTicketSystem.modules.bookingpassenger.Application.UseCases;
 using AirTicketSystem.modules.fare.Application.UseCases;
+using AirTicketSystem.modules.payment.Application.UseCases;
 
 namespace AirTicketSystem.UI.Client;
 
@@ -88,12 +89,17 @@ public sealed class FlightSearchMenu
 
     private async Task BuscarVuelosAsync()
     {
-        SpectreHelper.MostrarSubtitulo("Buscar Vuelos");
-        await MostrarAeropuertosAsync();
+        SpectreHelper.MostrarSubtitulo("Buscar Vuelos — Seleccione origen");
+        var origen = await SelectorUI.SeleccionarAeropuertoAsync(_provider);
+        if (origen is null) return;
 
-        var origenId  = SpectreHelper.PedirEntero("ID del aeropuerto de origen");
-        var destinoId = SpectreHelper.PedirEntero("ID del aeropuerto de destino");
-        var fechaStr  = SpectreHelper.PedirTexto("Fecha de viaje (yyyy-MM-dd)");
+        SpectreHelper.MostrarSubtitulo("Seleccione destino");
+        var destino = await SelectorUI.SeleccionarAeropuertoAsync(_provider);
+        if (destino is null) return;
+
+        var origenId  = origen.Id;
+        var destinoId = destino.Id;
+        var fechaStr  = SpectreHelper.PedirTexto($"Fecha de viaje  {origen.CodigoIata.Valor}→{destino.CodigoIata.Valor}  (yyyy-MM-dd)");
 
         if (!DateTime.TryParse(fechaStr, out var fecha))
         {
@@ -141,7 +147,11 @@ public sealed class FlightSearchMenu
 
     private async Task VerAsientosAsync()
     {
-        var vueloId = SpectreHelper.PedirEntero("ID del vuelo");
+        SpectreHelper.MostrarSubtitulo("Asientos disponibles — Seleccione el vuelo");
+        var vuelo = await SelectorUI.SeleccionarVueloProgramadoAsync(_provider);
+        if (vuelo is null) return;
+
+        var vueloId = vuelo.Id;
         await ConsoleErrorHandler.ExecuteAsync(async () =>
         {
             await using var scope = _provider.CreateAsyncScope();
@@ -164,23 +174,84 @@ public sealed class FlightSearchMenu
 
     private async Task CrearReservaAsync()
     {
-        SpectreHelper.MostrarSubtitulo("Nueva Reserva");
+        SpectreHelper.MostrarSubtitulo("Nueva Reserva — Seleccione el vuelo");
+        var vuelo = await SelectorUI.SeleccionarVueloProgramadoAsync(_provider);
+        if (vuelo is null) return;
 
-        var vueloId   = SpectreHelper.PedirEntero("ID del vuelo");
-        var tarifaId  = SpectreHelper.PedirEntero("ID de la tarifa");
-        var valorTotal = SpectreHelper.PedirDecimal("Valor total");
-        var obs        = SpectreHelper.PedirTexto("Observaciones (opcional)");
+        SpectreHelper.MostrarSubtitulo($"Vuelo {vuelo.NumeroVuelo.Valor} — Seleccione tarifa");
+        var tarifa = await SelectorUI.SeleccionarTarifaAsync(_provider, vuelo.RutaId);
+        if (tarifa is null) return;
+
+        SpectreHelper.MostrarSubtitulo("Pago — Seleccione método de pago");
+        var metodoPago = await SelectorUI.SeleccionarMetodoPagoAsync(_provider);
+        if (metodoPago is null) return;
+
+        var obs    = SpectreHelper.PedirTexto("Observaciones (opcional)", obligatorio: false);
         string? obsOpc = string.IsNullOrWhiteSpace(obs) ? null : obs;
 
         await ConsoleErrorHandler.ExecuteAsync(async () =>
         {
-            // Obtener clienteId del usuario en sesión
             await using var scopeC = _provider.CreateAsyncScope();
             var clienteId = await ObtenerClienteIdAsync(scopeC.ServiceProvider);
 
             await using var scope = _provider.CreateAsyncScope();
             var b = await scope.ServiceProvider.GetRequiredService<CreateBookingUseCase>()
-                .ExecuteAsync(clienteId, vueloId, tarifaId, valorTotal, obsOpc);
+                .ExecuteAsync(clienteId, vuelo.Id, tarifa.Id, tarifa.PrecioTotal.Valor, obsOpc);
+
+            // En la creación de la reserva se deben registrar los pasajeros
+            var addPassengerUc = scope.ServiceProvider.GetRequiredService<AddPassengerUseCase>();
+            var availUc        = scope.ServiceProvider.GetRequiredService<GetAvailableSeatsByFlightUseCase>();
+
+            var agregados = 0;
+            while (true)
+            {
+                SpectreHelper.MostrarSubtitulo("Pasajero — Seleccione persona");
+                var persona = await SelectorUI.SeleccionarPersonaAsync(_provider);
+                if (persona is null)
+                {
+                    if (agregados == 0)
+                        throw new InvalidOperationException(
+                            "Debe agregar al menos un pasajero para completar la reserva.");
+                    break;
+                }
+
+                var tipoOpc = SpectreHelper.SeleccionarOpcionTexto("Tipo de pasajero", ["ADULTO", "MENOR", "INFANTE"]);
+
+                int? asientoId = null;
+                if (SpectreHelper.Confirmar("¿Desea seleccionar asiento ahora?"))
+                {
+                    var disponibles = await availUc.ExecuteAsync(vuelo.Id);
+                    if (disponibles.Count == 0)
+                    {
+                        SpectreHelper.MostrarAdvertencia("No hay asientos disponibles para este vuelo.");
+                    }
+                    else
+                    {
+                        var seleccionado = SpectreHelper.SeleccionarOpcion(
+                            "Seleccione el asiento",
+                            disponibles,
+                            s => $"  AsientoID:{s.AsientoId}  Estado:{s.Estado.Valor}");
+                        asientoId = seleccionado.AsientoId;
+                    }
+                }
+
+                _ = await addPassengerUc.ExecuteAsync(b.Id, persona.Id, tipoOpc, asientoId);
+                agregados++;
+
+                if (!SpectreHelper.Confirmar("¿Desea agregar otro pasajero?"))
+                    break;
+            }
+
+            // Portal cliente: pago inmediato y confirmación de reserva
+            var pago = await scope.ServiceProvider.GetRequiredService<CreatePaymentUseCase>()
+                .ExecuteAsync(b.Id, metodoPago.Id, b.ValorTotal.Valor);
+
+            _ = await scope.ServiceProvider.GetRequiredService<ApprovePaymentUseCase>()
+                .ExecuteAsync(pago.Id, $"CLIENT-{Guid.NewGuid():N}");
+
+            _ = await scope.ServiceProvider.GetRequiredService<ConfirmBookingUseCase>()
+                .ExecuteAsync(b.Id, _session.CurrentUserId > 0 ? _session.CurrentUserId : null);
+
             SpectreHelper.MostrarExito(
                 $"Reserva creada exitosamente.\n" +
                 $"  Código : {b.CodigoReserva.Valor}\n" +
@@ -193,20 +264,28 @@ public sealed class FlightSearchMenu
 
     private async Task AgregarPasajeroAsync()
     {
-        SpectreHelper.MostrarSubtitulo("Agregar Pasajero");
-        var reservaId  = SpectreHelper.PedirEntero("ID de la reserva");
-        var personaId  = SpectreHelper.PedirEntero("ID de la persona (pasajero)");
-        var tipoOpc    = SpectreHelper.SeleccionarOpcionTexto("Tipo de pasajero", ["ADULTO", "MENOR", "INFANTE"]);
-        var asientoStr = SpectreHelper.PedirTexto("ID del asiento (opcional, Enter para omitir)");
-        int? asientoId = int.TryParse(asientoStr, out var av) && av > 0 ? av : null;
+        SpectreHelper.MostrarSubtitulo("Agregar Pasajero — Seleccione una reserva");
 
         await ConsoleErrorHandler.ExecuteAsync(async () =>
         {
+            await using var scopeC = _provider.CreateAsyncScope();
+            var clienteId = await ObtenerClienteIdAsync(scopeC.ServiceProvider);
+            var reserva = await SelectorUI.SeleccionarReservaAsync(_provider, clienteId);
+            if (reserva is null) return;
+
+            var persona  = await SelectorUI.SeleccionarPersonaAsync(_provider);
+            if (persona is null) return;
+
+            var tipoOpc  = SpectreHelper.SeleccionarOpcionTexto("Tipo de pasajero", ["ADULTO", "MENOR", "INFANTE"]);
+            var asientoStr = SpectreHelper.PedirTexto("ID del asiento (opcional, Enter para omitir)");
+            int? asientoId = int.TryParse(asientoStr, out var av) && av > 0 ? av : null;
+
             await using var scope = _provider.CreateAsyncScope();
             var p = await scope.ServiceProvider.GetRequiredService<AddPassengerUseCase>()
-                .ExecuteAsync(reservaId, personaId, tipoOpc, asientoId);
+                .ExecuteAsync(reserva.Id, persona.Id, tipoOpc, asientoId);
             SpectreHelper.MostrarExito($"Pasajero agregado (ID {p.Id}). Tipo: {p.TipoPasajero.Valor}.");
         });
+
         SpectreHelper.EsperarTecla();
     }
 
@@ -221,17 +300,4 @@ public sealed class FlightSearchMenu
         return cliente.Id;
     }
 
-    private async Task MostrarAeropuertosAsync()
-    {
-        await ConsoleErrorHandler.ExecuteAsync(async () =>
-        {
-            await using var scope = _provider.CreateAsyncScope();
-            var lista = await scope.ServiceProvider.GetRequiredService<GetActiveAirportsUseCase>().ExecuteAsync();
-            if (lista.Count == 0) return;
-            var tabla = SpectreHelper.CrearTabla("ID", "Nombre", "IATA");
-            foreach (var a in lista)
-                SpectreHelper.AgregarFila(tabla, a.Id.ToString(), a.Nombre.Valor, a.CodigoIata.Valor);
-            SpectreHelper.MostrarTabla(tabla);
-        });
-    }
 }

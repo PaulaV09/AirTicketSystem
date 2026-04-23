@@ -37,20 +37,12 @@ public sealed class ContinentMenu
         await ConsoleErrorHandler.ExecuteAsync(async () =>
         {
             await using var scope = _provider.CreateAsyncScope();
-            var uc = scope.ServiceProvider.GetRequiredService<GetAllContinentsUseCase>();
-            var lista = await uc.ExecuteAsync();
-
-            if (lista.Count == 0)
-            {
-                SpectreHelper.MostrarInfo("No hay continentes registrados.");
-                SpectreHelper.EsperarTecla();
-                return;
-            }
+            var lista = await scope.ServiceProvider.GetRequiredService<GetAllContinentsUseCase>().ExecuteAsync();
+            if (lista.Count == 0) { SpectreHelper.MostrarInfo("No hay continentes registrados."); SpectreHelper.EsperarTecla(); return; }
 
             var tabla = SpectreHelper.CrearTabla("ID", "Nombre", "Código");
             foreach (var c in lista)
                 SpectreHelper.AgregarFila(tabla, c.Id.ToString(), c.Nombre.Valor, c.Codigo.Valor);
-
             SpectreHelper.MostrarTabla(tabla);
             SpectreHelper.EsperarTecla();
         });
@@ -59,44 +51,45 @@ public sealed class ContinentMenu
     private async Task CrearAsync()
     {
         SpectreHelper.MostrarSubtitulo("Nuevo Continente");
-        var nombre = SpectreHelper.PedirTexto("Nombre");
-        var codigo = SpectreHelper.PedirTexto("Código (ej: AF, AS, EU)");
+        var nombre = SpectreHelper.PedirTexto("Nombre del continente");
+        var codigo = SpectreHelper.PedirTexto("Código de 2 letras (ej: AM, EU, AS)");
 
         await ConsoleErrorHandler.ExecuteAsync(async () =>
         {
             await using var scope = _provider.CreateAsyncScope();
-            var uc = scope.ServiceProvider.GetRequiredService<CreateContinentUseCase>();
-            var result = await uc.ExecuteAsync(nombre, codigo);
+            var result = await scope.ServiceProvider.GetRequiredService<CreateContinentUseCase>()
+                .ExecuteAsync(nombre, codigo);
             SpectreHelper.MostrarExito($"Continente '{result.Nombre.Valor}' creado (ID {result.Id}).");
         });
-
         SpectreHelper.EsperarTecla();
     }
 
     private async Task EditarAsync()
     {
-        SpectreHelper.MostrarSubtitulo("Editar Continente");
-        var id     = SpectreHelper.PedirEntero("ID del continente");
-        var nombre = SpectreHelper.PedirTexto("Nuevo nombre");
-        var codigo = SpectreHelper.PedirTexto("Nuevo código");
+        // Seleccionar desde lista → garantiza que el registro existe
+        var continente = await SelectorUI.SeleccionarContinenteAsync(_provider);
+        if (continente is null) return;
+
+        SpectreHelper.MostrarSubtitulo($"Editando: {continente.Nombre.Valor} [{continente.Codigo.Valor}]");
+        var nombre = SpectreHelper.PedirTexto($"Nuevo nombre (actual: {continente.Nombre.Valor})");
+        var codigo = SpectreHelper.PedirTexto($"Nuevo código (actual: {continente.Codigo.Valor})");
 
         await ConsoleErrorHandler.ExecuteAsync(async () =>
         {
             await using var scope = _provider.CreateAsyncScope();
-            var uc = scope.ServiceProvider.GetRequiredService<UpdateContinentUseCase>();
-            var result = await uc.ExecuteAsync(id, nombre, codigo);
+            var result = await scope.ServiceProvider.GetRequiredService<UpdateContinentUseCase>()
+                .ExecuteAsync(continente.Id, nombre, codigo);
             SpectreHelper.MostrarExito($"Continente '{result.Nombre.Valor}' actualizado.");
         });
-
         SpectreHelper.EsperarTecla();
     }
 
     private async Task EliminarAsync()
     {
-        SpectreHelper.MostrarSubtitulo("Eliminar Continente");
-        var id = SpectreHelper.PedirEntero("ID del continente a eliminar");
+        var continente = await SelectorUI.SeleccionarContinenteAsync(_provider);
+        if (continente is null) return;
 
-        if (!SpectreHelper.Confirmar("¿Confirma la eliminación?"))
+        if (!SpectreHelper.Confirmar($"¿Eliminar '{continente.Nombre.Valor}'?"))
         {
             SpectreHelper.MostrarInfo("Operación cancelada.");
             SpectreHelper.EsperarTecla();
@@ -106,11 +99,10 @@ public sealed class ContinentMenu
         await ConsoleErrorHandler.ExecuteAsync(async () =>
         {
             await using var scope = _provider.CreateAsyncScope();
-            var uc = scope.ServiceProvider.GetRequiredService<DeleteContinentUseCase>();
-            await uc.ExecuteAsync(id);
-            SpectreHelper.MostrarExito("Continente eliminado correctamente.");
+            await scope.ServiceProvider.GetRequiredService<DeleteContinentUseCase>()
+                .ExecuteAsync(continente.Id);
+            SpectreHelper.MostrarExito($"Continente '{continente.Nombre.Valor}' eliminado.");
         });
-
         SpectreHelper.EsperarTecla();
     }
 }

@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using AirTicketSystem.shared.UI;
 using AirTicketSystem.shared.helpers;
 using AirTicketSystem.modules.payment.Application.UseCases;
+using AirTicketSystem.modules.paymentmethod.Domain.aggregate;
 
 namespace AirTicketSystem.UI.Admin.Billing;
 
@@ -71,7 +72,12 @@ public sealed class PaymentMenu
         SpectreHelper.MostrarSubtitulo("Registrar Pago");
         await MostrarMetodosPagoAsync();
         var reservaId    = SpectreHelper.PedirEntero("ID de la reserva");
-        var metodoPagoId = SpectreHelper.PedirEntero("ID del método de pago");
+        var metodoPago = await SelectorUI.SeleccionarMetodoPagoAsync(_provider);
+        if (metodoPago is null) {
+            SpectreHelper.EsperarTecla();
+            return;
+        }
+        var metodoPagoId = metodoPago.Id;
         var monto        = SpectreHelper.PedirDecimal("Monto del pago");
 
         await ConsoleErrorHandler.ExecuteAsync(async () =>
@@ -131,7 +137,12 @@ public sealed class PaymentMenu
         SpectreHelper.MostrarSubtitulo("Reintentar Pago");
         var id = SpectreHelper.PedirEntero("ID del pago fallido");
         await MostrarMetodosPagoAsync();
-        var nuevoMetodoId = SpectreHelper.PedirEntero("ID del nuevo método de pago");
+        var nuevoMetodo = await SelectorUI.SeleccionarMetodoPagoAsync(_provider);
+        if (nuevoMetodo is null) {
+            SpectreHelper.EsperarTecla();
+            return;
+        }
+        var nuevoMetodoId = nuevoMetodo.Id;
         var montoStr      = SpectreHelper.PedirTexto("Nuevo monto (Enter para mantener el mismo)");
         decimal? monto    = decimal.TryParse(montoStr, out var mv) && mv > 0 ? mv : null;
 

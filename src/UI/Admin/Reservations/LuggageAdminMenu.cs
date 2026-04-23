@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using AirTicketSystem.shared.UI;
 using AirTicketSystem.shared.helpers;
 using AirTicketSystem.modules.luggage.Application.UseCases;
+using AirTicketSystem.modules.luggagetype.Domain.aggregate;
 
 namespace AirTicketSystem.UI.Admin.Reservations;
 
@@ -68,7 +69,12 @@ public sealed class LuggageAdminMenu
         SpectreHelper.MostrarSubtitulo("Registrar Equipaje");
         var pasajeroId   = SpectreHelper.PedirEntero("ID del pasajero-reserva");
         var vueloId      = SpectreHelper.PedirEntero("ID del vuelo");
-        var tipoEquipId  = SpectreHelper.PedirEntero("ID del tipo de equipaje");
+        var tipoEquip = await SelectorUI.SeleccionarTipoEquipajeAsync(_provider);
+        if (tipoEquip is null) {
+            SpectreHelper.EsperarTecla();
+            return;
+        }
+        var tipoEquipId  = tipoEquip.Id;
         var descripcion  = SpectreHelper.PedirTexto("Descripción (opcional)");
         var pesoStr      = SpectreHelper.PedirTexto("Peso declarado en kg (opcional)");
 

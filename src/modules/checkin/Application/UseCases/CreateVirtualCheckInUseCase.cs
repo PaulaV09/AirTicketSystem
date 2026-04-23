@@ -25,7 +25,8 @@ public sealed class CreateVirtualCheckInUseCase
             ?? throw new KeyNotFoundException(
                 $"No se encontró un pasajero de reserva con ID {pasajeroReservaId}.");
 
-        if (await _checkInRepository.ExistsByPasajeroReservaAsync(pasajeroReservaId))
+        var existing = await _checkInRepository.FindByPasajeroReservaAsync(pasajeroReservaId);
+        if (existing is not null)
             throw new InvalidOperationException(
                 "Ya existe un check-in registrado para este pasajero en esta reserva.");
 

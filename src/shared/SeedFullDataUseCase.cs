@@ -1,5 +1,7 @@
 // src/shared/SeedFullDataUseCase.cs
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.EntityFrameworkCore;
+using AirTicketSystem.shared.context;
 using AirTicketSystem.shared.helpers;
 
 // Domains
@@ -108,16 +110,31 @@ public sealed class SeedFullDataUseCase
         await using var scope = _provider.CreateAsyncScope();
         var sp = scope.ServiceProvider;
 
-        // Si ya hay continentes, el seed completo ya corrió
-        var continentes = await sp.GetRequiredService<IContinentRepository>().FindAllAsync();
-        if (continentes.Count > 0) return;
+        // Guard: si ya hay géneros, el seed ya corrió (géneros son lo primero que se inserta)
+        var generoRepo = sp.GetRequiredService<IGenderRepository>();
+        var generosExistentes = await generoRepo.FindAllAsync();
+        if (generosExistentes.Count > 0) return;
 
         Console.ForegroundColor = ConsoleColor.Cyan;
         Console.WriteLine("  ► Ejecutando seed completo de datos de prueba...");
         Console.ResetColor();
 
-        // ── 1. CATÁLOGOS ─────────────────────────────────────────────────────
+        // Usa transacción con la estrategia de reintentos de MySQL
+        var dbContext = sp.GetRequiredService<AppDbContext>();
+        var strategy  = dbContext.Database.CreateExecutionStrategy();
 
+        await strategy.ExecuteAsync(async () =>
+        {
+        await using var transaction = await dbContext.Database.BeginTransactionAsync(ct);
+
+        static void Log(string paso) {
+            Console.ForegroundColor = ConsoleColor.DarkGray;
+            Console.WriteLine($"    Seed paso: {paso}");
+            Console.ResetColor();
+        }
+
+        // ── 1. CATÁLOGOS ─────────────────────────────────────────────────────
+        Log("géneros");
         // Géneros
         var generoM = Gender.Crear("Masculino");
         var generoF = Gender.Crear("Femenino");
@@ -127,18 +144,24 @@ public sealed class SeedFullDataUseCase
         await generoRepo.SaveAsync(generoF);
         await generoRepo.SaveAsync(generoX);
 
-        // Tipos de documento
-        var docCC = DocumentType.Crear("Cédula de ciudadanía");
-        var docPA = DocumentType.Crear("Pasaporte");
-        var docCE = DocumentType.Crear("Cédula de extranjería");
-        var docTI = DocumentType.Crear("Tarjeta de identidad");
-        var docRepo = sp.GetRequiredService<IDocumentTypeRepository>();
-        await docRepo.SaveAsync(docCC);
-        await docRepo.SaveAsync(docPA);
-        await docRepo.SaveAsync(docCE);
-        await docRepo.SaveAsync(docTI);
+        Log("tipos de documento");
+        var docRepo       = sp.GetRequiredService<IDocumentTypeRepository>();
+        var docsExist     = (await docRepo.FindAllAsync()).ToDictionary(d => d.Descripcion.Valor);
 
-        // Tipos de teléfono
+        async Task<DocumentType> ObtenerOCrearDoc(string desc)
+        {
+            if (docsExist.TryGetValue(desc, out var ex)) return ex;
+            var nuevo = DocumentType.Crear(desc);
+            await docRepo.SaveAsync(nuevo);
+            return nuevo;
+        }
+
+        var docCC = await ObtenerOCrearDoc("Cédula de ciudadanía");
+        var docPA = await ObtenerOCrearDoc("Pasaporte");
+        var docCE = await ObtenerOCrearDoc("Cédula de extranjería");
+        var docTI = await ObtenerOCrearDoc("Tarjeta de identidad");
+
+        Log("tipos de teléfono");
         var telCel  = PhoneType.Crear("Celular");
         var telFijo = PhoneType.Crear("Fijo");
         var telTrab = PhoneType.Crear("Trabajo");
@@ -149,7 +172,7 @@ public sealed class SeedFullDataUseCase
         await telRepo.SaveAsync(telTrab);
         await telRepo.SaveAsync(telEmg);
 
-        // Tipos de email
+        Log("tipos de email");
         var emailPers = EmailType.Crear("Personal");
         var emailTrab = EmailType.Crear("Trabajo");
         var emailOtro = EmailType.Crear("Otro");
@@ -158,7 +181,7 @@ public sealed class SeedFullDataUseCase
         await emailRepo.SaveAsync(emailTrab);
         await emailRepo.SaveAsync(emailOtro);
 
-        // Tipos de dirección
+        Log("tipos de dirección");
         var dirRes  = AddressType.Crear("Residencia");
         var dirTrab = AddressType.Crear("Trabajo");
         var dirCorr = AddressType.Crear("Correspondencia");
@@ -167,7 +190,7 @@ public sealed class SeedFullDataUseCase
         await dirRepo.SaveAsync(dirTrab);
         await dirRepo.SaveAsync(dirCorr);
 
-        // Relaciones de contacto de emergencia
+        Log("relaciones de contacto");
         var relFam  = ContactRelationship.Crear("Familiar");
         var relCon  = ContactRelationship.Crear("Cónyuge");
         var relAmg  = ContactRelationship.Crear("Amigo/a");
@@ -178,7 +201,7 @@ public sealed class SeedFullDataUseCase
         await relRepo.SaveAsync(relAmg);
         await relRepo.SaveAsync(relVec);
 
-        // Tipos de equipaje
+        Log("tipos de equipaje");
         var eqMano    = LuggageType.Crear("Equipaje de mano");
         var eqBodSmall= LuggageType.Crear("Maleta bodega pequeña");
         var eqBodBig  = LuggageType.Crear("Maleta bodega grande");
@@ -189,18 +212,18 @@ public sealed class SeedFullDataUseCase
         await eqRepo.SaveAsync(eqBodBig);
         await eqRepo.SaveAsync(eqEsp);
 
-        // Clases de servicio
-        var claseY = ServiceClass.Crear("Económica",    "Y", "Clase económica estándar");
-        var claseW = ServiceClass.Crear("Económica Plus","W", "Económica con más espacio");
-        var claseC = ServiceClass.Crear("Ejecutiva",    "C", "Clase ejecutiva");
-        var claseF = ServiceClass.Crear("Primera Clase","F", "Primera clase premium");
+        Log("clases de servicio");
+        var claseY = ServiceClass.Crear("Económica",    "ECO", "Clase económica estándar");
+        var claseW = ServiceClass.Crear("Económica Plus","EPL", "Económica con más espacio");
+        var claseC = ServiceClass.Crear("Ejecutiva",    "EJE", "Clase ejecutiva");
+        var claseF = ServiceClass.Crear("Primera Clase","PRC", "Primera clase premium");
         var claseRepo = sp.GetRequiredService<IServiceClassRepository>();
         await claseRepo.SaveAsync(claseY);
         await claseRepo.SaveAsync(claseW);
         await claseRepo.SaveAsync(claseC);
         await claseRepo.SaveAsync(claseF);
 
-        // Tipos de trabajador
+        Log("tipos de trabajador");
         var tipoPiloto    = WorkerType.Crear("Piloto");
         var tipoCabina    = WorkerType.Crear("Tripulación de cabina");
         var tipoTecnico   = WorkerType.Crear("Personal técnico");
@@ -213,7 +236,7 @@ public sealed class SeedFullDataUseCase
         await wtRepo.SaveAsync(tipoTierra);
         await wtRepo.SaveAsync(tipoAdmin);
 
-        // Especialidades
+        Log("especialidades");
         var espCapitan  = Specialty.Crear("Capitán",                   tipoPiloto.Id);
         var espPrimOfi  = Specialty.Crear("Primer Oficial",             tipoPiloto.Id);
         var espAuxJefe  = Specialty.Crear("Auxiliar de vuelo jefe",    tipoCabina.Id);
@@ -226,7 +249,7 @@ public sealed class SeedFullDataUseCase
         await espRepo.SaveAsync(espAux);
         await espRepo.SaveAsync(espMecanico);
 
-        // Métodos de pago
+        Log("métodos de pago");
         var mpTC   = PaymentMethod.Crear("Tarjeta de crédito");
         var mpTD   = PaymentMethod.Crear("Tarjeta débito");
         var mpTrans= PaymentMethod.Crear("Transferencia bancaria");
@@ -239,7 +262,7 @@ public sealed class SeedFullDataUseCase
         await mpRepo.SaveAsync(mpPSE);
         await mpRepo.SaveAsync(mpEfec);
 
-        // ── 2. GEOGRAFÍA ─────────────────────────────────────────────────────
+        Log("geografía - continentes");
 
         var continRepo = sp.GetRequiredService<IContinentRepository>();
         var countRepo  = sp.GetRequiredService<ICountryRepository>();
@@ -284,7 +307,7 @@ public sealed class SeedFullDataUseCase
         await cityRepo.SaveAsync(ciudadCTG);
         await cityRepo.SaveAsync(ciudadMad);
 
-        // ── 3. AEROLÍNEAS Y FLOTA ─────────────────────────────────────────────
+        Log("aerolíneas y flota");
 
         var manufRepo  = sp.GetRequiredService<IAircraftManufacturerRepository>();
         var modelRepo  = sp.GetRequiredService<IAircraftModelRepository>();
@@ -396,7 +419,7 @@ public sealed class SeedFullDataUseCase
         var asientosHK4801 = await SeedAsientosAsync(seatRepo, avionHK4801.Id, claseC.Id, claseY.Id);
         var asientosHK5010 = await SeedAsientosAsync(seatRepo, avionHK5010.Id, claseC.Id, claseY.Id);
 
-        // ── 4. PERSONAL ───────────────────────────────────────────────────────
+        Log("personal - trabajadores");
 
         var personaRepo = sp.GetRequiredService<IPersonRepository>();
         var workerRepo  = sp.GetRequiredService<IWorkerRepository>();
@@ -441,7 +464,7 @@ public sealed class SeedFullDataUseCase
         await ratingRepo.SaveAsync(ratCarlosA320);
         await ratingRepo.SaveAsync(ratAna737);
 
-        // ── 5. USUARIOS Y CLIENTES ────────────────────────────────────────────
+        Log("usuarios y clientes");
 
         var roleRepo   = sp.GetRequiredService<IRoleRepository>();
         var userRepo   = sp.GetRequiredService<IUserRepository>();
@@ -503,7 +526,7 @@ public sealed class SeedFullDataUseCase
         await ecRepo.SaveAsync(ecJuan);
         await ecRepo.SaveAsync(ecLaura);
 
-        // ── 6. VUELOS ─────────────────────────────────────────────────────────
+        Log("vuelos");
 
         var flightRepo  = sp.GetRequiredService<IFlightRepository>();
         var crewRepo    = sp.GetRequiredService<IFlightCrewRepository>();
@@ -534,11 +557,11 @@ public sealed class SeedFullDataUseCase
 
         // Tripulación de vuelos
         var crew_v1_carlos = FlightCrew.Crear(vuelo1.Id, trabCarlos.Id, "PILOTO");
-        var crew_v1_jorge  = FlightCrew.Crear(vuelo1.Id, trabJorge.Id,  "AUXILIAR_CABINA");
+        var crew_v1_jorge  = FlightCrew.Crear(vuelo1.Id, trabJorge.Id,  "AUXILIAR_VUELO");
         var crew_v2_carlos = FlightCrew.Crear(vuelo2.Id, trabCarlos.Id, "PILOTO");
-        var crew_v2_jorge  = FlightCrew.Crear(vuelo2.Id, trabJorge.Id,  "AUXILIAR_CABINA");
+        var crew_v2_jorge  = FlightCrew.Crear(vuelo2.Id, trabJorge.Id,  "AUXILIAR_VUELO");
         var crew_v3_ana    = FlightCrew.Crear(vuelo3.Id, trabAna.Id,    "PILOTO");
-        var crew_v3_maria  = FlightCrew.Crear(vuelo3.Id, trabMaria.Id,  "AUXILIAR_CABINA");
+        var crew_v3_maria  = FlightCrew.Crear(vuelo3.Id, trabMaria.Id,  "AUXILIAR_VUELO");
         foreach (var c in new[]{ crew_v1_carlos, crew_v1_jorge, crew_v2_carlos,
                                   crew_v2_jorge, crew_v3_ana, crew_v3_maria })
             await crewRepo.SaveAsync(c);
@@ -551,7 +574,7 @@ public sealed class SeedFullDataUseCase
         await availRepo.SaveAllAsync(dispV2);
         await availRepo.SaveAllAsync(dispV3);
 
-        // ── 7. RESERVAS, PAGOS, TIQUETES ─────────────────────────────────────
+        Log("reservas, pagos, tiquetes");
 
         var bookingRepo  = sp.GetRequiredService<IBookingRepository>();
         var paxRepo      = sp.GetRequiredService<IBookingPassengerRepository>();
@@ -627,6 +650,10 @@ public sealed class SeedFullDataUseCase
             tarifaBasicaAVMDE.PrecioBase.Valor,
             19m);
         await invoiceRepo.SaveAsync(facturaJuan);
+
+        await transaction.CommitAsync(ct);
+
+        }); // fin strategy.ExecuteAsync
 
         Console.ForegroundColor = ConsoleColor.Green;
         Console.WriteLine("  ✓ Seed completo ejecutado correctamente.");

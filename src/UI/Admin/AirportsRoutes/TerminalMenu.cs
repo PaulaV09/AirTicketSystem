@@ -3,7 +3,6 @@ using Microsoft.Extensions.DependencyInjection;
 using AirTicketSystem.shared.UI;
 using AirTicketSystem.shared.helpers;
 using AirTicketSystem.modules.terminal.Application.UseCases;
-using AirTicketSystem.modules.airport.Application.UseCases;
 
 namespace AirTicketSystem.UI.Admin.AirportsRoutes;
 
@@ -18,76 +17,73 @@ public sealed class TerminalMenu
         while (true)
         {
             SpectreHelper.MostrarTitulo("Terminales");
-
             var opcion = SpectreHelper.SeleccionarOpcionTexto("Seleccione una acción",
-                ["Listar por aeropuerto", "Crear", "Editar", "Eliminar", "Volver"]);
+                ["Ver terminales de aeropuerto", "Crear", "Editar", "Eliminar", "Volver"]);
 
             switch (opcion)
             {
-                case "Listar por aeropuerto": await ListarAsync();   break;
-                case "Crear":                 await CrearAsync();    break;
-                case "Editar":                await EditarAsync();   break;
-                case "Eliminar":              await EliminarAsync(); break;
-                case "Volver":                return;
+                case "Ver terminales de aeropuerto": await ListarAsync();   break;
+                case "Crear":                        await CrearAsync();    break;
+                case "Editar":                       await EditarAsync();   break;
+                case "Eliminar":                     await EliminarAsync(); break;
+                case "Volver":                       return;
             }
         }
     }
 
     private async Task ListarAsync()
     {
-        await MostrarAeropuertosAsync();
-        var aeropuertoId = SpectreHelper.PedirEntero("ID del aeropuerto");
+        var aeropuerto = await SelectorUI.SeleccionarAeropuertoAsync(_provider);
+        if (aeropuerto is null) return;
 
         await ConsoleErrorHandler.ExecuteAsync(async () =>
         {
             await using var scope = _provider.CreateAsyncScope();
-            var lista = await scope.ServiceProvider
-                .GetRequiredService<GetTerminalsByAirportUseCase>().ExecuteAsync(aeropuertoId);
-
-            if (lista.Count == 0) { SpectreHelper.MostrarInfo("Sin terminales."); SpectreHelper.EsperarTecla(); return; }
-
+            var lista = await scope.ServiceProvider.GetRequiredService<GetTerminalsByAirportUseCase>().ExecuteAsync(aeropuerto.Id);
+            if (lista.Count == 0) { SpectreHelper.MostrarInfo($"Sin terminales en {aeropuerto.Nombre.Valor}."); SpectreHelper.EsperarTecla(); return; }
             var tabla = SpectreHelper.CrearTabla("ID", "Nombre", "Descripción");
             foreach (var t in lista)
-                SpectreHelper.AgregarFila(tabla, t.Id.ToString(), t.Nombre.Valor,
-                    t.Descripcion?.Valor ?? "-");
-            SpectreHelper.MostrarTabla(tabla);
-            SpectreHelper.EsperarTecla();
+                SpectreHelper.AgregarFila(tabla, t.Id.ToString(), t.Nombre.Valor, t.Descripcion?.Valor ?? "-");
+            SpectreHelper.MostrarTabla(tabla); SpectreHelper.EsperarTecla();
         });
     }
 
     private async Task CrearAsync()
     {
         SpectreHelper.MostrarSubtitulo("Nueva Terminal");
-        await MostrarAeropuertosAsync();
+        var aeropuerto = await SelectorUI.SeleccionarAeropuertoAsync(_provider);
+        if (aeropuerto is null) return;
 
-        var aeropuertoId = SpectreHelper.PedirEntero("ID del aeropuerto");
-        var nombre       = SpectreHelper.PedirTexto("Nombre de la terminal (ej: Terminal 1)");
-        var descripcion  = SpectreHelper.PedirTexto("Descripción (opcional)");
-        string? descOpc  = string.IsNullOrWhiteSpace(descripcion) ? null : descripcion;
+        var nombre     = SpectreHelper.PedirTexto("Nombre de la terminal (ej: T1 Nacional)");
+        var descripcion= SpectreHelper.PedirTexto("Descripción (opcional)", obligatorio: false);
 
         await ConsoleErrorHandler.ExecuteAsync(async () =>
         {
             await using var scope = _provider.CreateAsyncScope();
             var r = await scope.ServiceProvider.GetRequiredService<CreateTerminalUseCase>()
-                .ExecuteAsync(aeropuertoId, nombre, descOpc);
-            SpectreHelper.MostrarExito($"Terminal '{r.Nombre.Valor}' creada (ID {r.Id}).");
+                .ExecuteAsync(aeropuerto.Id, nombre, string.IsNullOrWhiteSpace(descripcion) ? null : descripcion);
+            SpectreHelper.MostrarExito($"Terminal '{r.Nombre.Valor}' creada en {aeropuerto.Nombre.Valor} (ID {r.Id}).");
         });
         SpectreHelper.EsperarTecla();
     }
 
     private async Task EditarAsync()
     {
-        SpectreHelper.MostrarSubtitulo("Editar Terminal");
-        var id          = SpectreHelper.PedirEntero("ID de la terminal");
-        var nombre      = SpectreHelper.PedirTexto("Nuevo nombre");
-        var descripcion = SpectreHelper.PedirTexto("Nueva descripción (opcional)");
-        string? descOpc = string.IsNullOrWhiteSpace(descripcion) ? null : descripcion;
+        // Seleccionar aeropuerto → terminal
+        var aeropuerto = await SelectorUI.SeleccionarAeropuertoAsync(_provider);
+        if (aeropuerto is null) return;
+        var terminal = await SelectorUI.SeleccionarTerminalAsync(_provider, aeropuerto.Id);
+        if (terminal is null) return;
+
+        SpectreHelper.MostrarSubtitulo($"Editando: {terminal.Nombre.Valor}");
+        var nombre     = SpectreHelper.PedirTexto($"Nuevo nombre  (actual: {terminal.Nombre.Valor})");
+        var descripcion= SpectreHelper.PedirTexto($"Nueva descripción  (actual: {terminal.Descripcion?.Valor ?? "-"})", obligatorio: false);
 
         await ConsoleErrorHandler.ExecuteAsync(async () =>
         {
             await using var scope = _provider.CreateAsyncScope();
             var r = await scope.ServiceProvider.GetRequiredService<UpdateTerminalUseCase>()
-                .ExecuteAsync(id, nombre, descOpc);
+                .ExecuteAsync(terminal.Id, nombre, string.IsNullOrWhiteSpace(descripcion) ? null : descripcion);
             SpectreHelper.MostrarExito($"Terminal '{r.Nombre.Valor}' actualizada.");
         });
         SpectreHelper.EsperarTecla();
@@ -95,30 +91,18 @@ public sealed class TerminalMenu
 
     private async Task EliminarAsync()
     {
-        var id = SpectreHelper.PedirEntero("ID de la terminal a eliminar");
-        if (!SpectreHelper.Confirmar("¿Confirma la eliminación?")) { SpectreHelper.EsperarTecla(); return; }
+        var aeropuerto = await SelectorUI.SeleccionarAeropuertoAsync(_provider);
+        if (aeropuerto is null) return;
+        var terminal = await SelectorUI.SeleccionarTerminalAsync(_provider, aeropuerto.Id);
+        if (terminal is null) return;
 
+        if (!SpectreHelper.Confirmar($"¿Eliminar terminal '{terminal.Nombre.Valor}'?")) { SpectreHelper.EsperarTecla(); return; }
         await ConsoleErrorHandler.ExecuteAsync(async () =>
         {
             await using var scope = _provider.CreateAsyncScope();
-            await scope.ServiceProvider.GetRequiredService<DeleteTerminalUseCase>().ExecuteAsync(id);
-            SpectreHelper.MostrarExito("Terminal eliminada.");
+            await scope.ServiceProvider.GetRequiredService<DeleteTerminalUseCase>().ExecuteAsync(terminal.Id);
+            SpectreHelper.MostrarExito($"Terminal '{terminal.Nombre.Valor}' eliminada.");
         });
         SpectreHelper.EsperarTecla();
-    }
-
-    private async Task MostrarAeropuertosAsync()
-    {
-        await ConsoleErrorHandler.ExecuteAsync(async () =>
-        {
-            await using var scope = _provider.CreateAsyncScope();
-            var lista = await scope.ServiceProvider.GetRequiredService<GetAllAirportsUseCase>().ExecuteAsync();
-            if (lista.Count == 0) return;
-            var tabla = SpectreHelper.CrearTabla("ID", "Aeropuerto", "IATA", "Activo");
-            foreach (var a in lista)
-                SpectreHelper.AgregarFila(tabla, a.Id.ToString(), a.Nombre.Valor,
-                    a.CodigoIata.Valor, a.Activo.Valor ? "Sí" : "No");
-            SpectreHelper.MostrarTabla(tabla);
-        });
     }
 }

@@ -25,6 +25,16 @@ using AirTicketSystem.modules.specialty.Application.UseCases;
 using AirTicketSystem.modules.luggagetype.Application.UseCases;
 // PaymentMethod
 using AirTicketSystem.modules.paymentmethod.Application.UseCases;
+using AirTicketSystem.modules.gender.Domain.aggregate;
+using AirTicketSystem.modules.documenttype.Domain.aggregate;
+using AirTicketSystem.modules.addresstype.Domain.aggregate;
+using AirTicketSystem.modules.phonetype.Domain.aggregate;
+using AirTicketSystem.modules.emailtype.Domain.aggregate;
+using AirTicketSystem.modules.luggagetype.Domain.aggregate;
+using AirTicketSystem.modules.workertype.Domain.aggregate;
+using AirTicketSystem.modules.specialty.Domain.aggregate;
+using AirTicketSystem.modules.paymentmethod.Domain.aggregate;
+using AirTicketSystem.modules.serviceclass.Domain.aggregate;
 
 namespace AirTicketSystem.UI.Admin.GeoConfig;
 
@@ -100,14 +110,24 @@ public sealed class CatalogosMenu
             },
             editar: async scope =>
             {
-                var id = SpectreHelper.PedirEntero("ID del género");
+                var genero = await SelectorUI.SeleccionarGeneroAsync(scope);
+                if (genero is null) {
+                    SpectreHelper.MostrarInfo("Operación cancelada.");
+                    throw new InvalidOperationException("Género no seleccionado.");
+                }
+                var id = genero.Id;
                 var nombre = SpectreHelper.PedirTexto("Nuevo nombre");
                 var r = await scope.GetRequiredService<UpdateGenderUseCase>().ExecuteAsync(id, nombre);
                 return r.Nombre.Valor;
             },
             eliminar: async scope =>
             {
-                var id = SpectreHelper.PedirEntero("ID del género a eliminar");
+                var genero = await SelectorUI.SeleccionarGeneroAsync(scope);
+                if (genero is null) {
+                    SpectreHelper.MostrarInfo("Operación cancelada.");
+                    throw new InvalidOperationException("Género no seleccionado.");
+                }
+                var id = genero.Id;
                 await scope.GetRequiredService<DeleteGenderUseCase>().ExecuteAsync(id);
             });
     }
@@ -133,14 +153,24 @@ public sealed class CatalogosMenu
             },
             editar: async scope =>
             {
-                var id = SpectreHelper.PedirEntero("ID del tipo de documento");
+                var documentType = await SelectorUI.SeleccionarTipoDocumentoAsync(scope);
+                if (documentType is null) {
+                    SpectreHelper.MostrarInfo("Operación cancelada.");
+                    throw new InvalidOperationException("Tipo de documento no seleccionado.");
+                }
+                var id = documentType.Id;
                 var desc = SpectreHelper.PedirTexto("Nueva descripción");
                 var r = await scope.GetRequiredService<UpdateDocumentTypeUseCase>().ExecuteAsync(id, desc);
                 return r.Descripcion.Valor;
             },
             eliminar: async scope =>
             {
-                var id = SpectreHelper.PedirEntero("ID a eliminar");
+                var documentType = await SelectorUI.SeleccionarTipoDocumentoAsync(scope);
+                if (documentType is null) {
+                    SpectreHelper.MostrarInfo("Operación cancelada.");
+                    throw new InvalidOperationException("Tipo de documento no seleccionado.");
+                }
+                var id = documentType.Id;
                 await scope.GetRequiredService<DeleteDocumentTypeUseCase>().ExecuteAsync(id);
             });
     }
@@ -166,14 +196,24 @@ public sealed class CatalogosMenu
             },
             editar: async scope =>
             {
-                var id = SpectreHelper.PedirEntero("ID del tipo de dirección");
+                var addressType = await SelectorUI.SeleccionarTipoDireccionAsync(scope);
+                if (addressType is null) {
+                    SpectreHelper.MostrarInfo("Operación cancelada.");
+                    throw new InvalidOperationException("Tipo de dirección no seleccionado.");
+                }
+                var id = addressType.Id;
                 var desc = SpectreHelper.PedirTexto("Nueva descripción");
                 var r = await scope.GetRequiredService<UpdateAddressTypeUseCase>().ExecuteAsync(id, desc);
                 return r.Descripcion.Valor;
             },
             eliminar: async scope =>
             {
-                var id = SpectreHelper.PedirEntero("ID a eliminar");
+                var addressType = await SelectorUI.SeleccionarTipoDireccionAsync(scope);
+                if (addressType is null) {
+                    SpectreHelper.MostrarInfo("Operación cancelada.");
+                    throw new InvalidOperationException("Tipo de dirección no seleccionado.");
+                }
+                var id = addressType.Id;
                 await scope.GetRequiredService<DeleteAddressTypeUseCase>().ExecuteAsync(id);
             });
     }
@@ -199,14 +239,24 @@ public sealed class CatalogosMenu
             },
             editar: async scope =>
             {
-                var id = SpectreHelper.PedirEntero("ID del tipo de teléfono");
+                var phoneType = await SelectorUI.SeleccionarTipoTelefonoAsync(scope);
+                if (phoneType is null) {
+                    SpectreHelper.MostrarInfo("Operación cancelada.");
+                    throw new InvalidOperationException("Tipo de teléfono no seleccionado.");
+                }
+                var id = phoneType.Id;
                 var desc = SpectreHelper.PedirTexto("Nueva descripción");
                 var r = await scope.GetRequiredService<UpdatePhoneTypeUseCase>().ExecuteAsync(id, desc);
                 return r.Descripcion.Valor;
             },
             eliminar: async scope =>
             {
-                var id = SpectreHelper.PedirEntero("ID a eliminar");
+                var phoneType = await SelectorUI.SeleccionarTipoTelefonoAsync(scope);
+                if (phoneType is null) {
+                    SpectreHelper.MostrarInfo("Operación cancelada.");
+                    throw new InvalidOperationException("Tipo de teléfono no seleccionado.");
+                }
+                var id = phoneType.Id;
                 await scope.GetRequiredService<DeletePhoneTypeUseCase>().ExecuteAsync(id);
             });
     }
@@ -232,14 +282,24 @@ public sealed class CatalogosMenu
             },
             editar: async scope =>
             {
-                var id = SpectreHelper.PedirEntero("ID del tipo de email");
+                var emailType = await SelectorUI.SeleccionarTipoEmailAsync(scope);
+                if (emailType is null) {
+                    SpectreHelper.MostrarInfo("Operación cancelada.");
+                    throw new InvalidOperationException("Tipo de email no seleccionado.");
+                }
+                var id = emailType.Id;
                 var desc = SpectreHelper.PedirTexto("Nueva descripción");
                 var r = await scope.GetRequiredService<UpdateEmailTypeUseCase>().ExecuteAsync(id, desc);
                 return r.Descripcion.Valor;
             },
             eliminar: async scope =>
             {
-                var id = SpectreHelper.PedirEntero("ID a eliminar");
+                var emailType = await SelectorUI.SeleccionarTipoEmailAsync(scope);
+                if (emailType is null) {
+                    SpectreHelper.MostrarInfo("Operación cancelada.");
+                    throw new InvalidOperationException("Tipo de email no seleccionado.");
+                }
+                var id = emailType.Id;
                 await scope.GetRequiredService<DeleteEmailTypeUseCase>().ExecuteAsync(id);
             });
     }
@@ -265,14 +325,24 @@ public sealed class CatalogosMenu
             },
             editar: async scope =>
             {
-                var id = SpectreHelper.PedirEntero("ID de la relación");
+                var relationship = await SelectorUI.SeleccionarRelacionContactoAsync(scope);
+                if (relationship is null) {
+                    SpectreHelper.MostrarInfo("Operación cancelada.");
+                    throw new InvalidOperationException("Relación de contacto no seleccionada.");
+                }
+                var id = relationship.Id;
                 var desc = SpectreHelper.PedirTexto("Nueva descripción");
                 var r = await scope.GetRequiredService<UpdateContactRelationshipUseCase>().ExecuteAsync(id, desc);
                 return r.Descripcion.Valor;
             },
             eliminar: async scope =>
             {
-                var id = SpectreHelper.PedirEntero("ID a eliminar");
+                var relationship = await SelectorUI.SeleccionarRelacionContactoAsync(scope);
+                if (relationship is null) {
+                    SpectreHelper.MostrarInfo("Operación cancelada.");
+                    throw new InvalidOperationException("Relación de contacto no seleccionada.");
+                }
+                var id = relationship.Id;
                 await scope.GetRequiredService<DeleteContactRelationshipUseCase>().ExecuteAsync(id);
             });
     }
@@ -374,14 +444,24 @@ public sealed class CatalogosMenu
             },
             editar: async scope =>
             {
-                var id = SpectreHelper.PedirEntero("ID del tipo de trabajador");
+                var workerType = await SelectorUI.SeleccionarTipoTrabajadorAsync(scope);
+                if (workerType is null) {
+                    SpectreHelper.MostrarInfo("Operación cancelada.");
+                    throw new InvalidOperationException("Tipo de trabajador no seleccionado.");
+                }
+                var id = workerType.Id;
                 var nombre = SpectreHelper.PedirTexto("Nuevo nombre");
                 var r = await scope.GetRequiredService<UpdateWorkerTypeUseCase>().ExecuteAsync(id, nombre);
                 return r.Nombre.Valor;
             },
             eliminar: async scope =>
             {
-                var id = SpectreHelper.PedirEntero("ID a eliminar");
+                var workerType = await SelectorUI.SeleccionarTipoTrabajadorAsync(scope);
+                if (workerType is null) {
+                    SpectreHelper.MostrarInfo("Operación cancelada.");
+                    throw new InvalidOperationException("Tipo de trabajador no seleccionado.");
+                }
+                var id = workerType.Id;
                 await scope.GetRequiredService<DeleteWorkerTypeUseCase>().ExecuteAsync(id);
             });
     }
@@ -483,14 +563,24 @@ public sealed class CatalogosMenu
             },
             editar: async scope =>
             {
-                var id = SpectreHelper.PedirEntero("ID del tipo de equipaje");
+                var luggageType = await SelectorUI.SeleccionarTipoEquipajeAsync(scope);
+                if (luggageType is null) {
+                    SpectreHelper.MostrarInfo("Operación cancelada.");
+                    throw new InvalidOperationException("Tipo de equipaje no seleccionado.");
+                }
+                var id = luggageType.Id;
                 var nombre = SpectreHelper.PedirTexto("Nuevo nombre");
                 var r = await scope.GetRequiredService<UpdateLuggageTypeUseCase>().ExecuteAsync(id, nombre);
                 return r.Nombre.Valor;
             },
             eliminar: async scope =>
             {
-                var id = SpectreHelper.PedirEntero("ID a eliminar");
+                var luggageType = await SelectorUI.SeleccionarTipoEquipajeAsync(scope);
+                if (luggageType is null) {
+                    SpectreHelper.MostrarInfo("Operación cancelada.");
+                    throw new InvalidOperationException("Tipo de equipaje no seleccionado.");
+                }
+                var id = luggageType.Id;
                 await scope.GetRequiredService<DeleteLuggageTypeUseCase>().ExecuteAsync(id);
             });
     }

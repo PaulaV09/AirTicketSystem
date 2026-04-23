@@ -3,7 +3,6 @@ using Microsoft.Extensions.DependencyInjection;
 using AirTicketSystem.shared.UI;
 using AirTicketSystem.shared.helpers;
 using AirTicketSystem.modules.country.Application.UseCases;
-using AirTicketSystem.modules.continent.Application.UseCases;
 
 namespace AirTicketSystem.UI.Admin.GeoConfig;
 
@@ -18,18 +17,17 @@ public sealed class CountryMenu
         while (true)
         {
             SpectreHelper.MostrarTitulo("Países");
-
             var opcion = SpectreHelper.SeleccionarOpcionTexto("Seleccione una acción",
                 ["Listar todos", "Listar por continente", "Crear", "Editar", "Eliminar", "Volver"]);
 
             switch (opcion)
             {
-                case "Listar todos":           await ListarTodosAsync();       break;
-                case "Listar por continente":  await ListarPorContinenteAsync(); break;
-                case "Crear":                  await CrearAsync();             break;
-                case "Editar":                 await EditarAsync();            break;
-                case "Eliminar":               await EliminarAsync();          break;
-                case "Volver":                 return;
+                case "Listar todos":          await ListarTodosAsync();        break;
+                case "Listar por continente": await ListarPorContinenteAsync(); break;
+                case "Crear":                 await CrearAsync();              break;
+                case "Editar":                await EditarAsync();             break;
+                case "Eliminar":              await EliminarAsync();           break;
+                case "Volver":                return;
             }
         }
     }
@@ -39,16 +37,12 @@ public sealed class CountryMenu
         await ConsoleErrorHandler.ExecuteAsync(async () =>
         {
             await using var scope = _provider.CreateAsyncScope();
-            var uc = scope.ServiceProvider.GetRequiredService<GetAllCountriesUseCase>();
-            var lista = await uc.ExecuteAsync();
-
-            if (lista.Count == 0) { SpectreHelper.MostrarInfo("No hay países registrados."); SpectreHelper.EsperarTecla(); return; }
-
-            var tabla = SpectreHelper.CrearTabla("ID", "Nombre", "ISO-2", "ISO-3", "ContinenteID");
+            var lista = await scope.ServiceProvider.GetRequiredService<GetAllCountriesUseCase>().ExecuteAsync();
+            if (lista.Count == 0) { SpectreHelper.MostrarInfo("Sin países registrados."); SpectreHelper.EsperarTecla(); return; }
+            var tabla = SpectreHelper.CrearTabla("ID", "Nombre", "ISO2", "ISO3", "ContinenteID");
             foreach (var c in lista)
-                SpectreHelper.AgregarFila(tabla, c.Id.ToString(), c.Nombre.Valor, c.CodigoIso2.Valor,
-                    c.CodigoIso3.Valor, c.ContinenteId.ToString());
-
+                SpectreHelper.AgregarFila(tabla, c.Id.ToString(), c.Nombre.Valor,
+                    c.CodigoIso2.Valor, c.CodigoIso3.Valor, c.ContinenteId.ToString());
             SpectreHelper.MostrarTabla(tabla);
             SpectreHelper.EsperarTecla();
         });
@@ -56,20 +50,17 @@ public sealed class CountryMenu
 
     private async Task ListarPorContinenteAsync()
     {
-        var continenteId = SpectreHelper.PedirEntero("ID del continente");
+        var cont = await SelectorUI.SeleccionarContinenteAsync(_provider);
+        if (cont is null) return;
 
         await ConsoleErrorHandler.ExecuteAsync(async () =>
         {
             await using var scope = _provider.CreateAsyncScope();
-            var uc = scope.ServiceProvider.GetRequiredService<GetCountriesByContinentUseCase>();
-            var lista = await uc.ExecuteAsync(continenteId);
-
-            if (lista.Count == 0) { SpectreHelper.MostrarInfo("Sin resultados."); SpectreHelper.EsperarTecla(); return; }
-
-            var tabla = SpectreHelper.CrearTabla("ID", "Nombre", "ISO-2", "ISO-3");
+            var lista = await scope.ServiceProvider.GetRequiredService<GetCountriesByContinentUseCase>().ExecuteAsync(cont.Id);
+            if (lista.Count == 0) { SpectreHelper.MostrarInfo($"Sin países en {cont.Nombre.Valor}."); SpectreHelper.EsperarTecla(); return; }
+            var tabla = SpectreHelper.CrearTabla("ID", "Nombre", "ISO2", "ISO3");
             foreach (var c in lista)
                 SpectreHelper.AgregarFila(tabla, c.Id.ToString(), c.Nombre.Valor, c.CodigoIso2.Valor, c.CodigoIso3.Valor);
-
             SpectreHelper.MostrarTabla(tabla);
             SpectreHelper.EsperarTecla();
         });
@@ -78,78 +69,56 @@ public sealed class CountryMenu
     private async Task CrearAsync()
     {
         SpectreHelper.MostrarSubtitulo("Nuevo País");
+        var cont = await SelectorUI.SeleccionarContinenteAsync(_provider);
+        if (cont is null) return;
 
-        await MostrarContinentesAsync();
-
-        var continenteId = SpectreHelper.PedirEntero("ID del continente");
-        var nombre       = SpectreHelper.PedirTexto("Nombre");
-        var iso2         = SpectreHelper.PedirTexto("Código ISO-2 (ej: CO)");
-        var iso3         = SpectreHelper.PedirTexto("Código ISO-3 (ej: COL)");
+        var nombre = SpectreHelper.PedirTexto("Nombre del país");
+        var iso2   = SpectreHelper.PedirTexto("Código ISO2 — 2 letras (ej: CO)");
+        var iso3   = SpectreHelper.PedirTexto("Código ISO3 — 3 letras (ej: COL)");
 
         await ConsoleErrorHandler.ExecuteAsync(async () =>
         {
             await using var scope = _provider.CreateAsyncScope();
-            var uc = scope.ServiceProvider.GetRequiredService<CreateCountryUseCase>();
-            var result = await uc.ExecuteAsync(continenteId, nombre, iso2, iso3);
-            SpectreHelper.MostrarExito($"País '{result.Nombre.Valor}' creado (ID {result.Id}).");
+            var r = await scope.ServiceProvider.GetRequiredService<CreateCountryUseCase>()
+                .ExecuteAsync(cont.Id, nombre, iso2, iso3);
+            SpectreHelper.MostrarExito($"País '{r.Nombre.Valor}' creado (ID {r.Id}).");
         });
-
         SpectreHelper.EsperarTecla();
     }
 
     private async Task EditarAsync()
     {
-        SpectreHelper.MostrarSubtitulo("Editar País");
-        var id     = SpectreHelper.PedirEntero("ID del país");
-        var nombre = SpectreHelper.PedirTexto("Nuevo nombre");
-        var iso2   = SpectreHelper.PedirTexto("Nuevo ISO-2");
-        var iso3   = SpectreHelper.PedirTexto("Nuevo ISO-3");
+        var pais = await SelectorUI.SeleccionarPaisAsync(_provider);
+        if (pais is null) return;
+
+        SpectreHelper.MostrarSubtitulo($"Editando: {pais.Nombre.Valor} [{pais.CodigoIso2.Valor}]");
+        var nombre = SpectreHelper.PedirTexto($"Nuevo nombre  (actual: {pais.Nombre.Valor})");
+        var iso2   = SpectreHelper.PedirTexto($"Nuevo ISO2    (actual: {pais.CodigoIso2.Valor})");
+        var iso3   = SpectreHelper.PedirTexto($"Nuevo ISO3    (actual: {pais.CodigoIso3.Valor})");
 
         await ConsoleErrorHandler.ExecuteAsync(async () =>
         {
             await using var scope = _provider.CreateAsyncScope();
-            var uc = scope.ServiceProvider.GetRequiredService<UpdateCountryUseCase>();
-            var result = await uc.ExecuteAsync(id, nombre, iso2, iso3);
-            SpectreHelper.MostrarExito($"País '{result.Nombre.Valor}' actualizado.");
+            var r = await scope.ServiceProvider.GetRequiredService<UpdateCountryUseCase>()
+                .ExecuteAsync(pais.Id, nombre, iso2, iso3);
+            SpectreHelper.MostrarExito($"País '{r.Nombre.Valor}' actualizado.");
         });
-
         SpectreHelper.EsperarTecla();
     }
 
     private async Task EliminarAsync()
     {
-        SpectreHelper.MostrarSubtitulo("Eliminar País");
-        var id = SpectreHelper.PedirEntero("ID del país a eliminar");
+        var pais = await SelectorUI.SeleccionarPaisAsync(_provider);
+        if (pais is null) return;
 
-        if (!SpectreHelper.Confirmar("¿Confirma la eliminación?"))
-        {
-            SpectreHelper.MostrarInfo("Operación cancelada.");
-            SpectreHelper.EsperarTecla();
-            return;
-        }
+        if (!SpectreHelper.Confirmar($"¿Eliminar '{pais.Nombre.Valor}'?")) { SpectreHelper.EsperarTecla(); return; }
 
         await ConsoleErrorHandler.ExecuteAsync(async () =>
         {
             await using var scope = _provider.CreateAsyncScope();
-            var uc = scope.ServiceProvider.GetRequiredService<DeleteCountryUseCase>();
-            await uc.ExecuteAsync(id);
-            SpectreHelper.MostrarExito("País eliminado correctamente.");
+            await scope.ServiceProvider.GetRequiredService<DeleteCountryUseCase>().ExecuteAsync(pais.Id);
+            SpectreHelper.MostrarExito($"País '{pais.Nombre.Valor}' eliminado.");
         });
-
         SpectreHelper.EsperarTecla();
-    }
-
-    private async Task MostrarContinentesAsync()
-    {
-        await ConsoleErrorHandler.ExecuteAsync(async () =>
-        {
-            await using var scope = _provider.CreateAsyncScope();
-            var uc = scope.ServiceProvider.GetRequiredService<GetAllContinentsUseCase>();
-            var lista = await uc.ExecuteAsync();
-            if (lista.Count == 0) return;
-            var tabla = SpectreHelper.CrearTabla("ID", "Continente");
-            foreach (var c in lista) SpectreHelper.AgregarFila(tabla, c.Id.ToString(), c.Nombre.Valor);
-            SpectreHelper.MostrarTabla(tabla);
-        });
     }
 }

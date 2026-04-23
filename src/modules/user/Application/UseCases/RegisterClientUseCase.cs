@@ -4,6 +4,7 @@ using AirTicketSystem.modules.user.Domain.Repositories;
 using AirTicketSystem.modules.person.Domain.aggregate;
 using AirTicketSystem.modules.person.Domain.Repositories;
 using AirTicketSystem.modules.role.Domain.Repositories;
+using AirTicketSystem.modules.client.Application.UseCases;
 
 namespace AirTicketSystem.modules.user.Application.UseCases;
 
@@ -12,15 +13,18 @@ public sealed class RegisterClientUseCase
     private readonly IUserRepository   _userRepository;
     private readonly IPersonRepository _personRepository;
     private readonly IRoleRepository   _roleRepository;
+    private readonly CreateClientUseCase _createClientUseCase;
 
     public RegisterClientUseCase(
         IUserRepository   userRepository,
         IPersonRepository personRepository,
-        IRoleRepository   roleRepository)
+        IRoleRepository   roleRepository,
+        CreateClientUseCase createClientUseCase)
     {
         _userRepository   = userRepository;
         _personRepository = personRepository;
         _roleRepository   = roleRepository;
+        _createClientUseCase = createClientUseCase;
     }
 
     public async Task<User> ExecuteAsync(
@@ -53,6 +57,9 @@ public sealed class RegisterClientUseCase
 
         var user = User.Crear(persona.Id, rolCliente.Id, username, passwordHash);
         await _userRepository.SaveAsync(user);
+
+        // Crear el perfil de cliente asociado (requerido para portal de clientes)
+        _ = await _createClientUseCase.ExecuteAsync(persona.Id, user.Id, cancellationToken);
 
         return user;
     }

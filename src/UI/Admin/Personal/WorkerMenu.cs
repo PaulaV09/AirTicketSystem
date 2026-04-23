@@ -3,6 +3,11 @@ using Microsoft.Extensions.DependencyInjection;
 using AirTicketSystem.shared.UI;
 using AirTicketSystem.shared.helpers;
 using AirTicketSystem.modules.worker.Application.UseCases;
+using AirTicketSystem.shared.UI;
+using AirTicketSystem.modules.person.Domain.aggregate;
+using AirTicketSystem.modules.workertype.Domain.aggregate;
+using AirTicketSystem.modules.airport.Domain.aggregate;
+using AirTicketSystem.modules.airline.Domain.aggregate;
 
 namespace AirTicketSystem.UI.Admin.Personal;
 
@@ -120,7 +125,12 @@ public sealed class WorkerMenu
 
     private async Task ListarPorAerolineaAsync()
     {
-        var aerolineaId = SpectreHelper.PedirEntero("ID de la aerolínea");
+        var aerolinea = await SelectorUI.SeleccionarAerolineaAsync(_provider);
+        if (aerolinea is null) {
+            SpectreHelper.EsperarTecla();
+            return;
+        }
+        var aerolineaId = aerolinea.Id;
         await ConsoleErrorHandler.ExecuteAsync(async () =>
         {
             await using var scope = _provider.CreateAsyncScope();
@@ -138,7 +148,12 @@ public sealed class WorkerMenu
 
     private async Task ListarPorAeropuertoAsync()
     {
-        var aeropuertoId = SpectreHelper.PedirEntero("ID del aeropuerto");
+        var aeropuerto = await SelectorUI.SeleccionarAeropuertoAsync(_provider);
+        if (aeropuerto is null) {
+            SpectreHelper.EsperarTecla();
+            return;
+        }
+        var aeropuertoId = aeropuerto.Id;
         await ConsoleErrorHandler.ExecuteAsync(async () =>
         {
             await using var scope = _provider.CreateAsyncScope();
@@ -157,9 +172,27 @@ public sealed class WorkerMenu
     private async Task CrearAsync()
     {
         SpectreHelper.MostrarSubtitulo("Crear Trabajador");
-        var personaId        = SpectreHelper.PedirEntero("ID de la persona");
-        var tipoTrabajadorId = SpectreHelper.PedirEntero("ID del tipo de trabajador");
-        var aeropuertoId     = SpectreHelper.PedirEntero("ID del aeropuerto base");
+        var persona = await SelectorUI.SeleccionarPersonaAsync(_provider);
+        if (persona is null) {
+            SpectreHelper.EsperarTecla();
+            return;
+        }
+        var personaId = persona.Id;
+
+        var tipoTrabajador = await SelectorUI.SeleccionarTipoTrabajadorAsync(_provider);
+        if (tipoTrabajador is null) {
+            SpectreHelper.EsperarTecla();
+            return;
+        }
+        var tipoTrabajadorId = tipoTrabajador.Id;
+
+        var aeropuerto = await SelectorUI.SeleccionarAeropuertoAsync(_provider);
+        if (aeropuerto is null) {
+            SpectreHelper.EsperarTecla();
+            return;
+        }
+        var aeropuertoId = aeropuerto.Id;
+
         var fechaStr         = SpectreHelper.PedirTexto("Fecha de contratación (yyyy-MM-dd)");
         var salarioStr       = SpectreHelper.PedirTexto("Salario mensual");
         var aerolineaStr     = SpectreHelper.PedirTexto("ID aerolínea (opcional, Enter para omitir)");
@@ -188,7 +221,12 @@ public sealed class WorkerMenu
 
     private async Task ActualizarSalarioAsync()
     {
-        var id         = SpectreHelper.PedirEntero("ID del trabajador");
+        var worker = await SelectorUI.SeleccionarTrabajadorAsync(_provider);
+        if (worker is null) {
+            SpectreHelper.EsperarTecla();
+            return;
+        }
+        var id = worker.Id;
         var salarioStr = SpectreHelper.PedirTexto("Nuevo salario");
         if (!decimal.TryParse(salarioStr, out var salario)) { SpectreHelper.MostrarError("Valor inválido."); SpectreHelper.EsperarTecla(); return; }
 
@@ -203,8 +241,19 @@ public sealed class WorkerMenu
 
     private async Task ActualizarAeropuertoAsync()
     {
-        var id           = SpectreHelper.PedirEntero("ID del trabajador");
-        var aeropuertoId = SpectreHelper.PedirEntero("ID del nuevo aeropuerto base");
+        var worker = await SelectorUI.SeleccionarTrabajadorAsync(_provider);
+        if (worker is null) {
+            SpectreHelper.EsperarTecla();
+            return;
+        }
+        var id = worker.Id;
+
+        var aeropuerto = await SelectorUI.SeleccionarAeropuertoAsync(_provider);
+        if (aeropuerto is null) {
+            SpectreHelper.EsperarTecla();
+            return;
+        }
+        var aeropuertoId = aeropuerto.Id;
 
         await ConsoleErrorHandler.ExecuteAsync(async () =>
         {
@@ -217,8 +266,19 @@ public sealed class WorkerMenu
 
     private async Task AsignarEspecialidadAsync()
     {
-        var workerId     = SpectreHelper.PedirEntero("ID del trabajador");
-        var especialidadId = SpectreHelper.PedirEntero("ID de la especialidad");
+        var worker = await SelectorUI.SeleccionarTrabajadorAsync(_provider);
+        if (worker is null) {
+            SpectreHelper.EsperarTecla();
+            return;
+        }
+        var workerId = worker.Id;
+
+        var especialidad = await SelectorUI.SeleccionarEspecialidadAsync(_provider);
+        if (especialidad is null) {
+            SpectreHelper.EsperarTecla();
+            return;
+        }
+        var especialidadId = especialidad.Id;
 
         await ConsoleErrorHandler.ExecuteAsync(async () =>
         {
@@ -244,7 +304,12 @@ public sealed class WorkerMenu
 
     private async Task ActivarAsync()
     {
-        var id = SpectreHelper.PedirEntero("ID del trabajador a activar");
+        var worker = await SelectorUI.SeleccionarTrabajadorAsync(_provider);
+        if (worker is null) {
+            SpectreHelper.EsperarTecla();
+            return;
+        }
+        var id = worker.Id;
         await ConsoleErrorHandler.ExecuteAsync(async () =>
         {
             await using var scope = _provider.CreateAsyncScope();
@@ -256,7 +321,12 @@ public sealed class WorkerMenu
 
     private async Task DesactivarAsync()
     {
-        var id = SpectreHelper.PedirEntero("ID del trabajador a desactivar");
+        var worker = await SelectorUI.SeleccionarTrabajadorAsync(_provider);
+        if (worker is null) {
+            SpectreHelper.EsperarTecla();
+            return;
+        }
+        var id = worker.Id;
         if (!SpectreHelper.Confirmar("¿Confirma desactivar?")) { SpectreHelper.EsperarTecla(); return; }
         await ConsoleErrorHandler.ExecuteAsync(async () =>
         {
@@ -269,7 +339,12 @@ public sealed class WorkerMenu
 
     private async Task EliminarAsync()
     {
-        var id = SpectreHelper.PedirEntero("ID del trabajador a eliminar");
+        var worker = await SelectorUI.SeleccionarTrabajadorAsync(_provider);
+        if (worker is null) {
+            SpectreHelper.EsperarTecla();
+            return;
+        }
+        var id = worker.Id;
         if (!SpectreHelper.Confirmar("¿Confirma la eliminación?")) { SpectreHelper.EsperarTecla(); return; }
         await ConsoleErrorHandler.ExecuteAsync(async () =>
         {

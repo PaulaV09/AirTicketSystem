@@ -103,12 +103,13 @@ public sealed class PersonasMenu
 
     private async Task BuscarPorDocumentoAsync()
     {
-        var tipoDocId = SpectreHelper.PedirEntero("ID del tipo de documento");
-        var numero    = SpectreHelper.PedirTexto("Número de documento");
+        var tipoDoc = await SelectorUI.SeleccionarTipoDocumentoAsync(_provider);
+        if (tipoDoc is null) return;
+        var numero  = SpectreHelper.PedirTexto("Número de documento");
         await ConsoleErrorHandler.ExecuteAsync(async () =>
         {
             await using var scope = _provider.CreateAsyncScope();
-            var p = await scope.ServiceProvider.GetRequiredService<GetPersonByDocumentUseCase>().ExecuteAsync(tipoDocId, numero);
+            var p = await scope.ServiceProvider.GetRequiredService<GetPersonByDocumentUseCase>().ExecuteAsync(tipoDoc.Id, numero);
 
             var tabla = SpectreHelper.CrearTabla("Campo", "Valor");
             SpectreHelper.AgregarFila(tabla, "ID",       p.Id.ToString());
@@ -122,23 +123,27 @@ public sealed class PersonasMenu
     private async Task CrearAsync()
     {
         SpectreHelper.MostrarSubtitulo("Crear Persona");
-        var tipoDocId  = SpectreHelper.PedirEntero("ID del tipo de documento");
-        var numeroDoc  = SpectreHelper.PedirTexto("Número de documento");
-        var nombres    = SpectreHelper.PedirTexto("Nombres");
-        var apellidos  = SpectreHelper.PedirTexto("Apellidos");
-        var fechaStr   = SpectreHelper.PedirTexto("Fecha de nacimiento (yyyy-MM-dd, opcional)");
-        var generoStr  = SpectreHelper.PedirTexto("ID de género (opcional)");
-        var nacionStr  = SpectreHelper.PedirTexto("ID de nacionalidad/país (opcional)");
+        var tipoDoc = await SelectorUI.SeleccionarTipoDocumentoAsync(_provider);
+        if (tipoDoc is null) return;
 
-        DateOnly? fecha   = DateOnly.TryParse(fechaStr, out var f) ? f : null;
-        int?      genero  = int.TryParse(generoStr, out var g) && g > 0 ? g : null;
-        int?      nacion  = int.TryParse(nacionStr, out var n) && n > 0 ? n : null;
+        var numeroDoc = SpectreHelper.PedirTexto("Número de documento");
+        var nombres   = SpectreHelper.PedirTexto("Nombres");
+        var apellidos = SpectreHelper.PedirTexto("Apellidos");
+        var fechaStr  = SpectreHelper.PedirTexto("Fecha de nacimiento (yyyy-MM-dd, opcional)", obligatorio: false);
+
+        SpectreHelper.MostrarSubtitulo("Género (opcional)");
+        var genero = await SelectorUI.SeleccionarGeneroAsync(_provider);
+
+        SpectreHelper.MostrarSubtitulo("Nacionalidad (opcional)");
+        var pais = await SelectorUI.SeleccionarPaisAsync(_provider);
+
+        DateOnly? fecha = DateOnly.TryParse(fechaStr, out var f) ? f : null;
 
         await ConsoleErrorHandler.ExecuteAsync(async () =>
         {
             await using var scope = _provider.CreateAsyncScope();
             var p = await scope.ServiceProvider.GetRequiredService<CreatePersonUseCase>()
-                .ExecuteAsync(tipoDocId, numeroDoc, nombres, apellidos, fecha, genero, nacion);
+                .ExecuteAsync(tipoDoc.Id, numeroDoc, nombres, apellidos, fecha, genero?.Id, pais?.Id);
             SpectreHelper.MostrarExito($"Persona '{p.NombreCompleto}' creada (ID {p.Id}).");
         });
         SpectreHelper.EsperarTecla();
@@ -146,20 +151,25 @@ public sealed class PersonasMenu
 
     private async Task ActualizarAsync()
     {
-        var id        = SpectreHelper.PedirEntero("ID de la persona");
-        var nombres   = SpectreHelper.PedirTexto("Nuevos nombres");
-        var apellidos = SpectreHelper.PedirTexto("Nuevos apellidos");
-        var fechaStr  = SpectreHelper.PedirTexto("Nueva fecha nac. (yyyy-MM-dd, opcional)");
-        var generoStr = SpectreHelper.PedirTexto("Nuevo ID de género (opcional)");
+        // Seleccionar persona de la lista → garantiza existencia
+        var persona = await SelectorUI.SeleccionarPersonaAsync(_provider);
+        if (persona is null) return;
 
-        DateOnly? fecha  = DateOnly.TryParse(fechaStr, out var f) ? f : null;
-        int?      genero = int.TryParse(generoStr, out var g) && g > 0 ? g : null;
+        SpectreHelper.MostrarSubtitulo($"Editando: {persona.NombreCompleto}");
+        var nombres   = SpectreHelper.PedirTexto($"Nuevos nombres  (actual: {persona.Nombres.Valor})");
+        var apellidos = SpectreHelper.PedirTexto($"Nuevos apellidos  (actual: {persona.Apellidos.Valor})");
+        var fechaStr  = SpectreHelper.PedirTexto($"Nueva fecha nac. (yyyy-MM-dd, actual: {persona.FechaNacimiento?.Valor.ToString("yyyy-MM-dd") ?? "-"})", obligatorio: false);
+
+        SpectreHelper.MostrarSubtitulo("Nuevo género (opcional — Enter para omitir)");
+        var genero = await SelectorUI.SeleccionarGeneroAsync(_provider);
+
+        DateOnly? fecha = DateOnly.TryParse(fechaStr, out var f) ? f : persona.FechaNacimiento?.Valor;
 
         await ConsoleErrorHandler.ExecuteAsync(async () =>
         {
             await using var scope = _provider.CreateAsyncScope();
             await scope.ServiceProvider.GetRequiredService<UpdatePersonUseCase>()
-                .ExecuteAsync(id, nombres, apellidos, fecha, genero, null);
+                .ExecuteAsync(persona.Id, nombres, apellidos, fecha, genero?.Id, null);
             SpectreHelper.MostrarExito("Persona actualizada.");
         });
         SpectreHelper.EsperarTecla();
@@ -167,13 +177,18 @@ public sealed class PersonasMenu
 
     private async Task AgregarTelefonoAsync()
     {
-        var personaId   = SpectreHelper.PedirEntero("ID de la persona");
-        var tipoTelId   = SpectreHelper.PedirEntero("ID del tipo de teléfono");
-        var numero      = SpectreHelper.PedirTexto("Número");
-        var indicativo  = SpectreHelper.PedirTexto("Indicativo país (ej: +57, opcional)");
+        var persona    = await SelectorUI.SeleccionarPersonaAsync(_provider);
+        if (persona is null) return;
+        var tipoTel    = await SelectorUI.SeleccionarTipoTelefonoAsync(_provider);
+        if (tipoTel is null) return;
+        var numero     = SpectreHelper.PedirTexto("Número de teléfono");
+        var indicativo = SpectreHelper.PedirTexto("Indicativo país (ej: +57, opcional)", obligatorio: false);
         var principalStr = SpectreHelper.PedirTexto("¿Es principal? (s/n)");
         bool esPrincipal = principalStr.Trim().ToLower() == "s";
-        string? indOpc  = string.IsNullOrWhiteSpace(indicativo) ? null : indicativo;
+        string? indOpc   = string.IsNullOrWhiteSpace(indicativo) ? null : indicativo;
+        // alias para compatibilidad
+        var personaId = persona.Id;
+        var tipoTelId = tipoTel.Id;
 
         await ConsoleErrorHandler.ExecuteAsync(async () =>
         {
@@ -212,18 +227,19 @@ public sealed class PersonasMenu
 
     private async Task AgregarEmailAsync()
     {
-        var personaId    = SpectreHelper.PedirEntero("ID de la persona");
-        var tipoEmailId  = SpectreHelper.PedirEntero("ID del tipo de email");
-        var email        = SpectreHelper.PedirTexto("Dirección de email");
-        var principalStr = SpectreHelper.PedirTexto("¿Es principal? (s/n)");
-        bool esPrincipal = principalStr.Trim().ToLower() == "s";
+        var persona    = await SelectorUI.SeleccionarPersonaAsync(_provider);
+        if (persona is null) return;
+        var tipoEmail  = await SelectorUI.SeleccionarTipoEmailAsync(_provider);
+        if (tipoEmail is null) return;
+        var email      = SpectreHelper.PedirTexto("Dirección de email");
+        var prinStr    = SpectreHelper.PedirTexto("¿Es principal? (s/n)");
 
         await ConsoleErrorHandler.ExecuteAsync(async () =>
         {
             await using var scope = _provider.CreateAsyncScope();
             var em = await scope.ServiceProvider.GetRequiredService<AddPersonEmailUseCase>()
-                .ExecuteAsync(personaId, tipoEmailId, email, esPrincipal);
-            SpectreHelper.MostrarExito($"Email '{em.Email.Valor}' agregado (ID {em.Id}).");
+                .ExecuteAsync(persona.Id, tipoEmail.Id, email, prinStr.Trim().ToLower() == "s");
+            SpectreHelper.MostrarExito($"Email '{em.Email.Valor}' agregado a {persona.NombreCompleto}.");
         });
         SpectreHelper.EsperarTecla();
     }
@@ -255,10 +271,16 @@ public sealed class PersonasMenu
 
     private async Task AgregarDireccionAsync()
     {
-        var personaId    = SpectreHelper.PedirEntero("ID de la persona");
-        var tipoDirId    = SpectreHelper.PedirEntero("ID del tipo de dirección");
+        var persona    = await SelectorUI.SeleccionarPersonaAsync(_provider);
+        if (persona is null) return;
+        var tipoDir    = await SelectorUI.SeleccionarTipoDireccionAsync(_provider);
+        if (tipoDir is null) return;
+        var ciudad     = await SelectorUI.SeleccionarCiudadAsync(_provider);
+        if (ciudad is null) return;
+        // alias para compatibilidad con el código existente
+        var personaId = persona.Id;
+        var tipoDirId = tipoDir.Id;
         var direccion    = SpectreHelper.PedirTexto("Dirección completa");
-        var ciudadId     = SpectreHelper.PedirEntero("ID de la ciudad");
         var principalStr = SpectreHelper.PedirTexto("¿Es principal? (s/n)");
         bool esPrincipal = principalStr.Trim().ToLower() == "s";
 
@@ -266,7 +288,7 @@ public sealed class PersonasMenu
         {
             await using var scope = _provider.CreateAsyncScope();
             var addr = await scope.ServiceProvider.GetRequiredService<AddPersonAddressUseCase>()
-                .ExecuteAsync(personaId, tipoDirId, ciudadId, direccion, null, null, esPrincipal);
+                .ExecuteAsync(personaId, tipoDirId, ciudad.Id, direccion, null, null, esPrincipal);
             SpectreHelper.MostrarExito($"Dirección agregada (ID {addr.Id}).");
         });
         SpectreHelper.EsperarTecla();

@@ -4,6 +4,7 @@ using AirTicketSystem.shared.helpers;
 using AirTicketSystem.shared.UI;
 using AirTicketSystem.modules.user.Application.UseCases;
 using AirTicketSystem.modules.role.Domain.Repositories;
+using AirTicketSystem.modules.documenttype.Domain.aggregate;
 
 namespace AirTicketSystem.UI.Auth;
 
@@ -98,7 +99,12 @@ public sealed class AuthMenu
 
         SpectreHelper.MostrarInfo("Complete los siguientes datos para crear su cuenta.");
 
-        var tipoDocId = SpectreHelper.PedirEntero("ID de tipo de documento (ver lista en sistema)");
+        var tipoDoc = await SelectorUI.SeleccionarTipoDocumentoAsync(_provider);
+        if (tipoDoc is null) {
+            SpectreHelper.EsperarTecla();
+            return;
+        }
+        var tipoDocId = tipoDoc.Id;
         var numeroDoc = SpectreHelper.PedirTexto("Número de documento");
         var nombres   = SpectreHelper.PedirTexto("Nombres");
         var apellidos = SpectreHelper.PedirTexto("Apellidos");

@@ -5,6 +5,7 @@ using AirTicketSystem.shared.helpers;
 using AirTicketSystem.modules.luggagerestriction.Application.UseCases;
 using AirTicketSystem.modules.fare.Application.UseCases;
 using AirTicketSystem.modules.luggagetype.Application.UseCases;
+using AirTicketSystem.modules.luggagetype.Domain.aggregate;
 
 namespace AirTicketSystem.UI.Admin.AirportsRoutes;
 
@@ -76,8 +77,12 @@ public sealed class LuggageRestrictionMenu
         await MostrarTarifasAsync();
         var tarifaId = SpectreHelper.PedirEntero("ID de la tarifa");
 
-        await MostrarTiposEquipajeAsync();
-        var tipoEquipajeId = SpectreHelper.PedirEntero("ID del tipo de equipaje");
+        var tipoEquipaje = await SelectorUI.SeleccionarTipoEquipajeAsync(_provider);
+        if (tipoEquipaje is null) {
+            SpectreHelper.EsperarTecla();
+            return;
+        }
+        var tipoEquipajeId = tipoEquipaje.Id;
 
         var piezas      = SpectreHelper.PedirEntero("Piezas incluidas");
         var pesoMax     = SpectreHelper.PedirDecimal("Peso máximo en kg");

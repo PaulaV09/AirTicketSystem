@@ -40,10 +40,6 @@ public sealed class CreatePaymentUseCase
             ?? throw new KeyNotFoundException(
                 $"No se encontró el método de pago con ID {metodoPagoId}.");
 
-        if (await _paymentRepository.ReservaTienePagoAprobadoAsync(reservaId))
-            throw new InvalidOperationException(
-                "La reserva ya tiene un pago aprobado.");
-
         var payment = Payment.Crear(reservaId, metodoPagoId, monto);
 
         await _paymentRepository.SaveAsync(payment);
