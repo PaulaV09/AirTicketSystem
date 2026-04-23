@@ -9,6 +9,7 @@ using AirTicketSystem.modules.boardingpass.Application.UseCases;
 using AirTicketSystem.modules.checkin.Application.UseCases;
 using AirTicketSystem.modules.payment.Application.UseCases;
 using AirTicketSystem.modules.client.Application.UseCases;
+using AirTicketSystem.modules.luggage.Application.UseCases;
 
 namespace AirTicketSystem.UI.Client;
 
@@ -31,27 +32,31 @@ public sealed class MyBookingsMenu
 
             var opcion = SpectreHelper.SeleccionarOpcionTexto("Seleccione una acción",
                 [
-                    "Ver mis reservas",
-                    "Detalle de reserva",
+                    "2.1 Ver mis reservas",
+                    "2.2 Detalle de reserva",
+                    "2.3 Cancelar mi reserva",
+                    "2.4 Hacer check-in virtual",
+                    "2.5 Mi pase de abordar",
+                    "2.6 Gestionar equipaje",
+                    "2.7 Ver mis tiquetes",
                     "Pasajeros de mi reserva",
-                    "Cancelar mi reserva",
                     "Mis pagos",
-                    "Mis tiquetes",
-                    "Consultar tiquete por código",
-                    "Mi pase de abordar",
+                    "Emitir tiquete",
                     "Volver"
                 ]);
 
             switch (opcion)
             {
-                case "Ver mis reservas":            await VerReservasAsync();          break;
-                case "Detalle de reserva":          await DetalleReservaAsync();       break;
+                case "2.1 Ver mis reservas":        await VerReservasAsync();          break;
+                case "2.2 Detalle de reserva":      await DetalleReservaAsync();       break;
+                case "2.3 Cancelar mi reserva":     await CancelarReservaAsync();      break;
+                case "2.4 Hacer check-in virtual":  await HacerCheckinVirtualAsync();  break;
+                case "2.5 Mi pase de abordar":      await VerPaseAbordarAsync();       break;
+                case "2.6 Gestionar equipaje":      await GestionarEquipajeAsync();    break;
+                case "2.7 Ver mis tiquetes":        await ConsultarTiqueteAsync();     break;
                 case "Pasajeros de mi reserva":     await VerPasajerosAsync();         break;
-                case "Cancelar mi reserva":         await CancelarReservaAsync();      break;
                 case "Mis pagos":                   await VerPagosAsync();             break;
-                case "Mis tiquetes":                await VerTiquetesAsync();          break;
-                case "Consultar tiquete por código": await ConsultarTiqueteAsync();    break;
-                case "Mi pase de abordar":          await VerPaseAbordarAsync();       break;
+                case "Emitir tiquete":              await VerTiquetesAsync();          break;
                 case "Volver":                      return;
             }
         }
@@ -223,6 +228,68 @@ public sealed class MyBookingsMenu
             SpectreHelper.MostrarTabla(tabla);
             SpectreHelper.EsperarTecla();
         });
+    }
+
+    // ── 2.4 Hacer check-in virtual ───────────────────────────────────────────
+    private async Task HacerCheckinVirtualAsync()
+    {
+        var pasajeroReservaId = SpectreHelper.PedirEntero("ID del pasajero-reserva");
+        await ConsoleErrorHandler.ExecuteAsync(async () =>
+        {
+            await using var scope = _provider.CreateAsyncScope();
+            var c = await scope.ServiceProvider.GetRequiredService<CreateVirtualCheckInUseCase>()
+                .ExecuteAsync(pasajeroReservaId);
+            SpectreHelper.MostrarExito($"Check-in virtual realizado (ID {c.Id}). Estado: {c.Estado.Valor}.");
+        });
+        SpectreHelper.EsperarTecla();
+    }
+
+    // ── 2.6 Gestionar equipaje ───────────────────────────────────────────────
+    private async Task GestionarEquipajeAsync()
+    {
+        while (true)
+        {
+            SpectreHelper.MostrarTitulo("Mi Equipaje");
+            var opcion = SpectreHelper.SeleccionarOpcionTexto("Acción",
+                ["Ver mi equipaje", "Agregar equipaje", "Volver"]);
+            if (opcion == "Volver") return;
+
+            await ConsoleErrorHandler.ExecuteAsync(async () =>
+            {
+                await using var scope = _provider.CreateAsyncScope();
+                switch (opcion)
+                {
+                    case "Ver mi equipaje":
+                        var pasajeroId = SpectreHelper.PedirEntero("ID del pasajero-reserva");
+                        var lista = await scope.ServiceProvider.GetRequiredService<GetLuggageByPassengerUseCase>()
+                            .ExecuteAsync(pasajeroId);
+                        if (lista.Count == 0) { SpectreHelper.MostrarInfo("Sin equipaje registrado."); SpectreHelper.EsperarTecla(); return; }
+                        var tabla = SpectreHelper.CrearTabla("ID", "Tipo", "Peso(kg)", "Estado");
+                        foreach (var l in lista)
+                            SpectreHelper.AgregarFila(tabla,
+                                l.Id.ToString(), l.TipoEquipajeId.ToString(),
+                                l.PesoDeclaradoKg?.Valor.ToString("F1") ?? "-",
+                                l.Estado.Valor);
+                        SpectreHelper.MostrarTabla(tabla);
+                        SpectreHelper.EsperarTecla();
+                        break;
+
+                    case "Agregar equipaje":
+                        var pId   = SpectreHelper.PedirEntero("ID del pasajero-reserva");
+                        var vId   = SpectreHelper.PedirEntero("ID del vuelo");
+                        var tId   = SpectreHelper.PedirEntero("ID del tipo de equipaje");
+                        var desc  = SpectreHelper.PedirTexto("Descripción (opcional)");
+                        var pesoS = SpectreHelper.PedirTexto("Peso en kg (opcional)");
+                        string? dOpc = string.IsNullOrWhiteSpace(desc) ? null : desc;
+                        decimal? peso = decimal.TryParse(pesoS, out var p) ? p : null;
+                        var lug = await scope.ServiceProvider.GetRequiredService<RegisterLuggageUseCase>()
+                            .ExecuteAsync(pId, vId, tId, dOpc, peso);
+                        SpectreHelper.MostrarExito($"Equipaje registrado (ID {lug.Id}).");
+                        SpectreHelper.EsperarTecla();
+                        break;
+                }
+            });
+        }
     }
 
     private async Task<int> ObtenerClienteIdAsync()

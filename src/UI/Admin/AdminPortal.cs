@@ -3,9 +3,12 @@ using AirTicketSystem.shared.UI;
 using AirTicketSystem.UI.Admin.GeoConfig;
 using AirTicketSystem.UI.Admin.Aeronautica;
 using AirTicketSystem.UI.Admin.AirportsRoutes;
+using AirTicketSystem.UI.Admin.Personal;
 using AirTicketSystem.UI.Admin.Flights;
+using AirTicketSystem.UI.Admin.ClientesUsuarios;
 using AirTicketSystem.UI.Admin.Reservations;
 using AirTicketSystem.UI.Admin.Billing;
+using AirTicketSystem.UI.Admin.Reportes;
 
 namespace AirTicketSystem.UI.Admin;
 
@@ -25,63 +28,59 @@ public sealed class AdminPortal
         while (true)
         {
             SpectreHelper.MostrarTitulo(
-                $"Portal Admin  —  {_session.CurrentUserName}");
+                $"Portal Administrativo  —  {_session.CurrentUserName}");
 
             var opcion = SpectreHelper.SeleccionarOpcionTexto(
                 "Seleccione un módulo",
                 [
-                    "1. Configuración geográfica",
-                    "2. Gestión aeronáutica",
-                    "3. Aeropuertos y rutas",
-                    "4. Tripulación y personal",
-                    "5. Vuelos",
-                    "6. Reservas y pasajeros",
-                    "7. Pagos y facturación",
-                    "8. Usuarios y roles",
-                    "Cerrar sesión"
+                    "1. Gestión Geográfica",
+                    "2. Gestión de Aerolíneas y Flota",
+                    "3. Gestión de Personal",
+                    "4. Gestión de Vuelos",
+                    "5. Gestión de Clientes y Usuarios",
+                    "6. Gestión de Reservas y Pagos",
+                    "7. Gestión de Catálogos",
+                    "8. Reportes LINQ",
+                    "9. Cerrar sesión"
                 ]);
-
-            if (opcion == "Cerrar sesión")
-            {
-                _session.Logout();
-                return;
-            }
 
             switch (opcion)
             {
-                case "1. Configuración geográfica":
+                case "1. Gestión Geográfica":
                     await new GeoConfigMenu(_provider).MostrarAsync();
                     break;
 
-                case "2. Gestión aeronáutica":
-                    await new AeronauticaMenu(_provider).MostrarAsync();
+                case "2. Gestión de Aerolíneas y Flota":
+                    await new AerolineaFlotaMenu(_provider).MostrarAsync();
                     break;
 
-                case "3. Aeropuertos y rutas":
-                    await new AirportsRoutesMenu(_provider).MostrarAsync();
+                case "3. Gestión de Personal":
+                    await new PersonalMenu(_provider).MostrarAsync();
                     break;
 
-                case "5. Vuelos":
-                    await new FlightMenu(_provider).MostrarAsync();
+                case "4. Gestión de Vuelos":
+                    await new FlightModuleMenu(_provider).MostrarAsync();
                     break;
 
-                case "6. Reservas y pasajeros":
-                    await new ReservationsMenu(_provider, _session).MostrarAsync();
+                case "5. Gestión de Clientes y Usuarios":
+                    await new ClientesUsuariosMenu(_provider).MostrarAsync();
                     break;
 
-                case "7. Pagos y facturación":
-                    await new BillingMenu(_provider).MostrarAsync();
+                case "6. Gestión de Reservas y Pagos":
+                    await new ReservasYPagosMenu(_provider, _session).MostrarAsync();
                     break;
 
-                case "8. Usuarios y roles":
-                    await new BillingMenu(_provider).MostrarAsync();
+                case "7. Gestión de Catálogos":
+                    await new CatalogosMenu(_provider).MostrarAsync();
                     break;
 
-                default:
-                    SpectreHelper.MostrarTitulo(opcion);
-                    SpectreHelper.MostrarAdvertencia("Módulo en construcción.");
-                    SpectreHelper.EsperarTecla();
+                case "8. Reportes LINQ":
+                    await new ReportesMenu(_provider).MostrarAsync();
                     break;
+
+                case "9. Cerrar sesión":
+                    _session.Logout();
+                    return;
             }
         }
     }

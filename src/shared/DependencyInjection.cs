@@ -145,6 +145,15 @@ using AirTicketSystem.modules.client.Application.UseCases;
 using AirTicketSystem.modules.ticket.Application.UseCases;
 using AirTicketSystem.modules.boardingpass.Application.UseCases;
 using AirTicketSystem.modules.seatavailability.Application.UseCases;
+using AirTicketSystem.modules.worker.Application.UseCases;
+using AirTicketSystem.modules.flightcrew.Application.UseCases;
+using AirTicketSystem.modules.pilotlicense.Application.UseCases;
+using AirTicketSystem.modules.pilotrating.Application.UseCases;
+using AirTicketSystem.modules.person.Application.UseCases;
+using AirTicketSystem.modules.luggage.Application.UseCases;
+using AirTicketSystem.modules.additionalcharge.Application.UseCases;
+using AirTicketSystem.modules.flighthistory.Application.UseCases;
+using AirTicketSystem.modules.paymentmethod.Application.UseCases;
 
 namespace AirTicketSystem.shared;
 
@@ -578,6 +587,94 @@ public static class DependencyInjection
         services.AddScoped<ReserveSeatUseCase>();
         services.AddScoped<AirTicketSystem.modules.seatavailability.Application.UseCases.ReleaseSeatUseCase>();
         services.AddScoped<BlockSeatUseCase>();
+
+        // Worker
+        services.AddScoped<CreateWorkerUseCase>();
+        services.AddScoped<GetAllWorkersUseCase>();
+        services.AddScoped<GetWorkerByIdUseCase>();
+        services.AddScoped<GetWorkerByPersonUseCase>();
+        services.AddScoped<GetWorkersByAirlineUseCase>();
+        services.AddScoped<GetWorkersByAirportUseCase>();
+        services.AddScoped<GetWorkersByWorkerTypeUseCase>();
+        services.AddScoped<GetActiveWorkersUseCase>();
+        services.AddScoped<GetQualifiedPilotsUseCase>();
+        services.AddScoped<DeactivateWorkerUseCase>();
+        services.AddScoped<ActivateWorkerUseCase>();
+        services.AddScoped<DeleteWorkerUseCase>();
+        services.AddScoped<UpdateWorkerSalaryUseCase>();
+        services.AddScoped<UpdateWorkerAirportUseCase>();
+        services.AddScoped<AssignUserToWorkerUseCase>();
+        services.AddScoped<AssignWorkerSpecialtyUseCase>();
+        services.AddScoped<RemoveWorkerSpecialtyUseCase>();
+
+        // FlightCrew
+        services.AddScoped<AssignCrewMemberUseCase>();
+        services.AddScoped<RemoveCrewMemberUseCase>();
+        services.AddScoped<GetCrewByFlightUseCase>();
+        services.AddScoped<ValidateFlightCrewUseCase>();
+        services.AddScoped<DeleteFlightCrewUseCase>();
+
+        // PilotLicense
+        services.AddScoped<CreatePilotLicenseUseCase>();
+        services.AddScoped<DeletePilotLicenseUseCase>();
+        services.AddScoped<GetLicensesByWorkerUseCase>();
+        services.AddScoped<GetLicensesExpiringSoonUseCase>();
+        services.AddScoped<GetPilotLicenseByIdUseCase>();
+        services.AddScoped<GetVigenteLicensesUseCase>();
+        services.AddScoped<ReactivatePilotLicenseUseCase>();
+        services.AddScoped<RenewPilotLicenseUseCase>();
+        services.AddScoped<SuspendPilotLicenseUseCase>();
+
+        // PilotRating (Habilitaciones)
+        services.AddScoped<CreatePilotRatingUseCase>();
+        services.AddScoped<DeletePilotRatingUseCase>();
+        services.AddScoped<GetPilotRatingByIdUseCase>();
+        services.AddScoped<GetRatingsByAircraftModelUseCase>();
+        services.AddScoped<GetRatingsByLicenseUseCase>();
+        services.AddScoped<GetVigenteRatingsUseCase>();
+        services.AddScoped<RenewPilotRatingUseCase>();
+
+        // Person
+        services.AddScoped<CreatePersonUseCase>();
+        services.AddScoped<GetAllPersonsUseCase>();
+        services.AddScoped<GetPersonByIdUseCase>();
+        services.AddScoped<GetPersonByDocumentUseCase>();
+        services.AddScoped<UpdatePersonUseCase>();
+        services.AddScoped<DeletePersonUseCase>();
+        services.AddScoped<AddPersonPhoneUseCase>();
+        services.AddScoped<DeletePersonPhoneUseCase>();
+        services.AddScoped<SetPrincipalPersonPhoneUseCase>();
+        services.AddScoped<AddPersonEmailUseCase>();
+        services.AddScoped<DeletePersonEmailUseCase>();
+        services.AddScoped<SetPrincipalPersonEmailUseCase>();
+        services.AddScoped<AddPersonAddressUseCase>();
+        services.AddScoped<DeletePersonAddressUseCase>();
+        services.AddScoped<SetPrincipalPersonAddressUseCase>();
+
+        // Luggage
+        services.AddScoped<RegisterLuggageUseCase>();
+        services.AddScoped<GetLuggageByPassengerUseCase>();
+        services.AddScoped<ProcessCheckInLuggageUseCase>();
+        services.AddScoped<ReportDamagedLuggageUseCase>();
+        services.AddScoped<ReportLostLuggageUseCase>();
+        services.AddScoped<SendToBaggageUseCase>();
+
+        // AdditionalCharge
+        services.AddScoped<CreateAdditionalChargeUseCase>();
+        services.AddScoped<DeleteAdditionalChargeUseCase>();
+        services.AddScoped<GetAdditionalChargeByIdUseCase>();
+        services.AddScoped<GetAllAdditionalChargesUseCase>();
+        services.AddScoped<GetChargesByBookingUseCase>();
+        services.AddScoped<GetTotalChargesByBookingUseCase>();
+
+        // FlightHistory
+        services.AddScoped<GetFlightHistoryUseCase>();
+        services.AddScoped<GetLastFlightChangeUseCase>();
+
+        // PaymentMethod
+        services.AddScoped<CreatePaymentMethodUseCase>();
+        services.AddScoped<GetPaymentMethodByIdUseCase>();
+        services.AddScoped<UpdatePaymentMethodUseCase>();
 
         return services;
     }

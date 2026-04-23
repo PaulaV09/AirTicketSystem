@@ -30,7 +30,8 @@ public sealed class FlightSearchMenu
 
             var opcion = SpectreHelper.SeleccionarOpcionTexto("Seleccione una acción",
                 [
-                    "Buscar vuelos por origen, destino y fecha",
+                    "1.1 Buscar vuelos (origen, destino y fecha)",
+                    "1.2 Ver vuelos próximos disponibles",
                     "Ver asientos disponibles de un vuelo",
                     "Crear reserva",
                     "Agregar pasajero a reserva",
@@ -39,13 +40,50 @@ public sealed class FlightSearchMenu
 
             switch (opcion)
             {
-                case "Buscar vuelos por origen, destino y fecha": await BuscarVuelosAsync();      break;
-                case "Ver asientos disponibles de un vuelo":      await VerAsientosAsync();       break;
-                case "Crear reserva":                             await CrearReservaAsync();      break;
-                case "Agregar pasajero a reserva":                await AgregarPasajeroAsync();   break;
-                case "Volver":                                    return;
+                case "1.1 Buscar vuelos (origen, destino y fecha)": await BuscarVuelosAsync();        break;
+                case "1.2 Ver vuelos próximos disponibles":          await VuelosProximosAsync();      break;
+                case "Ver asientos disponibles de un vuelo":         await VerAsientosAsync();         break;
+                case "Crear reserva":                                await CrearReservaAsync();        break;
+                case "Agregar pasajero a reserva":                   await AgregarPasajeroAsync();     break;
+                case "Volver":                                       return;
             }
         }
+    }
+
+    private async Task VuelosProximosAsync()
+    {
+        SpectreHelper.MostrarSubtitulo("1.2 — Vuelos Próximos Disponibles");
+        await ConsoleErrorHandler.ExecuteAsync(async () =>
+        {
+            await using var scope = _provider.CreateAsyncScope();
+            var vuelos = await scope.ServiceProvider.GetRequiredService<GetScheduledFlightsUseCase>().ExecuteAsync();
+            var availUc = scope.ServiceProvider.GetRequiredService<GetAvailableSeatsByFlightUseCase>();
+
+            // LINQ: próximos 7 días, con asientos disponibles
+            var hoy    = DateTime.UtcNow;
+            var limite = hoy.AddDays(7);
+
+            var proximos = vuelos
+                .Where(v => v.FechaSalida.Valor >= hoy && v.FechaSalida.Valor <= limite)
+                .OrderBy(v => v.FechaSalida.Valor)
+                .ToList();
+
+            if (proximos.Count == 0) { SpectreHelper.MostrarInfo("Sin vuelos disponibles en los próximos 7 días."); SpectreHelper.EsperarTecla(); return; }
+
+            var tabla = SpectreHelper.CrearTabla("VueloID", "Número", "RutaID", "Salida", "Llegada", "Estado");
+            foreach (var v in proximos)
+            {
+                var disponibles = await availUc.ExecuteAsync(v.Id);
+                if (disponibles.Count > 0)
+                    SpectreHelper.AgregarFila(tabla,
+                        v.Id.ToString(), v.NumeroVuelo.Valor, v.RutaId.ToString(),
+                        v.FechaSalida.Valor.ToString("yyyy-MM-dd HH:mm"),
+                        v.FechaLlegada.Valor.ToString("yyyy-MM-dd HH:mm"),
+                        $"{v.Estado.Valor} ({disponibles.Count} asientos)");
+            }
+            SpectreHelper.MostrarTabla(tabla);
+            SpectreHelper.EsperarTecla();
+        });
     }
 
     private async Task BuscarVuelosAsync()

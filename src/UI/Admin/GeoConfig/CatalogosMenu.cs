@@ -23,6 +23,8 @@ using AirTicketSystem.modules.workertype.Application.UseCases;
 using AirTicketSystem.modules.specialty.Application.UseCases;
 // LuggageType
 using AirTicketSystem.modules.luggagetype.Application.UseCases;
+// PaymentMethod
+using AirTicketSystem.modules.paymentmethod.Application.UseCases;
 
 namespace AirTicketSystem.UI.Admin.GeoConfig;
 
@@ -41,32 +43,38 @@ public sealed class CatalogosMenu
             var opcion = SpectreHelper.SeleccionarOpcionTexto(
                 "Seleccione un catálogo",
                 [
-                    "Géneros",
-                    "Tipos de documento",
-                    "Tipos de dirección",
-                    "Tipos de teléfono",
-                    "Tipos de email",
-                    "Relaciones de contacto",
+                    "7.1 Géneros",
+                    "7.2 Tipos de documento",
+                    "7.3 Tipos de teléfono",
+                    "7.4 Tipos de email",
+                    "7.5 Tipos de dirección",
+                    "7.6 Relaciones de contacto",
+                    "7.7 Tipos de equipaje",
+                    "7.8 Restricciones de equipaje",
+                    "7.9 Métodos de pago",
+                    "7.10 Tarifas",
                     "Clases de servicio",
                     "Tipos de trabajador",
                     "Especialidades",
-                    "Tipos de equipaje",
                     "Volver"
                 ]);
 
             switch (opcion)
             {
-                case "Géneros":                await GenderMenuAsync();              break;
-                case "Tipos de documento":     await DocumentTypeMenuAsync();        break;
-                case "Tipos de dirección":     await AddressTypeMenuAsync();         break;
-                case "Tipos de teléfono":      await PhoneTypeMenuAsync();           break;
-                case "Tipos de email":         await EmailTypeMenuAsync();           break;
-                case "Relaciones de contacto": await ContactRelationshipMenuAsync(); break;
-                case "Clases de servicio":     await ServiceClassMenuAsync();        break;
-                case "Tipos de trabajador":    await WorkerTypeMenuAsync();          break;
-                case "Especialidades":         await SpecialtyMenuAsync();           break;
-                case "Tipos de equipaje":      await LuggageTypeMenuAsync();         break;
-                case "Volver":                 return;
+                case "7.1 Géneros":             await GenderMenuAsync();              break;
+                case "7.2 Tipos de documento":  await DocumentTypeMenuAsync();        break;
+                case "7.3 Tipos de teléfono":   await PhoneTypeMenuAsync();           break;
+                case "7.4 Tipos de email":      await EmailTypeMenuAsync();           break;
+                case "7.5 Tipos de dirección":  await AddressTypeMenuAsync();         break;
+                case "7.6 Relaciones de contacto": await ContactRelationshipMenuAsync(); break;
+                case "7.7 Tipos de equipaje":   await LuggageTypeMenuAsync();         break;
+                case "7.8 Restricciones de equipaje": SpectreHelper.MostrarInfo("Ver sección 2 → Aerolíneas y Flota → Restricciones."); SpectreHelper.EsperarTecla(); break;
+                case "7.9 Métodos de pago":     await PaymentMethodMenuAsync();       break;
+                case "7.10 Tarifas":            SpectreHelper.MostrarInfo("Ver sección 2 → Aerolíneas y Flota → Tarifas."); SpectreHelper.EsperarTecla(); break;
+                case "Clases de servicio":      await ServiceClassMenuAsync();        break;
+                case "Tipos de trabajador":     await WorkerTypeMenuAsync();          break;
+                case "Especialidades":          await SpecialtyMenuAsync();           break;
+                case "Volver":                  return;
             }
         }
     }
@@ -485,6 +493,60 @@ public sealed class CatalogosMenu
                 var id = SpectreHelper.PedirEntero("ID a eliminar");
                 await scope.GetRequiredService<DeleteLuggageTypeUseCase>().ExecuteAsync(id);
             });
+    }
+
+    // ── Métodos de pago ───────────────────────────────────────────────────────
+
+    private async Task PaymentMethodMenuAsync()
+    {
+        while (true)
+        {
+            SpectreHelper.MostrarTitulo("Métodos de Pago");
+
+            var opcion = SpectreHelper.SeleccionarOpcionTexto("Acción",
+                ["Buscar por ID", "Crear", "Editar", "Volver"]);
+
+            if (opcion == "Volver") return;
+
+            switch (opcion)
+            {
+                case "Buscar por ID":
+                    await ConsoleErrorHandler.ExecuteAsync(async () =>
+                    {
+                        var id = SpectreHelper.PedirEntero("ID del método de pago");
+                        await using var sc = _provider.CreateAsyncScope();
+                        var m = await sc.ServiceProvider.GetRequiredService<GetPaymentMethodByIdUseCase>().ExecuteAsync(id);
+                        var t = SpectreHelper.CrearTabla("ID", "Nombre");
+                        SpectreHelper.AgregarFila(t, m.Id.ToString(), m.Nombre.Valor);
+                        SpectreHelper.MostrarTabla(t);
+                        SpectreHelper.EsperarTecla();
+                    });
+                    break;
+
+                case "Crear":
+                    await ConsoleErrorHandler.ExecuteAsync(async () =>
+                    {
+                        var nombre = SpectreHelper.PedirTexto("Nombre del método de pago");
+                        await using var sc = _provider.CreateAsyncScope();
+                        var m = await sc.ServiceProvider.GetRequiredService<CreatePaymentMethodUseCase>().ExecuteAsync(nombre);
+                        SpectreHelper.MostrarExito($"Método '{m.Nombre.Valor}' creado (ID {m.Id}).");
+                    });
+                    SpectreHelper.EsperarTecla();
+                    break;
+
+                case "Editar":
+                    await ConsoleErrorHandler.ExecuteAsync(async () =>
+                    {
+                        var id     = SpectreHelper.PedirEntero("ID del método de pago");
+                        var nombre = SpectreHelper.PedirTexto("Nuevo nombre");
+                        await using var sc = _provider.CreateAsyncScope();
+                        var m = await sc.ServiceProvider.GetRequiredService<UpdatePaymentMethodUseCase>().ExecuteAsync(id, nombre);
+                        SpectreHelper.MostrarExito($"Método '{m.Nombre.Valor}' actualizado.");
+                    });
+                    SpectreHelper.EsperarTecla();
+                    break;
+            }
+        }
     }
 
     // ── Helper genérico CRUD simple ───────────────────────────────────────────
