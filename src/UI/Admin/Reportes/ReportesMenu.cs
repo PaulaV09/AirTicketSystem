@@ -9,6 +9,8 @@ using AirTicketSystem.modules.booking.Application.UseCases;
 using AirTicketSystem.modules.route.Application.UseCases;
 using AirTicketSystem.modules.airline.Application.UseCases;
 using AirTicketSystem.modules.flighthistory.Application.UseCases;
+using AirTicketSystem.modules.milescuenta.Application.UseCases;
+using AirTicketSystem.modules.milesmovimiento.Application.UseCases;
 
 namespace AirTicketSystem.UI.Admin.Reportes;
 
@@ -33,6 +35,12 @@ public sealed class ReportesMenu
                     "8.5 Reservas por estado",
                     "8.6 Ingresos estimados por aerolínea",
                     "8.7 Historial de cambios por rango de fechas",
+                    "── PROGRAMA DE MILLAS ──────────────────────",
+                    "8.8 Clientes con más millas acumuladas",
+                    "8.9 Clientes que más redimen millas",
+                    "8.10 Aerolíneas con mayor volumen de fidelización",
+                    "8.11 Rutas con mayor acumulación de millas",
+                    "8.12 Ranking de viajeros frecuentes",
                     "Volver"
                 ]);
 
@@ -45,6 +53,11 @@ public sealed class ReportesMenu
                 case "8.5 Reservas por estado":               await Reporte5Async(); break;
                 case "8.6 Ingresos estimados por aerolínea":  await Reporte6Async(); break;
                 case "8.7 Historial de cambios por rango de fechas": await Reporte7Async(); break;
+                case "8.8 Clientes con más millas acumuladas":         await Reporte8Async(); break;
+                case "8.9 Clientes que más redimen millas":            await Reporte9Async(); break;
+                case "8.10 Aerolíneas con mayor volumen de fidelización": await Reporte10Async(); break;
+                case "8.11 Rutas con mayor acumulación de millas":     await Reporte11Async(); break;
+                case "8.12 Ranking de viajeros frecuentes":            await Reporte12Async(); break;
                 case "Volver": return;
             }
         }
@@ -332,5 +345,341 @@ public sealed class ReportesMenu
             SpectreHelper.MostrarTabla(tabla);
             SpectreHelper.EsperarTecla();
         });
+    }
+
+    // ════════════════════════════════════════════════════════════════
+    //   REPORTES DE MILLAS (8.8 – 8.12)
+    // ════════════════════════════════════════════════════════════════
+
+    // ── 8.8 Clientes con más millas acumuladas ───────────────────────────────
+    private async Task Reporte8Async()
+    {
+        SpectreHelper.MostrarSubtitulo("8.8 — Clientes con Más Millas Acumuladas");
+        var top = SpectreHelper.PedirEntero("Mostrar top N clientes (ej: 10)");
+
+        await ConsoleErrorHandler.ExecuteAsync(async () =>
+        {
+            await using var scope = _provider.CreateAsyncScope();
+            var cuentas = await scope.ServiceProvider
+                .GetRequiredService<GetAllCuentasMilesUseCase>()
+                .ExecuteAsync();
+
+            // LINQ: ordenar por total histórico acumulado, tomar los N primeros
+            var reporte = cuentas
+                .OrderByDescending(c => c.MilesAcumuladasTotal)
+                .Take(top)
+                .Select(c => new
+                {
+                    c.ClienteId,
+                    SaldoDisponible  = c.SaldoActual.Valor,
+                    c.MilesAcumuladasTotal,
+                    Nivel            = c.Nivel.Valor,
+                    Desde            = c.FechaInscripcion.Valor.ToString("yyyy-MM-dd")
+                })
+                .ToList();
+
+            if (reporte.Count == 0)
+            {
+                SpectreHelper.MostrarInfo("Sin cuentas de millas registradas.");
+                SpectreHelper.EsperarTecla();
+                return;
+            }
+
+            var tabla = SpectreHelper.CrearTabla(
+                "ClienteID", "Saldo disponible", "Total acumulado", "Nivel", "Miembro desde");
+            foreach (var r in reporte)
+                SpectreHelper.AgregarFila(tabla,
+                    r.ClienteId.ToString(),
+                    $"{r.SaldoDisponible:N0}",
+                    $"{r.MilesAcumuladasTotal:N0}",
+                    r.Nivel,
+                    r.Desde);
+            SpectreHelper.MostrarTabla(tabla);
+            SpectreHelper.EsperarTecla();
+        });
+    }
+
+    // ── 8.9 Clientes que más redimen millas ──────────────────────────────────
+    private async Task Reporte9Async()
+    {
+        SpectreHelper.MostrarSubtitulo("8.9 — Clientes que Más Redimen Millas");
+        var top = SpectreHelper.PedirEntero("Mostrar top N clientes (ej: 10)");
+
+        await ConsoleErrorHandler.ExecuteAsync(async () =>
+        {
+            await using var scope = _provider.CreateAsyncScope();
+            var sp = scope.ServiceProvider;
+
+            var movimientos = await sp.GetRequiredService<GetAllMovimientosUseCase>().ExecuteAsync();
+            var cuentas     = await sp.GetRequiredService<GetAllCuentasMilesUseCase>().ExecuteAsync();
+
+            // Diccionario para lookup rápido: CuentaId → ClienteId
+            var cuentaACliente = cuentas.ToDictionary(c => c.Id, c => c.ClienteId);
+
+            // LINQ: filtrar redenciones, agrupar por cuenta, sumar millas y contar transacciones
+            var reporte = movimientos
+                .Where(m => m.Tipo.EsRedencion)
+                .GroupBy(m => m.CuentaId)
+                .Select(g => new
+                {
+                    CuentaId       = g.Key,
+                    TotalRedimido  = g.Sum(m => m.Millas.Valor),
+                    NumRedenciones = g.Count()
+                })
+                .OrderByDescending(x => x.TotalRedimido)
+                .Take(top)
+                .Select(x => new
+                {
+                    ClienteId      = cuentaACliente.TryGetValue(x.CuentaId, out var cid) ? cid : 0,
+                    x.TotalRedimido,
+                    x.NumRedenciones,
+                    PromedioXRed   = x.NumRedenciones > 0 ? x.TotalRedimido / x.NumRedenciones : 0
+                })
+                .ToList();
+
+            if (reporte.Count == 0)
+            {
+                SpectreHelper.MostrarInfo("Sin redenciones registradas.");
+                SpectreHelper.EsperarTecla();
+                return;
+            }
+
+            var tabla = SpectreHelper.CrearTabla(
+                "ClienteID", "Total redimido", "Nº redenciones", "Promedio/redención");
+            foreach (var r in reporte)
+                SpectreHelper.AgregarFila(tabla,
+                    r.ClienteId.ToString(),
+                    $"{r.TotalRedimido:N0} millas",
+                    r.NumRedenciones.ToString(),
+                    $"{r.PromedioXRed:N0} millas");
+            SpectreHelper.MostrarTabla(tabla);
+            SpectreHelper.EsperarTecla();
+        });
+    }
+
+    // ── 8.10 Aerolíneas con mayor volumen de fidelización ────────────────────
+    private async Task Reporte10Async()
+    {
+        SpectreHelper.MostrarSubtitulo("8.10 — Aerolíneas con Mayor Volumen de Fidelización");
+
+        await ConsoleErrorHandler.ExecuteAsync(async () =>
+        {
+            await using var scope = _provider.CreateAsyncScope();
+            var sp = scope.ServiceProvider;
+
+            // Cargar todo en memoria para el join LINQ
+            var movimientos = await sp.GetRequiredService<GetAllMovimientosUseCase>().ExecuteAsync();
+            var aerolineas  = await sp.GetRequiredService<GetAllAirlinesUseCase>().ExecuteAsync();
+            var rutas       = await sp.GetRequiredService<GetAllRoutesUseCase>().ExecuteAsync();
+            var vuelos      = await sp.GetRequiredService<GetAllFlightsUseCase>().ExecuteAsync();
+            var reservas    = await CargarTodasLasReservasAsync(sp);
+
+            // Construir diccionarios para joins eficientes
+            var reservaAVuelo = reservas.ToDictionary(r => r.Id, r => r.VueloId);
+            var vueloARuta    = vuelos.ToDictionary(v => v.Id, v => v.RutaId);
+            var rutaAerolinea = rutas.ToDictionary(r => r.Id, r => r.AerolineaId);
+            var nombreAerolinea = aerolineas.ToDictionary(a => a.Id, a => a.Nombre.Valor);
+
+            // LINQ: acumulaciones → reserva → vuelo → ruta → aerolínea
+            var reporte = movimientos
+                .Where(m => m.Tipo.EsAcumulacion && m.ReservaId.HasValue)
+                .Where(m => reservaAVuelo.ContainsKey(m.ReservaId!.Value))
+                .Select(m => new
+                {
+                    Millas  = m.Millas.Valor,
+                    VueloId = reservaAVuelo[m.ReservaId!.Value]
+                })
+                .Where(x => vueloARuta.ContainsKey(x.VueloId))
+                .Select(x => new
+                {
+                    x.Millas,
+                    RutaId = vueloARuta[x.VueloId]
+                })
+                .Where(x => rutaAerolinea.ContainsKey(x.RutaId))
+                .Select(x => new
+                {
+                    x.Millas,
+                    AerolineaId = rutaAerolinea[x.RutaId]
+                })
+                .GroupBy(x => x.AerolineaId)
+                .Select(g => new
+                {
+                    AerolineaId    = g.Key,
+                    Nombre         = nombreAerolinea.TryGetValue(g.Key, out var n) ? n : $"ID {g.Key}",
+                    TotalMillas    = g.Sum(x => x.Millas),
+                    NumMovimientos = g.Count()
+                })
+                .OrderByDescending(x => x.TotalMillas)
+                .ToList();
+
+            if (reporte.Count == 0)
+            {
+                SpectreHelper.MostrarInfo("Sin datos de fidelización por aerolínea.");
+                SpectreHelper.EsperarTecla();
+                return;
+            }
+
+            var tabla = SpectreHelper.CrearTabla(
+                "AerolineaID", "Nombre", "Millas distribuidas", "Nº acumulaciones");
+            foreach (var r in reporte)
+                SpectreHelper.AgregarFila(tabla,
+                    r.AerolineaId.ToString(),
+                    r.Nombre,
+                    $"{r.TotalMillas:N0}",
+                    r.NumMovimientos.ToString());
+            SpectreHelper.MostrarTabla(tabla);
+            SpectreHelper.EsperarTecla();
+        });
+    }
+
+    // ── 8.11 Rutas con mayor acumulación de millas ───────────────────────────
+    private async Task Reporte11Async()
+    {
+        SpectreHelper.MostrarSubtitulo("8.11 — Rutas con Mayor Acumulación de Millas");
+        var top = SpectreHelper.PedirEntero("Mostrar top N rutas (ej: 10)");
+
+        await ConsoleErrorHandler.ExecuteAsync(async () =>
+        {
+            await using var scope = _provider.CreateAsyncScope();
+            var sp = scope.ServiceProvider;
+
+            var movimientos = await sp.GetRequiredService<GetAllMovimientosUseCase>().ExecuteAsync();
+            var rutas       = await sp.GetRequiredService<GetAllRoutesUseCase>().ExecuteAsync();
+            var vuelos      = await sp.GetRequiredService<GetAllFlightsUseCase>().ExecuteAsync();
+            var reservas    = await CargarTodasLasReservasAsync(sp);
+
+            var reservaAVuelo = reservas.ToDictionary(r => r.Id, r => r.VueloId);
+            var vueloARuta    = vuelos.ToDictionary(v => v.Id, v => v.RutaId);
+
+            // Enriquecer ruta con origen/destino para display
+            var infoRuta = rutas.ToDictionary(
+                r => r.Id,
+                r => $"Ruta #{r.Id} (O:{r.OrigenId} → D:{r.DestinoId})");
+
+            // LINQ: acumulaciones → reserva → vuelo → ruta
+            var reporte = movimientos
+                .Where(m => m.Tipo.EsAcumulacion && m.ReservaId.HasValue)
+                .Where(m => reservaAVuelo.ContainsKey(m.ReservaId!.Value))
+                .Select(m => new
+                {
+                    Millas  = m.Millas.Valor,
+                    VueloId = reservaAVuelo[m.ReservaId!.Value]
+                })
+                .Where(x => vueloARuta.ContainsKey(x.VueloId))
+                .Select(x => new
+                {
+                    x.Millas,
+                    RutaId = vueloARuta[x.VueloId]
+                })
+                .GroupBy(x => x.RutaId)
+                .Select(g => new
+                {
+                    RutaId        = g.Key,
+                    Info          = infoRuta.TryGetValue(g.Key, out var i) ? i : $"Ruta #{g.Key}",
+                    TotalMillas   = g.Sum(x => x.Millas),
+                    TotalVuelos   = g.Select(x => x.RutaId).Distinct().Count()
+                })
+                .OrderByDescending(x => x.TotalMillas)
+                .Take(top)
+                .ToList();
+
+            if (reporte.Count == 0)
+            {
+                SpectreHelper.MostrarInfo("Sin datos de acumulación por ruta.");
+                SpectreHelper.EsperarTecla();
+                return;
+            }
+
+            var tabla = SpectreHelper.CrearTabla("RutaID", "Ruta", "Millas acumuladas");
+            foreach (var r in reporte)
+                SpectreHelper.AgregarFila(tabla,
+                    r.RutaId.ToString(),
+                    r.Info,
+                    $"{r.TotalMillas:N0}");
+            SpectreHelper.MostrarTabla(tabla);
+            SpectreHelper.EsperarTecla();
+        });
+    }
+
+    // ── 8.12 Ranking de viajeros frecuentes ──────────────────────────────────
+    private async Task Reporte12Async()
+    {
+        SpectreHelper.MostrarSubtitulo("8.12 — Ranking de Viajeros Frecuentes");
+        var top = SpectreHelper.PedirEntero("Mostrar top N viajeros (ej: 10)");
+
+        await ConsoleErrorHandler.ExecuteAsync(async () =>
+        {
+            await using var scope = _provider.CreateAsyncScope();
+            var sp = scope.ServiceProvider;
+
+            var cuentas  = await sp.GetRequiredService<GetAllCuentasMilesUseCase>().ExecuteAsync();
+            var reservas = await CargarTodasLasReservasAsync(sp);
+
+            // Agrupar reservas confirmadas por cliente para contar vuelos completados
+            var vuelosPorCliente = reservas
+                .Where(r => r.Estado.Valor == "CONFIRMADA")
+                .GroupBy(r => r.ClienteId)
+                .ToDictionary(g => g.Key, g => g.Count());
+
+            // LINQ multi-criterio:
+            //   1º millas acumuladas históricas (fidelidad total)
+            //   2º vuelos confirmados (actividad)
+            //   3º saldo disponible (engagement actual)
+            var reporte = cuentas
+                .Select(c => new
+                {
+                    c.ClienteId,
+                    Nivel              = c.Nivel.Valor,
+                    MilesTotal         = c.MilesAcumuladasTotal,
+                    SaldoDisponible    = c.SaldoActual.Valor,
+                    VuelosConfirmados  = vuelosPorCliente.TryGetValue(c.ClienteId, out var v) ? v : 0,
+                    Desde              = c.FechaInscripcion.Valor.ToString("yyyy-MM-dd")
+                })
+                .OrderByDescending(x => x.MilesTotal)
+                .ThenByDescending(x => x.VuelosConfirmados)
+                .ThenByDescending(x => x.SaldoDisponible)
+                .Take(top)
+                .ToList();
+
+            if (reporte.Count == 0)
+            {
+                SpectreHelper.MostrarInfo("Sin viajeros frecuentes registrados.");
+                SpectreHelper.EsperarTecla();
+                return;
+            }
+
+            var tabla = SpectreHelper.CrearTabla(
+                "#", "ClienteID", "Nivel", "Miles total", "Saldo", "Vuelos", "Miembro desde");
+            var posicion = 1;
+            foreach (var r in reporte)
+            {
+                SpectreHelper.AgregarFila(tabla,
+                    posicion++.ToString(),
+                    r.ClienteId.ToString(),
+                    r.Nivel,
+                    $"{r.MilesTotal:N0}",
+                    $"{r.SaldoDisponible:N0}",
+                    r.VuelosConfirmados.ToString(),
+                    r.Desde);
+            }
+            SpectreHelper.MostrarTabla(tabla);
+            SpectreHelper.EsperarTecla();
+        });
+    }
+
+    // ── Helper: carga todas las reservas iterando por todos los clientes ──────
+    // Sigue el mismo patrón de los reportes 8.5 y 8.6 existentes.
+    private async Task<List<AirTicketSystem.modules.booking.Domain.aggregate.Booking>>
+        CargarTodasLasReservasAsync(IServiceProvider sp)
+    {
+        var clientes = await sp.GetRequiredService<GetAllClientsUseCase>().ExecuteAsync();
+        var bookingUc = sp.GetRequiredService<GetBookingsByClienteUseCase>();
+        var todas = new List<AirTicketSystem.modules.booking.Domain.aggregate.Booking>();
+        foreach (var c in clientes)
+        {
+            var reservas = await bookingUc.ExecuteAsync(c.Id);
+            todas.AddRange(reservas);
+        }
+        return todas;
     }
 }
