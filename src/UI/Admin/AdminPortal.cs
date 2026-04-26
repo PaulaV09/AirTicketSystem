@@ -9,6 +9,7 @@ using AirTicketSystem.UI.Admin.ClientesUsuarios;
 using AirTicketSystem.UI.Admin.Reservations;
 using AirTicketSystem.UI.Admin.Billing;
 using AirTicketSystem.UI.Admin.Reportes;
+using AirTicketSystem.UI.Admin.Miles;
 
 namespace AirTicketSystem.UI.Admin;
 
@@ -41,7 +42,8 @@ public sealed class AdminPortal
                     "6. Gestión de Reservas y Pagos",
                     "7. Gestión de Catálogos",
                     "8. Reportes LINQ",
-                    "9. Cerrar sesión"
+                    "9. Programa de Millas",
+                    "10. Cerrar sesión"
                 ]);
 
             switch (opcion)
@@ -78,7 +80,11 @@ public sealed class AdminPortal
                     await new ReportesMenu(_provider).MostrarAsync();
                     break;
 
-                case "9. Cerrar sesión":
+                case "9. Programa de Millas":
+                    await new MilesAdminMenu(_provider).MostrarAsync();
+                    break;
+
+                case "10. Cerrar sesión":
                     _session.Logout();
                     return;
             }

@@ -28,6 +28,7 @@ public sealed class ClientPortal
                     "1. Buscar vuelos y reservar",
                     "2. Mis reservas",
                     "3. Mi perfil",
+                    "4. Mis millas",
                     "Cerrar sesión"
                 ]);
 
@@ -49,6 +50,10 @@ public sealed class ClientPortal
 
                 case "3. Mi perfil":
                     await new MyProfileMenu(_provider, _session).MostrarAsync();
+                    break;
+
+                case "4. Mis millas":
+                    await new MilesMenu(_provider, _session).MostrarAsync();
                     break;
             }
         }
