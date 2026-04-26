@@ -57,6 +57,10 @@ public sealed class MilesMovimientoRepository : IMilesMovimientoRepository
             .SumAsync(m => (int?)m.Millas)
             .ContinueWith(t => t.Result ?? 0);
 
+    public Task<bool> ExisteAcumulacionByReservaAsync(int reservaId)
+        => _context.MilesMovimientos
+            .AnyAsync(m => m.ReservaId == reservaId && m.Tipo == "ACUMULACION");
+
     public async Task SaveAsync(MilesMovimiento movimiento)
     {
         var entity = MapToEntity(movimiento);

@@ -699,6 +699,7 @@ public static class DependencyInjection
         services.AddScoped<RegistrarRedencionUseCase>();
         services.AddScoped<GetMovimientosByClienteUseCase>();
         services.AddScoped<GetAllMovimientosUseCase>();
+        services.AddScoped<AcumularMilesPorVueloUseCase>();
 
         // Seed
         services.AddSingleton<SeedFullDataUseCase>(sp => new SeedFullDataUseCase(sp));

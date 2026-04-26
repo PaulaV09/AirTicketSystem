@@ -14,5 +14,8 @@ public interface IMilesMovimientoRepository
     Task<int> SumarAcumulacionesByCuentaAsync(int cuentaId);
     Task<int> SumarRedencionesByCuentaAsync(int cuentaId);
 
+    // Idempotencia: evita acumular millas dos veces en la misma reserva
+    Task<bool> ExisteAcumulacionByReservaAsync(int reservaId);
+
     Task SaveAsync(MilesMovimiento movimiento);
 }
