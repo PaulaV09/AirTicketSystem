@@ -53,10 +53,9 @@ public sealed class MilesMenu
         {
             var clienteId = await ObtenerClienteIdAsync();
             await using var scope = _provider.CreateAsyncScope();
+            var sp = scope.ServiceProvider;
 
-            var cuenta = await scope.ServiceProvider
-                .GetRequiredService<GetCuentaMilesByClienteUseCase>()
-                .ExecuteAsync(clienteId);
+            var cuenta = await ObtenerOCrearCuentaAsync(sp, clienteId);
 
             var tabla = SpectreHelper.CrearTabla("Campo", "Valor");
             SpectreHelper.AgregarFila(tabla, "Saldo disponible",    $"{cuenta.SaldoActual.Valor:N0} millas");
@@ -81,8 +80,11 @@ public sealed class MilesMenu
         {
             var clienteId = await ObtenerClienteIdAsync();
             await using var scope = _provider.CreateAsyncScope();
+            var sp = scope.ServiceProvider;
 
-            var movimientos = await scope.ServiceProvider
+            await ObtenerOCrearCuentaAsync(sp, clienteId);
+
+            var movimientos = await sp
                 .GetRequiredService<GetMovimientosByClienteUseCase>()
                 .ExecuteAsync(clienteId);
 
@@ -116,8 +118,7 @@ public sealed class MilesMenu
             var sp = scope.ServiceProvider;
 
             // Mostrar saldo disponible antes de pedir la redención
-            var cuenta = await sp.GetRequiredService<GetCuentaMilesByClienteUseCase>()
-                .ExecuteAsync(clienteId);
+            var cuenta = await ObtenerOCrearCuentaAsync(sp, clienteId);
 
             SpectreHelper.MostrarInfo(
                 $"Saldo disponible: {cuenta.SaldoActual.Valor:N0} millas " +
@@ -222,5 +223,24 @@ public sealed class MilesMenu
         return clientes.FirstOrDefault(c => c.UsuarioId == _session.CurrentUserId)?.Id
             ?? throw new InvalidOperationException(
                 "No se encontró el perfil de cliente. Contacte al administrador.");
+    }
+
+    // Si el cliente aún no tiene cuenta de millas (clientes creados antes del módulo),
+    // la crea automáticamente en el primer acceso al menú.
+    private async Task<AirTicketSystem.modules.milescuenta.Domain.aggregate.MilesCuenta>
+        ObtenerOCrearCuentaAsync(IServiceProvider sp, int clienteId)
+    {
+        try
+        {
+            return await sp.GetRequiredService<GetCuentaMilesByClienteUseCase>()
+                .ExecuteAsync(clienteId);
+        }
+        catch (KeyNotFoundException)
+        {
+            SpectreHelper.MostrarInfo(
+                "Bienvenido al programa de millas. Se ha creado su cuenta automáticamente.");
+            return await sp.GetRequiredService<CrearCuentaMilesUseCase>()
+                .ExecuteAsync(clienteId);
+        }
     }
 }

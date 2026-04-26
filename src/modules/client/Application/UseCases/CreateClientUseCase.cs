@@ -3,23 +3,28 @@ using AirTicketSystem.modules.client.Domain.aggregate;
 using AirTicketSystem.modules.client.Domain.Repositories;
 using AirTicketSystem.modules.person.Domain.Repositories;
 using AirTicketSystem.modules.user.Domain.Repositories;
+using AirTicketSystem.modules.milescuenta.Domain.aggregate;
+using AirTicketSystem.modules.milescuenta.Domain.Repositories;
 
 namespace AirTicketSystem.modules.client.Application.UseCases;
 
 public sealed class CreateClientUseCase
 {
-    private readonly IClientRepository _repository;
-    private readonly IPersonRepository _personRepository;
-    private readonly IUserRepository   _userRepository;
+    private readonly IClientRepository      _repository;
+    private readonly IPersonRepository      _personRepository;
+    private readonly IUserRepository        _userRepository;
+    private readonly IMilesCuentaRepository _cuentaMilesRepository;
 
     public CreateClientUseCase(
-        IClientRepository repository,
-        IPersonRepository personRepository,
-        IUserRepository userRepository)
+        IClientRepository      repository,
+        IPersonRepository      personRepository,
+        IUserRepository        userRepository,
+        IMilesCuentaRepository cuentaMilesRepository)
     {
-        _repository        = repository;
-        _personRepository  = personRepository;
-        _userRepository    = userRepository;
+        _repository            = repository;
+        _personRepository      = personRepository;
+        _userRepository        = userRepository;
+        _cuentaMilesRepository = cuentaMilesRepository;
     }
 
     public async Task<Client> ExecuteAsync(
@@ -49,6 +54,14 @@ public sealed class CreateClientUseCase
 
         var client = Client.Crear(personaId, usuarioId);
         await _repository.SaveAsync(client);
+
+        // Crear la cuenta de millas automáticamente junto con el cliente
+        if (!await _cuentaMilesRepository.ExistsByClienteAsync(client.Id))
+        {
+            var cuenta = MilesCuenta.Crear(client.Id);
+            await _cuentaMilesRepository.SaveAsync(cuenta);
+        }
+
         return client;
     }
 }
