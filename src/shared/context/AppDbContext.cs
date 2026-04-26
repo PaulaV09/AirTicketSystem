@@ -71,6 +71,7 @@ using AirTicketSystem.modules.invoice.Infrastructure.entity;
 
 // Programa de millas
 using AirTicketSystem.modules.milescuenta.Infrastructure.entity;
+using AirTicketSystem.modules.milesmovimiento.Infrastructure.entity;
 
 namespace AirTicketSystem.shared.context;
 
@@ -156,6 +157,7 @@ public class AppDbContext : DbContext
 
     // ── Programa de millas ─────────────────────────────────
     public DbSet<MilesCuentaEntity> CuentasMillas => Set<MilesCuentaEntity>();
+    public DbSet<MilesMovimientoEntity> MilesMovimientos => Set<MilesMovimientoEntity>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

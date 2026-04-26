@@ -56,6 +56,7 @@ using AirTicketSystem.modules.user.Domain.Repositories;
 using AirTicketSystem.modules.worker.Domain.Repositories;
 using AirTicketSystem.modules.workertype.Domain.Repositories;
 using AirTicketSystem.modules.milescuenta.Domain.Repositories;
+using AirTicketSystem.modules.milesmovimiento.Domain.Repositories;
 
 // ── Infrastructure repositories ──────────────────────────────────────────────
 using AirTicketSystem.modules.additionalcharge.Infrastructure.repository;
@@ -107,6 +108,7 @@ using AirTicketSystem.modules.user.Infrastructure.repository;
 using AirTicketSystem.modules.worker.Infrastructure.repository;
 using AirTicketSystem.modules.workertype.Infrastructure.repository;
 using AirTicketSystem.modules.milescuenta.Infrastructure.repository;
+using AirTicketSystem.modules.milesmovimiento.Infrastructure.repository;
 
 // ── Use Cases ─────────────────────────────────────────────────────────────────
 using AirTicketSystem.modules.user.Application.UseCases;
@@ -157,6 +159,7 @@ using AirTicketSystem.modules.additionalcharge.Application.UseCases;
 using AirTicketSystem.modules.flighthistory.Application.UseCases;
 using AirTicketSystem.modules.paymentmethod.Application.UseCases;
 using AirTicketSystem.modules.milescuenta.Application.UseCases;
+using AirTicketSystem.modules.milesmovimiento.Application.UseCases;
 
 namespace AirTicketSystem.shared;
 
@@ -689,6 +692,13 @@ public static class DependencyInjection
         services.AddScoped<GetCuentaMilesByClienteUseCase>();
         services.AddScoped<GetAllCuentasMilesUseCase>();
         services.AddScoped<GetSaldoMilesUseCase>();
+
+        // MilesMovimiento
+        services.AddScoped<IMilesMovimientoRepository, MilesMovimientoRepository>();
+        services.AddScoped<RegistrarAcumulacionUseCase>();
+        services.AddScoped<RegistrarRedencionUseCase>();
+        services.AddScoped<GetMovimientosByClienteUseCase>();
+        services.AddScoped<GetAllMovimientosUseCase>();
 
         // Seed
         services.AddSingleton<SeedFullDataUseCase>(sp => new SeedFullDataUseCase(sp));
