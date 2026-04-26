@@ -55,6 +55,7 @@ using AirTicketSystem.modules.ticket.Domain.Repositories;
 using AirTicketSystem.modules.user.Domain.Repositories;
 using AirTicketSystem.modules.worker.Domain.Repositories;
 using AirTicketSystem.modules.workertype.Domain.Repositories;
+using AirTicketSystem.modules.milescuenta.Domain.Repositories;
 
 // ── Infrastructure repositories ──────────────────────────────────────────────
 using AirTicketSystem.modules.additionalcharge.Infrastructure.repository;
@@ -105,6 +106,7 @@ using AirTicketSystem.modules.ticket.Infrastructure.repository;
 using AirTicketSystem.modules.user.Infrastructure.repository;
 using AirTicketSystem.modules.worker.Infrastructure.repository;
 using AirTicketSystem.modules.workertype.Infrastructure.repository;
+using AirTicketSystem.modules.milescuenta.Infrastructure.repository;
 
 // ── Use Cases ─────────────────────────────────────────────────────────────────
 using AirTicketSystem.modules.user.Application.UseCases;
@@ -154,7 +156,7 @@ using AirTicketSystem.modules.luggage.Application.UseCases;
 using AirTicketSystem.modules.additionalcharge.Application.UseCases;
 using AirTicketSystem.modules.flighthistory.Application.UseCases;
 using AirTicketSystem.modules.paymentmethod.Application.UseCases;
-using AirTicketSystem.modules.luggagerestriction.Application.UseCases;
+using AirTicketSystem.modules.milescuenta.Application.UseCases;
 
 namespace AirTicketSystem.shared;
 
@@ -680,6 +682,13 @@ public static class DependencyInjection
         services.AddScoped<CreatePaymentMethodUseCase>();
         services.AddScoped<GetPaymentMethodByIdUseCase>();
         services.AddScoped<UpdatePaymentMethodUseCase>();
+
+        // MilesCuenta
+        services.AddScoped<IMilesCuentaRepository, MilesCuentaRepository>();
+        services.AddScoped<CrearCuentaMilesUseCase>();
+        services.AddScoped<GetCuentaMilesByClienteUseCase>();
+        services.AddScoped<GetAllCuentasMilesUseCase>();
+        services.AddScoped<GetSaldoMilesUseCase>();
 
         // Seed
         services.AddSingleton<SeedFullDataUseCase>(sp => new SeedFullDataUseCase(sp));

@@ -1566,6 +1566,52 @@ namespace AirTicketSystem.Migrations
                     b.ToTable("tipos_equipaje", (string)null);
                 });
 
+            modelBuilder.Entity("AirTicketSystem.modules.milescuenta.Infrastructure.entity.MilesCuentaEntity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("id");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ClienteId")
+                        .HasColumnType("int")
+                        .HasColumnName("cliente_id");
+
+                    b.Property<DateTime>("FechaInscripcion")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("fecha_inscripcion");
+
+                    b.Property<int>("MilesAcumuladasTotal")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0)
+                        .HasColumnName("miles_acumuladas_total");
+
+                    b.Property<string>("Nivel")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(10)
+                        .HasColumnType("varchar(10)")
+                        .HasDefaultValue("BRONCE")
+                        .HasColumnName("nivel");
+
+                    b.Property<int>("SaldoActual")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0)
+                        .HasColumnName("saldo_actual");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ClienteId")
+                        .IsUnique()
+                        .HasDatabaseName("uq_cuentas_millas_cliente");
+
+                    b.ToTable("cuentas_millas", (string)null);
+                });
+
             modelBuilder.Entity("AirTicketSystem.modules.payment.Infrastructure.entity.PaymentEntity", b =>
                 {
                     b.Property<int>("Id")
@@ -2925,6 +2971,17 @@ namespace AirTicketSystem.Migrations
                     b.Navigation("Tarifa");
 
                     b.Navigation("TipoEquipaje");
+                });
+
+            modelBuilder.Entity("AirTicketSystem.modules.milescuenta.Infrastructure.entity.MilesCuentaEntity", b =>
+                {
+                    b.HasOne("AirTicketSystem.modules.client.Infrastructure.entity.ClientEntity", "Cliente")
+                        .WithMany()
+                        .HasForeignKey("ClienteId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Cliente");
                 });
 
             modelBuilder.Entity("AirTicketSystem.modules.payment.Infrastructure.entity.PaymentEntity", b =>

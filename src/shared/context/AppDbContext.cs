@@ -69,6 +69,9 @@ using AirTicketSystem.modules.payment.Infrastructure.entity;
 using AirTicketSystem.modules.additionalcharge.Infrastructure.entity;
 using AirTicketSystem.modules.invoice.Infrastructure.entity;
 
+// Programa de millas
+using AirTicketSystem.modules.milescuenta.Infrastructure.entity;
+
 namespace AirTicketSystem.shared.context;
 
 public class AppDbContext : DbContext
@@ -150,6 +153,9 @@ public class AppDbContext : DbContext
     public DbSet<PaymentEntity> Pagos => Set<PaymentEntity>();
     public DbSet<AdditionalChargeEntity> CargosAdicionales => Set<AdditionalChargeEntity>();
     public DbSet<InvoiceEntity> Facturas => Set<InvoiceEntity>();
+
+    // ── Programa de millas ─────────────────────────────────
+    public DbSet<MilesCuentaEntity> CuentasMillas => Set<MilesCuentaEntity>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
