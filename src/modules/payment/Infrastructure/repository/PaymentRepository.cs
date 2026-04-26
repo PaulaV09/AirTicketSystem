@@ -89,6 +89,7 @@ public sealed class PaymentRepository : IPaymentRepository
         entity.FechaVencimiento = payment.FechaVencimiento.Valor;
         entity.MetodoPagoId     = payment.MetodoPagoId;
         entity.Monto            = payment.Monto.Valor;
+        entity.MilesUsadas      = payment.MilesUsadas?.Valor;
 
         await _context.SaveChangesAsync();
     }
@@ -99,6 +100,7 @@ public sealed class PaymentRepository : IPaymentRepository
             e.ReservaId,
             e.MetodoPagoId,
             e.Monto,
+            e.MilesUsadas,
             e.Estado,
             e.ReferenciaPago,
             e.FechaPago,
@@ -109,6 +111,7 @@ public sealed class PaymentRepository : IPaymentRepository
         ReservaId        = p.ReservaId,
         MetodoPagoId     = p.MetodoPagoId,
         Monto            = p.Monto.Valor,
+        MilesUsadas      = p.MilesUsadas?.Valor,
         Estado           = p.Estado.Valor,
         ReferenciaPago   = p.Referencia?.Valor,
         FechaPago        = p.FechaPago?.Valor,

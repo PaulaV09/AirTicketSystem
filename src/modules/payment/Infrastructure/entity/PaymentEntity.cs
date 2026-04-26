@@ -10,6 +10,7 @@ public class PaymentEntity
     public int ReservaId { get; set; }
     public int MetodoPagoId { get; set; }
     public decimal Monto { get; set; }
+    public int? MilesUsadas { get; set; }           // null = pago solo en dinero
     public string Estado { get; set; } = "PENDIENTE";
     public string? ReferenciaPago { get; set; }
     public DateTime? FechaPago { get; set; }

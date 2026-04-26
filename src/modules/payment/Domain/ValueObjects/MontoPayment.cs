@@ -9,9 +9,9 @@ public sealed class MontoPayment
 
     public static MontoPayment Crear(decimal valor)
     {
-        if (valor <= 0)
+        if (valor < 0)
             throw new ArgumentException(
-                "El monto del pago debe ser mayor a 0.");
+                "El monto del pago no puede ser negativo.");
 
         if (valor > 999_999_999)
             throw new ArgumentException(
@@ -19,6 +19,9 @@ public sealed class MontoPayment
 
         return new MontoPayment(Math.Round(valor, 2));
     }
+
+    // Fábrica semántica para dejar claro que el pago es íntegramente con millas
+    public static MontoPayment Cero() => new(0);
 
     /// <summary>
     /// Verifica si este monto cubre el valor total requerido.

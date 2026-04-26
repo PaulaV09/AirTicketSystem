@@ -8,7 +8,8 @@ public sealed class Payment
     public int Id { get; private set; }
     public int ReservaId { get; private set; }
     public int MetodoPagoId { get; private set; }
-    public MontoPayment Monto { get; private set; } = null!;
+    public MontoPayment Monto { get; private set; } = null!;         // parte en dinero
+    public MilesUsadasPayment? MilesUsadas { get; private set; }     // parte en millas (opcional)
     public EstadoPayment Estado { get; private set; } = null!;
     public ReferenciaPayment? Referencia { get; private set; }
     public FechaPagoPayment? FechaPago { get; private set; }
@@ -19,7 +20,8 @@ public sealed class Payment
     public static Payment Crear(
         int reservaId,
         int metodoPagoId,
-        decimal monto)
+        decimal monto,
+        int? milesUsadas = null)
     {
         if (reservaId <= 0)
             throw new ArgumentException("La reserva es obligatoria.");
@@ -27,16 +29,25 @@ public sealed class Payment
         if (metodoPagoId <= 0)
             throw new ArgumentException("El método de pago es obligatorio.");
 
+        // Al menos uno de los dos debe cubrir algo
+        if (monto == 0 && (milesUsadas is null || milesUsadas <= 0))
+            throw new InvalidOperationException(
+                "El pago debe incluir un monto en dinero mayor a 0, " +
+                "millas a redimir, o una combinación de ambos.");
+
         var ahora = DateTime.UtcNow;
 
         return new Payment
         {
-            ReservaId      = reservaId,
-            MetodoPagoId   = metodoPagoId,
-            Monto          = MontoPayment.Crear(monto),
-            Estado         = EstadoPayment.Pendiente(),
-            Referencia     = null,
-            FechaPago      = null,
+            ReservaId        = reservaId,
+            MetodoPagoId     = metodoPagoId,
+            Monto            = MontoPayment.Crear(monto),
+            MilesUsadas      = milesUsadas.HasValue && milesUsadas.Value > 0
+                                ? MilesUsadasPayment.Crear(milesUsadas.Value)
+                                : null,
+            Estado           = EstadoPayment.Pendiente(),
+            Referencia       = null,
+            FechaPago        = null,
             FechaVencimiento = FechaVencimientoPayment.EstandarDesde(ahora)
         };
     }
@@ -117,24 +128,36 @@ public sealed class Payment
 
     public int HorasParaVencer => FechaVencimiento.HorasRestantes;
 
-    /// <summary>
-    /// Verifica si el monto del pago cubre el valor
-    /// requerido por la reserva.
-    /// </summary>
-    public bool CubreValorRequerido(decimal valorRequerido)
-        => Monto.CubreValor(valorRequerido);
+    // ── Propiedades de millas ────────────────────────────────
 
-    /// <summary>
-    /// Calcula el cambio si el monto supera el valor requerido.
-    /// </summary>
+    public bool UsaMiles => MilesUsadas is not null;
+
+    public bool EsSoloMiles => MilesUsadas is not null && Monto.Valor == 0;
+
+    public bool EsPagoMixto => MilesUsadas is not null && Monto.Valor > 0;
+
+    // Valor total cubierto = dinero + equivalente en pesos de las millas
+    // (1 milla = $1 COP, según MilesUsadasPayment.ValorEnPesos)
+    public decimal MontoTotalCubierto =>
+        Monto.Valor + (MilesUsadas?.ValorEnPesos ?? 0);
+
+    // Verifica si este pago (dinero + millas) cubre el valor requerido
+    public bool CubreValorRequerido(decimal valorRequerido)
+        => MontoTotalCubierto >= valorRequerido;
+
+    // Calcula el cambio sobre el total cubierto
     public decimal CalcularCambio(decimal valorRequerido)
-        => Monto.CambioContra(valorRequerido);
+    {
+        var cambio = MontoTotalCubierto - valorRequerido;
+        return cambio > 0 ? Math.Round(cambio, 2) : 0;
+    }
 
     public static Payment Reconstituir(
         int id,
         int reservaId,
         int metodoPagoId,
         decimal monto,
+        int? milesUsadas,
         string estado,
         string? referencia,
         DateTime? fechaPago,
@@ -145,6 +168,9 @@ public sealed class Payment
             ReservaId    = reservaId,
             MetodoPagoId = metodoPagoId,
             Monto        = MontoPayment.Crear(monto),
+            MilesUsadas  = milesUsadas.HasValue
+                ? MilesUsadasPayment.Crear(milesUsadas.Value)
+                : null,
             Estado       = EstadoPayment.Crear(estado),
             Referencia   = referencia is not null
                 ? ReferenciaPayment.Crear(referencia)
@@ -162,7 +188,10 @@ public sealed class Payment
 
     public void EstablecerId(int id) => Id = id;
 
-    public override string ToString() =>
-        $"Pago Reserva #{ReservaId} — {Monto} | " +
-        $"{Estado} | Ref: {Referencia?.Valor ?? "Sin referencia"}";
+    public override string ToString()
+    {
+        var milesInfo = MilesUsadas is not null ? $" + {MilesUsadas}" : "";
+        return $"Pago Reserva #{ReservaId} — {Monto}{milesInfo} | " +
+               $"{Estado} | Ref: {Referencia?.Valor ?? "Sin referencia"}";
+    }
 }

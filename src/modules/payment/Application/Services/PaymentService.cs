@@ -30,8 +30,8 @@ public sealed class PaymentService : IPaymentService
         _getByBooking = getByBooking;
     }
 
-    public Task<Payment> CreateAsync(int reservaId, int metodoPagoId, decimal monto)
-        => _create.ExecuteAsync(reservaId, metodoPagoId, monto);
+    public Task<Payment> CreateAsync(int reservaId, int metodoPagoId, decimal monto, int? milesUsadas = null)
+        => _create.ExecuteAsync(reservaId, metodoPagoId, monto, milesUsadas);
 
     public Task<Payment> ApproveAsync(int pagoId, string referencia)
         => _approve.ExecuteAsync(pagoId, referencia);

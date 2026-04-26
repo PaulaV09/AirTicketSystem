@@ -5,7 +5,7 @@ namespace AirTicketSystem.modules.payment.Application.Interfaces;
 
 public interface IPaymentService
 {
-    Task<Payment> CreateAsync(int reservaId, int metodoPagoId, decimal monto);
+    Task<Payment> CreateAsync(int reservaId, int metodoPagoId, decimal monto, int? milesUsadas = null);
     Task<Payment> ApproveAsync(int pagoId, string referencia);
     Task<Payment> RejectAsync(int pagoId);
     Task<Payment> RefundAsync(int pagoId);

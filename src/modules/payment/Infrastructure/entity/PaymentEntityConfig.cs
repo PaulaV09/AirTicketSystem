@@ -15,6 +15,7 @@ public class PaymentEntityConfig : IEntityTypeConfiguration<PaymentEntity>
         builder.Property(p => p.ReservaId).HasColumnName("reserva_id").IsRequired();
         builder.Property(p => p.MetodoPagoId).HasColumnName("metodo_pago_id").IsRequired();
         builder.Property(p => p.Monto).HasColumnName("monto").HasColumnType("decimal(12,2)").IsRequired();
+        builder.Property(p => p.MilesUsadas).HasColumnName("miles_usadas").IsRequired(false);
         builder.Property(p => p.Estado).HasColumnName("estado").HasMaxLength(12)
             .IsRequired().HasDefaultValue("PENDIENTE");
         builder.Property(p => p.ReferenciaPago).HasColumnName("referencia_pago").HasMaxLength(100);

@@ -22,10 +22,15 @@ public sealed class CreatePaymentUseCase
         _paymentMethodRepository = paymentMethodRepository;
     }
 
+    // milesUsadas: millas a redimir en este pago (null = solo dinero).
+    // IMPORTANTE: este use case solo REGISTRA las millas en el pago.
+    // La deducción del saldo de la cuenta debe llamarse por separado
+    // con RegistrarRedencionUseCase antes o después de crear el pago.
     public async Task<Payment> ExecuteAsync(
         int reservaId,
         int metodoPagoId,
         decimal monto,
+        int? milesUsadas = null,
         CancellationToken cancellationToken = default)
     {
         var booking = await _bookingRepository.FindByIdAsync(reservaId)
@@ -40,7 +45,7 @@ public sealed class CreatePaymentUseCase
             ?? throw new KeyNotFoundException(
                 $"No se encontró el método de pago con ID {metodoPagoId}.");
 
-        var payment = Payment.Crear(reservaId, metodoPagoId, monto);
+        var payment = Payment.Crear(reservaId, metodoPagoId, monto, milesUsadas);
 
         await _paymentRepository.SaveAsync(payment);
         return payment;
